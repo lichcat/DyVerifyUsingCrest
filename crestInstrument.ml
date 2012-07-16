@@ -185,6 +185,7 @@ let prependToBlock (is : instr list) (b : block) =
   b.bstmts <- mkStmt (Instr is) :: b.bstmts
 
 let isSymbolicType ty = isIntegralType (unrollType ty)
+let isPointerType ty = isPointerType (unrollType ty)
 
 
 (* These definitions must match those in "libcrest/crest.h". *)
@@ -287,6 +288,15 @@ class crestInstrumentVisitor f =
   let addrArg = ("addr", addrType, []) in
   let opArg   = ("op",   opType,   []) in
   let boolArg = ("b",    boolType, []) in
+  (*
+      add by lichcat
+      ptrAddrArg and memAddrArg for alloc/free related functioin argument
+      retPtrAddrArg and retPtrValueArg for return pointer related function argument
+   *)
+  let ptrAddrArg =("ptrAddr", addrType, []) in
+  let memAddrArg =("memAddr", addrType, []) in
+  let retPtrAddrArg =("retPtrAddr", addrType,[]) in 
+  let retPtrValueArg =("retPtrValue", addrType, []) in
 
   let mkInstFunc name args =
     let ty = TFun (voidType, Some (idArg :: args), false, []) in
@@ -305,7 +315,37 @@ class crestInstrumentVisitor f =
   let callFunc         = mkInstFunc "Call" [fidArg] in
   let returnFunc       = mkInstFunc "Return" [] in
   let handleReturnFunc = mkInstFunc "HandleReturn" [valArg] in
-
+  (*
+     add by lichcat
+     csvMallocFunc for __csvMalloc
+     csvFreeFunc for __csvFree
+     csvLoadPointerFunc for __csvLoadPointer
+     csvStorePointerFunc for __csvStorePointer
+     csvPointerApply1/2 for __csvPointerApply1/2
+     csvHandleReturnPointer for __csvHandleReturnPointer
+     csvClearPointerStack fro __csvClearPointerStack
+   *)
+  let mkCsvInstFunc name args =
+    let ty = TFun (voidType, Some (idArg :: args), false, []) in
+    let func = findOrCreateFunc f ("__DyVerify" ^ name) ty in
+      func.vstorage <- Extern ;
+      func.vattr <- [Attr ("crest_skip", [])] ;
+      func
+  in
+  let csvMallocFunc  = mkCsvInstFunc "Malloc" [memAddrArg;valArg] in
+  let csvFreeFunc  =mkCsvInstFunc "Free" [memAddrArg] in
+  (*
+  let csvMallocFunc  = mkCsvInstFunc "Malloc" [ptrAddrArg;memAddrArg;valArg] in
+  let csvFreeFunc  =mkCsvInstFunc "Free" [ptrAddrArg;memAddrArg] in
+  let csvLoadPointerFunc  = mkCsvInstFunc "LoadPointer" [ptrAddrArg;memAddrArg] in
+  let csvStorePointerFunc  = mkCsvInstFunc "StorePointer" [ptrAddrArg;memAddrArg] in
+  let csvPointerApply1 = mkCsvInstFunc "PointerApply1" [opArg; valArg] in
+  let csvPointerApply2 = mkCsvInstFunc "PointerApply2" [opArg; valArg] in
+  let csvHandleReturnPointerFunc = mkCsvInstFunc "HandleReturnPointer" [retPtrAddrArg; retPtrValueArg] in
+  let csvClearPointerStackFunc = mkCsvInstFunc "ClearPointerStack" [] in
+  *)
+  let csvLiveMemory = mkCsvInstFunc "LiveMemory" [memAddrArg;valArg] in
+  
   (*
    * Functions to create calls to the above instrumentation functions.
    *)
@@ -354,8 +394,31 @@ class crestInstrumentVisitor f =
   let mkCall fid           = mkInstCall callFunc [integer fid] in
   let mkReturn ()          = mkInstCall returnFunc [] in
   let mkHandleReturn value = mkInstCall handleReturnFunc [toValue value] in
-
-
+  
+  (*
+     Instrument csv functions 
+     __csvMalloc,__csvRealloc,__csvCalloc,__csvFree
+     __csvLoadPointer,__csvStorePointer
+     __csvPointerApply1,__csvPointerApply2
+     __csvHandleReturnPointer
+     __csvClearPointerStack
+   *)
+  let mkCsvMalloc memAddr size = mkInstCall csvMallocFunc [toAddr memAddr;toValue size] in 
+  let mkCsvFree memAddr = mkInstCall csvFreeFunc [toAddr memAddr] in
+  
+  (* reference count
+  let mkCsvMalloc ptrAddr memAddr size = mkInstCall csvMallocFunc [toAddr ptrAddr; toAddr memAddr;toValue size] in 
+  let mkCsvFree ptrAddr memAddr = mkInstCall csvFreeFunc [toAddr ptrAddr; toAddr memAddr] in
+ 
+  let mkCsvLoadPointer ptrAddr memAddr  = mkInstCall csvLoadPointerFunc [toAddr ptrAddr; toAddr memAddr] in
+  let mkCsvStorePointer ptrAddr memAddr   = mkInstCall csvStorePointerFunc [toAddr ptrAddr; toAddr memAddr] in
+  let mkCsvPointerApply1 op value = mkInstCall csvPointerApply1 [unaryOpCode op; toValue value] in
+  let mkCsvPointerApply2 op value = mkInstCall csvPointerApply2 [binaryOpCode op; toValue value] in
+  let mkCsvHandleReturnPointer retPtrAddr retPtrValue = mkInstCall csvHandleReturnPointerFunc [toAddr retPtrAddr; toValue retPtrValue] in
+  let mkCsvClearPointerStack ()  = mkInstCall csvClearPointerStackFunc [] in
+  *)
+    let mkCsvLiveMemory addr value = mkInstCall csvLiveMemory [toAddr addr; toValue value] in
+  
   (*
    * Instrument an expression.
    *)
@@ -365,7 +428,10 @@ class crestInstrumentVisitor f =
     else
       match e with
         | Lval lv when hasAddress lv ->
-            [mkLoad (addressOf lv) e]
+          (match lv with
+            | (Mem memExp,_) ->[mkCsvLiveMemory (addressOf lv) e;mkLoad (addressOf lv) e]
+            | _ -> [mkLoad (addressOf lv) e]
+          )
 
         | UnOp (op, e, _) ->
             (* Should skip this if we don't currently handle 'op'. *)
@@ -383,8 +449,36 @@ class crestInstrumentVisitor f =
          * and stop recursing. *)
         | _ -> [mkLoad noAddr e]
   in
+	
+  (* lichcat add
+   * instrumentPointerExpr for   
+   *
+  let rec instrumentPointerExpr e =
+    if isConstant e then
+      [mkCsvLoadPointer noAddr e]
+    else
+      match e with
+        | Lval lv when hasAddress lv ->
+            [mkCsvLoadPointer (addressOf lv) e]
 
+        | UnOp (op, e, _) ->
+            (* Should skip this if we don't currently handle 'op'. *)
+            (instrumentPointerExpr e) @ [mkCsvPointerApply1 op e]
 
+        | BinOp (op, e1, e2, _) ->
+            (* Should skip this if we don't currently handle 'op'. *)
+            (instrumentPointerExpr e1) @ (instrumentPointerExpr e2) @ [mkCsvPointerApply2 op e]
+
+        | CastE (_, e) ->
+            (* We currently treat cast's as no-ops, which is not precise. *)
+            instrumentPointerExpr e
+
+        (* Default case: We cannot instrument, so generate a concrete load
+         * and stop recursing. *)
+        | _ -> [mkCsvLoadPointer noAddr e]
+  in
+    *)
+  
 object (self)
   inherit nopCilVisitor
 
@@ -420,48 +514,115 @@ object (self)
   (*
    * Instrument assignment and call statements.
    *)
+        (*
+         * lichcat
+         * add isPointerType :handle pointer assignment
+         * and add insert __csvLoadPointer and __csvStorePointer 
+         self#queueInstr [mkCsvLiveMemory (addressOf lv) e];
+           *)
   method vinst(i) =
     match i with
       | Set (lv, e, _) ->
-          if (isSymbolicType (typeOf e)) && (hasAddress lv) then
+        (match lv with
+          | (Mem memExp,_) ->
+            if (isSymbolicType (typeOf e)) && (hasAddress lv) then
             (self#queueInstr (instrumentExpr e) ;
-             self#queueInstr [mkStore (addressOf lv)]) ;
-          SkipChildren
+             self#queueInstr [mkStore (addressOf lv)]);
+            self#queueInstr [mkCsvLiveMemory (addressOf lv) (Lval lv)];
+          | _ -> 
+            if (isSymbolicType (typeOf e)) && (hasAddress lv) then
+            (self#queueInstr (instrumentExpr e) ;
+             self#queueInstr [mkStore (addressOf lv)])
+        );
+          
+         (* else if (isPointerType (typeOf e)) && (hasAddress lv) then  
+            ((*self#queueInstr (instrumentExpr e) ;
+             self#queueInstr [mkStore (addressOf lv)] ; *)
+             self#queueInstr (instrumentPointerExpr e) ;
+             (*self#queueInstr [mkCsvLoadPointer (addressOf lv) e] ; *)
+             self#queueInstr [mkCsvStorePointer (addressOf lv) (Lval lv)]) ;
+            *)
+         SkipChildren
+          
 
       (* Don't instrument calls to functions marked as uninstrumented. *)
       | Call (_, Lval (Var f, NoOffset), _, _)
           when shouldSkipFunction f -> SkipChildren
+        
+      | Call (ret, Lval (Var f, NoOffset),args,_)
+          when f.vname = "malloc" ->
+        	let sizeArg = List.hd args in
+            (match ret with
+              |  Some lv when (hasAddress lv) ->
+              	   ChangeTo [i ;  mkCsvMalloc (Lval lv) sizeArg]
+                (* ChangeTo [i ;  mkCsvMalloc (addressOf lv) (Lval lv) sizeArg]	*)
+              |  _ -> DoChildren
+            )
+              
+      | Call(None, Lval(Var f, NoOffset),args,_)
+          when f.vname = "free" ->
+            let frPtr = List.hd args in
+        	(match frPtr with
+              |  CastE (_,Lval castExp)->
+                	ChangeTo [i ;  mkCsvFree (Lval castExp)]
+                (* ChangeTo [i ;  mkCsvFree (addressOf castExp) (Lval castExp)] *)
+              |  _ -> DoChildren
+         	)
+      (*  
+       *  lichcat add 
+       *  isPointerExp for pointerArgsToInst
+       *  to instrument pointer args
+       *)
 
       | Call (ret, _, args, _) ->
           let isSymbolicExp e = isSymbolicType (typeOf e) in
+         (* let isPointerExp e = isPointerType (typeOf e) in	*)
           let isSymbolicLval lv = isSymbolicType (typeOfLval lv) in
+         (* let isPointerLval lv = isPointerType (typeOfLval lv) in  *)
           let argsToInst = List.filter isSymbolicExp args in
+         (* let pointerArgsToInst = List.filter isPointerExp args in	*) 
             self#queueInstr (concatMap instrumentExpr argsToInst) ;
+         (*	self#queueInstr (concatMap instrumentPointerExpr pointerArgsToInst) ;	*)
             (match ret with
                | Some lv when ((isSymbolicLval lv) && (hasAddress lv)) ->
                    ChangeTo [i ;
                              mkHandleReturn (Lval lv) ;
                              mkStore (addressOf lv)]
+               (*  
+               | Some lv when ((isPointerLval lv) && (hasAddress lv))  ->
+                   ChangeTo [i ;
+                             mkCsvHandleReturnPointer (addressOf lv) (Lval lv) ;
+                             mkCsvStorePointer (addressOf lv) (Lval lv)]
+                *) 
                | _ ->
-                   ChangeTo [i ; mkClearStack ()])
+                   ChangeTo [i ; 
+                     		 (*mkCsvClearPointerStack () ; *)
+                     		 mkClearStack ()])
 
       | _ -> DoChildren
 
 
   (*
    * Instrument function entry.
+   * lichcat add instParamPointer and isPointerType
+   * using by pointerParamsToInst
    *)
   method vfunc(f) =
     if shouldSkipFunction f.svar then
       SkipChildren
     else
       let instParam v = mkStore (addressOf (var v)) in
+      (*let instPointerParam v = mkCsvStorePointer (addressOf (var v)) (Lval (var v)) in	*)
       let isSymbolic v = isSymbolicType v.vtype in
+      (*let isPointer v = isPointerType v.vtype in	*)
       let (_, _, isVarArgs, _) = splitFunctionType f.svar.vtype in
       let paramsToInst = List.filter isSymbolic f.sformals in
+      (*let pointerParamsToInst = List.filter isPointer f.sformals in	*)
         addFunction () ;
-        if (not isVarArgs) then
+        if (not isVarArgs) then 
           prependToBlock (List.rev_map instParam paramsToInst) f.sbody ;
+          (*(prependToBlock (List.rev_map instParam paramsToInst) f.sbody ;
+          prependToBlock (List.rev_map instPointerParam pointerParamsToInst) f.sbody) ;	*)
         prependToBlock [mkCall !funCount] f.sbody ;
         DoChildren
 

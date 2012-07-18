@@ -11,7 +11,7 @@
 
 open Cil
 
-(*
+(*open String
  * Utilities that should be in the O'Caml standard libraries.
  *)
 
@@ -65,6 +65,7 @@ let stmtCount = Cfg.start_id
 let funCount = ref 0
 let branches = ref []
 let curBranches = ref []
+let currentFileName = ref ""
 (* Control-flow graph is stored inside the CIL AST. *)
 
 let getNewId () = ((idCount := !idCount + 1); !idCount)
@@ -87,10 +88,28 @@ let writeCounter fname (cnt : int) =
   with x ->
     failwith ("Failed to write counter to: " ^ fname ^ "\n")
 
+    
+let readCurrentCheck fname =
+  try
+	let f =open_in fname in
+      Scanf.fscanf f "%s" (fun x -> x)
+  with x -> ""
+    
+let writeForDebugFile fname (cstr : string) =
+  try
+	let f= open_append fname in
+    	Printf.fprintf f "%s\n" cstr ;
+    	close_out f
+  with x ->
+    failwith ("Failed to write counter to : " ^ fname ^ "\n")
+    
+    
 let readIdCount () = (idCount := readCounter "idcount")
 let readStmtCount () = (stmtCount := readCounter "stmtcount")
 let readFunCount () = (funCount := readCounter "funcount")
 
+let readCheckFileName () =(currentFileName := readCurrentCheck "currentCheck")
+  
 let writeIdCount () = writeCounter "idcount" !idCount
 let writeStmtCount () = writeCounter "stmtcount" !stmtCount
 let writeFunCount () = writeCounter "funcount" !funCount
@@ -668,6 +687,13 @@ let feature : featureDescr =
              visitCilFileSameGlobals (ncVisitor :> cilVisitor) f) ;
           (* Clear out any existing CFG information. *)
           Cfg.clearFileCFG f ;
+    	  writeForDebugFile "debugFile" f.fileName;
+    	  readCheckFileName () ;
+    	  writeForDebugFile "debugFile" !currentFileName;
+    	  (* Read currentCheck
+    	   * 
+    	   *)
+    
           (* Read the ID and statement counts from files.  (This must
            * occur after clearFileCFG, because clearFileCfg clobbers
            * the statement counter.) *)

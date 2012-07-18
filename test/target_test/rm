@@ -1,0 +1,1 @@
+rm idcount *.o *.cil.i *.cil.c *.i cfg* branches funcount stmtcount 

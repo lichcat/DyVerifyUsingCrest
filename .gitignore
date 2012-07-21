@@ -8,7 +8,14 @@
 *.cmxs
 *.cmxa
 .gitignore.swp
-/EnhancedCrestInstru/
+.svn
+/EnhancedCrestInstru/bin
+/EnhancedCrestInstru/cil
+/EnhancedCrestInstru/src
+/EnhancedCrestInstru/lib
+/EnhancedCrestInstru/include
+/EnhancedCrestInstru/README
+/EnhancedCrestINstru/test
 !/EnhancedCrestInstru/cil/src/ext/crestInstrument.ml
 !/EnhancedCrestInstru/LICENSE
 !/EnhancedCrestInstru/src/base/symbolic_interpreter.cc

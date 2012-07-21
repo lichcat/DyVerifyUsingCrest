@@ -7,3 +7,10 @@
 *.cmx
 *.cmxs
 *.cmxa
+.gitignore.swp
+/EnhancedCrestInstru/
+!/EnhancedCrestInstru/cil/src/ext/crestInstrument.ml
+!/EnhancedCrestInstru/LICENSE
+!/EnhancedCrestInstru/src/base/symbolic_interpreter.cc
+!/EnhancedCrestInstru/src/base/symbolic_interpreter.h
+!/EnhancedCrestInstru/src/libcrest

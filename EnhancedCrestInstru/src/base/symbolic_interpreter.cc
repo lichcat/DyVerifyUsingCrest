@@ -373,7 +373,7 @@ void SymbolicInterpreter::DyVerifyStaticPathEnd(id_t id){
 	IFDEBUG(DyVerifyDumpShadowHeap());
 }
 void SymbolicInterpreter::DyVerifyCheckShadowHeap(){
-	IFDEBUG(fprintf(stderr,"Check  \n"));
+	IFDEBUG(fprintf(stderr,"Check   \n"));
 	IFDEBUG(DyVerifyDumpShadowHeap());
 }
 void SymbolicInterpreter::DyVerifyIsWarningMem(id_t id, addr_t memAddr){

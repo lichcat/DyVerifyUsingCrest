@@ -726,6 +726,7 @@ let feature : featureDescr =
 
     	  readCurrentCheckFile() ;
 
+
           (* Read the ID and statement counts from files.  (This must
            * occur after clearFileCFG, because clearFileCfg clobbers
            * the statement counter.) *)

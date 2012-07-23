@@ -121,7 +121,7 @@
  */
 #define __CREST_ID int
 #define __CREST_BRANCH_ID int
-#define __CREST_FUNCTION_ID unsigned int
+#define __CREST_FUNCTION_ID unsigned int 
 #define __CREST_VALUE long long int
 #define __CREST_ADDR unsigned long int
 
@@ -235,4 +235,5 @@ EXTERN void __DyVerifyStaticPathEnd(__CREST_ID) __SKIP;
 
 EXTERN void __DyVerifyIsWarningMem(__CREST_ID, __CREST_ADDR) __SKIP;
 
+EXTERN void __DyVerifyCheckShadowHeap() __SKIP;
 #endif  /* LIBCREST_CREST_H__ */

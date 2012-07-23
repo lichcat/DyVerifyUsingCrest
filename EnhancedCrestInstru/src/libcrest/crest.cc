@@ -68,7 +68,8 @@ void __CrestInit() {
 
 void __CrestAtExit() {
   const SymbolicExecution& ex = SI->execution();
-
+  
+  __DyVerifyCheckShadowHeap();
   /* Write the execution out to file 'szd_execution'. */
   string buff;
   buff.reserve(1<<26);
@@ -239,4 +240,7 @@ void __DyVerifyStaticPathEnd(__CREST_ID id){
 
 void __DyVerifyIsWarningMem(__CREST_ID id, __CREST_ADDR memAddr){
 	SI->DyVerifyIsWarningMem(id,memAddr);
+}
+void __DyVerifyCheckShadowHeap(){
+	SI->DyVerifyCheckShadowHeap();
 }

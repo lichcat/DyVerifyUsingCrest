@@ -19,7 +19,7 @@ xmlDocPtr getFvdlDoc(char* docname){
 		xmlFreeDoc(doc);
 		return NULL;
 	}
-	//printf("%d\n",xmlStrcmp(cur->name,(const xmlChar*)"FVDL"));	FVDL->0
+	//printf("%d\n",xmlStrcmp(cur->name,(const xmlChar*)"FVDL"));	FVDL->0 same->0
 	if(xmlStrcmp(cur->name,(const xmlChar*)"FVDL")){
 		fprintf(stderr,"%s is not a FVDL file!\n",docname);
 		xmlFreeDoc(doc);
@@ -52,7 +52,27 @@ xmlXPathObjectPtr getnodeset(xmlDocPtr doc, xmlChar *xpath){
 	return result;
 
 }
-
+void parseVulnerability(xmlDocPtr doc,xmlNodePtr cur){
+	xmlChar* key;
+	xmlNodePtr curChild;
+	cur = cur->xmlChildrenNode;
+	while(NULL!=cur){
+		if(!xmlStrcmp(cur->name,(const xmlChar*)"ClassInfo")){
+			//printf("in ClassInfo\n");
+			curChild=cur->xmlChildrenNode;
+			while(NULL!=curChild){
+				if(!xmlStrcmp(curChild->name,(const xmlChar*)"Type")){
+					key= xmlNodeListGetString(doc,curChild->xmlChildrenNode,1);
+					printf("ClassInfo/Type: %s \n",key);
+					xmlFree(key);
+				}
+				curChild = curChild ->next;
+			}
+		}
+		cur = cur->next;
+	}
+	//return false;
+}
 int main(int argc, char** argv){
 	int i;
 	char* fvdlDocName;
@@ -61,7 +81,6 @@ int main(int argc, char** argv){
 	xmlNodeSetPtr nodeset;
 	xmlXPathObjectPtr result;
 
-	xmlChar * keyword;
 
 	if(argc <=1){
 		printf("Usage: %s docname\n",argv[0]);
@@ -78,9 +97,7 @@ int main(int argc, char** argv){
 	if(result){
 		nodeset = result->nodesetval;
 		for(i=0;i< nodeset->nodeNr; i++){
-			keyword = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode,1);
-			printf("keyword: %s \n",keyword);
-			xmlFree(keyword);
+			parseVulnerability(doc, nodeset->nodeTab[i]);
 		}
 		xmlXPathFreeObject(result);
 	}

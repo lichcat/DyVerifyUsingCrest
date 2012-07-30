@@ -1,12 +1,14 @@
 #include <stdio.h>
+#include <assert.h>
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
+#include <libxml/xpathInternals.h>
 
 xmlDocPtr getFvdlDoc(char* docname){
 
 	xmlDocPtr doc;
 	xmlNodePtr cur;
-
+	xmlKeepBlanksDefault(0);
 	doc=xmlParseFile(docname);
 	if(NULL==doc){
 		fprintf(stderr,"Document not parsed successfully. \n");
@@ -52,74 +54,60 @@ xmlXPathObjectPtr getnodeset(xmlDocPtr doc, xmlChar *xpath){
 	return result;
 
 }
-int isTypeMemoryLeak(xmlDocPtr doc,xmlNodePtr cur){
-	xmlChar* key;
-	xmlNodePtr curChild;
-	cur = cur->xmlChildrenNode;
-	while(NULL!=cur){
-		if(!xmlStrcmp(cur->name,(const xmlChar*)"ClassInfo")){
-			//printf("in ClassInfo\n");
-			curChild=cur->xmlChildrenNode;
-			while(NULL!=curChild){
-				if(!xmlStrcmp(curChild->name,(const xmlChar*)"Type")){
-					key= xmlNodeListGetString(doc,curChild->xmlChildrenNode,1);
-					//printf("ClassInfo/Type: %s \n",key);
-					if(!xmlStrcmp(key,(const xmlChar*)"Memory Leak")){
-						xmlFree(key);
-						return 1;
-					}
-					xmlFree(key);
-				}
-				curChild = curChild ->next;
-			}
-		}
-		cur = cur->next;
-	}
-	return 0;
-}
-xmlNodePtr getTrace(xmlNodePtr cur){
-	xmlNodePtr curChild,curGrandSon;
-	cur = cur->xmlChildrenNode;
-	while(NULL!=cur){
-		if(!xmlStrcmp(cur->name,(const xmlChar*)"AnalysisInfo")){
-			curChild = cur ->xmlChildrenNode;
-			while(NULL!=curChild){
-				if(!xmlStrcmp(curChild->name,(const xmlChar*)"Unified")){
-					curGrandSon=curChild->xmlChildrenNode;
-					while(NULL!=curGrandSon){
-						if(!xmlStrcmp(curGrandSon->name,(const xmlChar*)"Trace")){
-							return curGrandSon;
-						}
-						curGrandSon=curGrandSon->next;
-					}
-				}
-				curChild = curChild->next;
-			}
-		}
-		cur = cur->next;
-	}
-	return NULL;
-}
 void getTraceInfo(xmlDocPtr doc,xmlNodePtr cur){
-	xmlChar * string;
-	//printf("%s\n",cur->name);
-	
-	//string=xmlNodeListGetString(doc, cur->xmlChildrenNode,1);
-	//xmlFree(string);
+	int i;
+	xmlChar* nodeXpath=(unsigned char*)"//fvdl:Entry/fvdl:Node";
+	xmlNodeSetPtr nodeset;
+	xmlXPathObjectPtr result;
+	xmlNodePtr nodeChild;
+
+	xmlChar *file,*line,*lineEnd,*actionType,*actionString;
+
+	result=getnodeset((xmlDocPtr)cur,nodeXpath);
+	if(result){
+		nodeset = result ->nodesetval;
+		for(i=0;i<nodeset->nodeNr;i++){
+			nodeChild=nodeset->nodeTab[i]->xmlChildrenNode;
+			while(nodeChild!=NULL){
+				if(!xmlStrcmp(nodeChild->name,(const xmlChar*)"SourceLocation")){
+					file=xmlGetProp(nodeChild,(const xmlChar*)"path");
+					line=xmlGetProp(nodeChild,(const xmlChar*)"line");
+					lineEnd=xmlGetProp(nodeChild,(const xmlChar*)"lineEnd");
+					assert(!xmlStrcmp(line,lineEnd));
+					//printf("sourcelocation::file: %s \t sourcelocation::line:%s \n",file,line);
+
+					xmlFree(file);
+					xmlFree(line);
+					xmlFree(lineEnd);
+				}else if(!xmlStrcmp(nodeChild->name,(const xmlChar*)"Action")){
+					actionType=xmlGetProp(nodeChild,(const xmlChar*)"type");
+					actionString=xmlNodeListGetString(doc,nodeChild->xmlChildrenNode,1);
+					//printf("action::type %s \t action::string %s \n",actionType,actionString);
+					xmlFree(actionType);
+					xmlFree(actionString);
+				}
+
+				nodeChild=nodeChild->next;
+			}
+		}
+		xmlXPathFreeObject(result);
+	}
 }
 int main(int argc, char** argv){
 	int i;
 	char* fvdlDocName;
 	xmlDocPtr doc;
-	xmlChar *xpath="//fvdl:Vulnerability";
+	//xmlChar *xpath="//fvdl:Vulnerability";
+	xmlChar *xpath=(unsigned char*)"//fvdl:Vulnerability[./fvdl:ClassInfo/fvdl:Type='Memory Leak']"
+					"/fvdl:AnalysisInfo/fvdl:Unified/fvdl:Trace/fvdl:Primary";
 	xmlNodeSetPtr nodeset;
 	xmlXPathObjectPtr result;
-	xmlNodePtr tracenode;
 
 	if(argc <=1){
 		printf("Usage: %s docname\n",argv[0]);
 		return (0);
 	}
+
 	fvdlDocName=argv[1];
 	doc=getFvdlDoc(fvdlDocName);
 
@@ -131,13 +119,7 @@ int main(int argc, char** argv){
 	if(result){
 		nodeset = result->nodesetval;
 		for(i=0;i< nodeset->nodeNr; i++){
-			if(isTypeMemoryLeak(doc, nodeset->nodeTab[i])){
-				tracenode=getTrace(nodeset->nodeTab[i]);
-				if(NULL==tracenode)
-					printf("Resolve Error: no trace node\n");
-				else
-					getTraceInfo(doc,tracenode);
-			}
+			getTraceInfo(doc,nodeset->nodeTab[i]);
 		}
 		xmlXPathFreeObject(result);
 	}

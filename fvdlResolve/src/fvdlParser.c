@@ -77,6 +77,36 @@ int isTypeMemoryLeak(xmlDocPtr doc,xmlNodePtr cur){
 	}
 	return 0;
 }
+xmlNodePtr getTrace(xmlNodePtr cur){
+	xmlNodePtr curChild,curGrandSon;
+	cur = cur->xmlChildrenNode;
+	while(NULL!=cur){
+		if(!xmlStrcmp(cur->name,(const xmlChar*)"AnalysisInfo")){
+			curChild = cur ->xmlChildrenNode;
+			while(NULL!=curChild){
+				if(!xmlStrcmp(curChild->name,(const xmlChar*)"Unified")){
+					curGrandSon=curChild->xmlChildrenNode;
+					while(NULL!=curGrandSon){
+						if(!xmlStrcmp(curGrandSon->name,(const xmlChar*)"Trace")){
+							return curGrandSon;
+						}
+						curGrandSon=curGrandSon->next;
+					}
+				}
+				curChild = curChild->next;
+			}
+		}
+		cur = cur->next;
+	}
+	return NULL;
+}
+void getTraceInfo(xmlDocPtr doc,xmlNodePtr cur){
+	xmlChar * string;
+	//printf("%s\n",cur->name);
+	
+	//string=xmlNodeListGetString(doc, cur->xmlChildrenNode,1);
+	//xmlFree(string);
+}
 int main(int argc, char** argv){
 	int i;
 	char* fvdlDocName;
@@ -84,7 +114,7 @@ int main(int argc, char** argv){
 	xmlChar *xpath="//fvdl:Vulnerability";
 	xmlNodeSetPtr nodeset;
 	xmlXPathObjectPtr result;
-
+	xmlNodePtr tracenode;
 
 	if(argc <=1){
 		printf("Usage: %s docname\n",argv[0]);
@@ -101,8 +131,13 @@ int main(int argc, char** argv){
 	if(result){
 		nodeset = result->nodesetval;
 		for(i=0;i< nodeset->nodeNr; i++){
-			if(isTypeMemoryLeak(doc, nodeset->nodeTab[i]))
-				printf(" ml \n");
+			if(isTypeMemoryLeak(doc, nodeset->nodeTab[i])){
+				tracenode=getTrace(nodeset->nodeTab[i]);
+				if(NULL==tracenode)
+					printf("Resolve Error: no trace node\n");
+				else
+					getTraceInfo(doc,tracenode);
+			}
 		}
 		xmlXPathFreeObject(result);
 	}

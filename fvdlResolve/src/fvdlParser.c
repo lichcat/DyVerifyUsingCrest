@@ -52,7 +52,7 @@ xmlXPathObjectPtr getnodeset(xmlDocPtr doc, xmlChar *xpath){
 	return result;
 
 }
-void parseVulnerability(xmlDocPtr doc,xmlNodePtr cur){
+int isTypeMemoryLeak(xmlDocPtr doc,xmlNodePtr cur){
 	xmlChar* key;
 	xmlNodePtr curChild;
 	cur = cur->xmlChildrenNode;
@@ -63,7 +63,11 @@ void parseVulnerability(xmlDocPtr doc,xmlNodePtr cur){
 			while(NULL!=curChild){
 				if(!xmlStrcmp(curChild->name,(const xmlChar*)"Type")){
 					key= xmlNodeListGetString(doc,curChild->xmlChildrenNode,1);
-					printf("ClassInfo/Type: %s \n",key);
+					//printf("ClassInfo/Type: %s \n",key);
+					if(!xmlStrcmp(key,(const xmlChar*)"Memory Leak")){
+						xmlFree(key);
+						return 1;
+					}
 					xmlFree(key);
 				}
 				curChild = curChild ->next;
@@ -71,7 +75,7 @@ void parseVulnerability(xmlDocPtr doc,xmlNodePtr cur){
 		}
 		cur = cur->next;
 	}
-	//return false;
+	return 0;
 }
 int main(int argc, char** argv){
 	int i;
@@ -97,7 +101,8 @@ int main(int argc, char** argv){
 	if(result){
 		nodeset = result->nodesetval;
 		for(i=0;i< nodeset->nodeNr; i++){
-			parseVulnerability(doc, nodeset->nodeTab[i]);
+			if(isTypeMemoryLeak(doc, nodeset->nodeTab[i]))
+				printf(" ml \n");
 		}
 		xmlXPathFreeObject(result);
 	}

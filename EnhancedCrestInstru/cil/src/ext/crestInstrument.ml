@@ -65,10 +65,10 @@ let stmtCount = Cfg.start_id
 let funCount = ref 0
 let branches = ref []
 let curBranches = ref []
-(*let currentCheckFile = ref ""
-let warningMemLine = ref 0
-let pathEndLineNumber = ref 0
-*)
+let warningId = ref 0 
+let warningPath = ref []
+
+
 (* Control-flow graph is stored inside the CIL AST. *)
 
 let getNewId () = ((idCount := !idCount + 1); !idCount)
@@ -102,15 +102,25 @@ let mySubStr fname ?indexHead:(indexHead=0) indexEnd =
 let readIdCount () = (idCount := readCounter "idcount")
 let readStmtCount () = (stmtCount := readCounter "stmtcount")
 let readFunCount () = (funCount := readCounter "funcount")
-(*
+
 let readCurrentCheckFile () =
   let f =open_in "currentCheck" in
-    Scanf.fscanf f "%s %d %d" 
-  	(fun x y z->
-     	currentCheckFile := x;
-	warningMemLine := y;
-     	pathEndLineNumber := z) 
- 
+	let rec iter_lines chan =
+	try
+		let words = Str.split (Str.regexp "[ \t]+") (input_line chan) in
+		warningPath:= words::!warningPath;
+		iter_lines chan
+	with End_of_file -> () in
+	iter_lines f;
+	close_in f;
+  warningPath:=List.tl !warningPath;
+  warningPath:=List.rev !warningPath;
+  let lines=List.hd !warningPath in
+  let hdline=List.hd lines in
+  warningId:=int_of_string hdline;
+  warningPath:=List.tl !warningPath
+
+(* 
 let file_pathEnd location =
   !currentCheckFile=location.file && (!pathEndLineNumber)==location.line
 let file_targetMem location =
@@ -738,7 +748,15 @@ let feature : featureDescr =
           (* Clear out any existing CFG information. *)
           Cfg.clearFileCFG f ;
 
-    	  (*readCurrentCheckFile() ;*)
+    	  readCurrentCheckFile();
+		  (* debug*)
+		  Printf.printf "%d\n" !warningId;
+		  (let printWarningPath lines =
+		     let printlines s =
+				Printf.printf "%s " s in
+			 List.iter printlines lines;
+			 Printf.printf "\n" in
+		  List.iter printWarningPath !warningPath ) ;
 
 
           (* Read the ID and statement counts from files.  (This must

@@ -65,9 +65,10 @@ let stmtCount = Cfg.start_id
 let funCount = ref 0
 let branches = ref []
 let curBranches = ref []
-let currentCheckFile = ref ""
+(*let currentCheckFile = ref ""
 let warningMemLine = ref 0
 let pathEndLineNumber = ref 0
+*)
 (* Control-flow graph is stored inside the CIL AST. *)
 
 let getNewId () = ((idCount := !idCount + 1); !idCount)
@@ -101,7 +102,7 @@ let mySubStr fname ?indexHead:(indexHead=0) indexEnd =
 let readIdCount () = (idCount := readCounter "idcount")
 let readStmtCount () = (stmtCount := readCounter "stmtcount")
 let readFunCount () = (funCount := readCounter "funcount")
-
+(*
 let readCurrentCheckFile () =
   let f =open_in "currentCheck" in
     Scanf.fscanf f "%s %d %d" 
@@ -114,7 +115,7 @@ let file_pathEnd location =
   !currentCheckFile=location.file && (!pathEndLineNumber)==location.line
 let file_targetMem location =
   !currentCheckFile=location.file && (!warningMemLine)==location.line  	
-  
+ *) 
 let writeIdCount () = writeCounter "idcount" !idCount
 let writeStmtCount () = writeCounter "stmtcount" !stmtCount
 let writeFunCount () = writeCounter "funcount" !funCount
@@ -515,8 +516,9 @@ object (self)
   method vstmt(s) =
     match s.skind with
       | If (e, b1, b2, location) ->
-          if(file_pathEnd location) then
+          (*if(file_pathEnd location) then
             self#queueInstr [mkStaticPathEnd];
+			*)
           let getFirstStmtId blk = (List.hd blk.bstmts).sid in
           let b1_sid = getFirstStmtId b1 in
           let b2_sid = getFirstStmtId b2 in
@@ -527,16 +529,19 @@ object (self)
             DoChildren
 
       | Return (Some e, location) ->
+	  (*
           if(file_pathEnd location) then
             self#queueInstr [mkStaticPathEnd];
+			*)
           if isSymbolicType (typeOf e) then
             self#queueInstr (instrumentExpr e) ;
           self#queueInstr [mkReturn ()] ;
           SkipChildren
 
       | Return (None, location) ->
-          if(file_pathEnd location) then
+          (*if(file_pathEnd location) then
             self#queueInstr [mkStaticPathEnd];
+			*)
           self#queueInstr [mkReturn ()] ;
           SkipChildren
 
@@ -556,8 +561,10 @@ object (self)
   method vinst(i) =
     match i with
       | Set (lv, e, location) ->
+	  (*
           if(file_pathEnd location) then
             self#queueInstr [mkStaticPathEnd];
+			*)
         (match lv with
           | (Mem memExp,_) ->
             if (isSymbolicType (typeOf e)) && (hasAddress lv) then
@@ -582,8 +589,10 @@ object (self)
       (* Don't instrument calls to functions marked as uninstrumented. *)
       | Call (_, Lval (Var f, NoOffset), _, location)
           when shouldSkipFunction f -> 
+		  (*
           	if(file_pathEnd location) then
             	self#queueInstr [mkStaticPathEnd];
+				*)
         SkipChildren
         
       | Call (ret, Lval (Var f, NoOffset),args,location)
@@ -591,11 +600,12 @@ object (self)
         	let sizeArg = List.hd args in
             (match ret with
               |  Some lv when (hasAddress lv) ->
+			  (*
           		if(file_pathEnd location) then
                    		ChangeTo [i ;  mkCsvMalloc (Lval lv) sizeArg; mkStaticPathEnd]
 	  		else if(file_targetMem location ) then
 	    			ChangeTo [i ;  mkCsvMalloc (Lval lv) sizeArg; mkIsWarningMem (Lval lv)]
-                   	else  
+                   	else *) 
               	   		ChangeTo [i ;  mkCsvMalloc (Lval lv) sizeArg]
                 (* ChangeTo [i ;  mkCsvMalloc (addressOf lv) (Lval lv) sizeArg]	*)
               |  _ -> DoChildren
@@ -606,9 +616,11 @@ object (self)
             let frPtr = List.hd args in
         	(match frPtr with
               |  CastE (_,Lval castExp)->
+			  (*
           		if(file_pathEnd location) then
                 		ChangeTo [i ;  mkCsvFree (Lval castExp); mkStaticPathEnd]
-                 	else 
+						
+                 	else *)
                    		ChangeTo [i ;  mkCsvFree (Lval castExp)]
                 (* ChangeTo [i ;  mkCsvFree (addressOf castExp) (Lval castExp)] *)
               |  _ -> DoChildren
@@ -631,12 +643,13 @@ object (self)
          (*	self#queueInstr (concatMap instrumentPointerExpr pointerArgsToInst) ;	*)
             (match ret with
                | Some lv when ((isSymbolicLval lv) && (hasAddress lv)) ->
+			   (*
           	  if(file_pathEnd location) then
                    ChangeTo [i ;
                              mkHandleReturn (Lval lv) ;
                              mkStore (addressOf lv) ;
                              mkStaticPathEnd]
-                   else ChangeTo [i ;
+                   else *)ChangeTo [i ;
                              mkHandleReturn (Lval lv) ;
                              mkStore (addressOf lv)]
                (*  
@@ -646,12 +659,13 @@ object (self)
                              mkCsvStorePointer (addressOf lv) (Lval lv)]
                 *) 
                | _ ->
+			   (*
           	  if(file_pathEnd location) then
                    ChangeTo [i ; 
                      		 (*mkCsvClearPointerStack () ; *)
                      		 mkClearStack ();
                              mkStaticPathEnd]
-        		else ChangeTo [i ; 
+        		else*) ChangeTo [i ; 
         					 mkClearStack ()])
       | _ -> DoChildren
 
@@ -724,7 +738,7 @@ let feature : featureDescr =
           (* Clear out any existing CFG information. *)
           Cfg.clearFileCFG f ;
 
-    	  readCurrentCheckFile() ;
+    	  (*readCurrentCheckFile() ;*)
 
 
           (* Read the ID and statement counts from files.  (This must

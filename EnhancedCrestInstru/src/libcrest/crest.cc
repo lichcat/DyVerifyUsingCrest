@@ -237,10 +237,14 @@ void __DyVerifyLiveMemory(__CREST_ID id, __CREST_ADDR memAddr, __CREST_VALUE val
 void __DyVerifyStaticPathEnd(__CREST_ID id){
 	SI->DyVerifyStaticPathEnd(id);
 }
-
+void __DyVerifyPathMark(__CREST_ID id,__CREST_ID pathId,__CREST_ID pathStmtId){
+	SI->DyVerifyPathMark(pathId,pathStmtId);
+}
+/*
 void __DyVerifyIsWarningMem(__CREST_ID id, __CREST_ADDR memAddr){
 	SI->DyVerifyIsWarningMem(id,memAddr);
 }
+*/
 void __DyVerifyCheckShadowHeap(){
 	SI->DyVerifyCheckShadowHeap();
 }

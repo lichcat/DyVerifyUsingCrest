@@ -76,7 +76,8 @@ class SymbolicInterpreter {
   void DyVerifyLiveMemory(id_t id, addr_t memAddr, value_t value);
   void DyVerifyCheckShadowHeap();
   void DyVerifyStaticPathEnd(id_t id);
-  void DyVerifyIsWarningMem(id_t id, addr_t memAddr);
+  void DyVerifyPathMark(id_t pathId,id_t pathStmtId);
+  //void DyVerifyIsWarningMem(id_t id, addr_t memAddr);
 
  private:
   struct StackElem {

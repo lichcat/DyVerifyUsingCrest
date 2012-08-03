@@ -336,13 +336,9 @@ void SymbolicInterpreter::DyVerifyFree(id_t id,addr_t memAddr){
 		fprintf(stderr,"Err: in DyVerifyFree id:%d\n\tTry to Free %lu , where couldn't find in ShadowHeap!\n",id,memAddr);
 		exit(-1);
 	}
-	if(it->second->isWarningMem==true){
-		fprintf(stderr,"FREE target Memory\n\tBefore free:\n");
-		DyVerifyDumpShadowHeap();
-	}
 	delete it->second;
 	shadowHeap_.erase(it->first);
-	IFDEBUG(fprintf(stderr,"\n\tAfter free: \n");DyVerifyDumpShadowHeap());
+	IFDEBUG(DyVerifyDumpShadowHeap());
 }
 void SymbolicInterpreter::DyVerifyLiveMemory(id_t id, addr_t memAddr, value_t value){
 	IFDEBUG(fprintf(stderr,"LiveUse \tmemAddr: %lu value: %lld\n",memAddr,value));
@@ -359,7 +355,7 @@ void SymbolicInterpreter::DyVerifyLiveMemory(id_t id, addr_t memAddr, value_t va
 
 }
 void SymbolicInterpreter::DyVerifyDumpShadowHeap(){
-	fprintf(stderr,"SHeap: \n");
+	IFDEBUG(fprintf(stderr,"SHeap: \n"));
 	ConstShadowHeapIt it;
 	for(it=shadowHeap_.begin();it!=shadowHeap_.end();it++){
 		ShadowHeap* mem=it->second;
@@ -376,10 +372,14 @@ void SymbolicInterpreter::DyVerifyStaticPathEnd(id_t id){
 	}
 	IFDEBUG(DyVerifyDumpShadowHeap());
 }
-void SymbolicInterpreter::DyVerifyCheckShadowHeap(){
-	fprintf(stderr,"Check at Program exit:\n");
-	DyVerifyDumpShadowHeap();
+void SymbolicInterpreter::DyVerifyPathMark(id_t pathId,id_t pathStmtId){
+	IFDEBUG(fprintf(stderr,"StaticPathMark_%d_%d \n",pathId,pathStmtId));
 }
+void SymbolicInterpreter::DyVerifyCheckShadowHeap(){
+	IFDEBUG(fprintf(stderr,"Check  \n"));
+
+}
+/*
 void SymbolicInterpreter::DyVerifyIsWarningMem(id_t id, addr_t memAddr){
 	IFDEBUG(fprintf(stderr,"IsWarningMemory: %lu \n", memAddr));
 	ConstShadowHeapIt it=shadowHeap_.find(memAddr);
@@ -389,5 +389,5 @@ void SymbolicInterpreter::DyVerifyIsWarningMem(id_t id, addr_t memAddr){
 	}else
 		it->second->isWarningMem=true;
 	IFDEBUG(DyVerifyDumpShadowHeap());
-}
+}*/
 }  // namespace crest

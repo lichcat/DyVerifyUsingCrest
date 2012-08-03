@@ -67,7 +67,8 @@ let branches = ref []
 let curBranches = ref []
 let warningId = ref 0 
 let warningPath = ref []
-
+let pathStmtId = ref 0
+let matchWarning = ref false
 
 (* Control-flow graph is stored inside the CIL AST. *)
 
@@ -120,6 +121,20 @@ let readCurrentCheckFile () =
   warningId:=int_of_string hdline;
   warningPath:=List.tl !warningPath
 
+let instruPathMark stype location =
+	pathStmtId:= 0;
+	let count = ref 0 in 
+ let iterWarningPath warningline =
+	 let tmp_file = List.nth warningline 0 in
+	 let tmp_line = List.nth warningline 1 in
+	 let tmp_type = List.nth warningline 2 in
+	 (count:=!count+1;
+	  if(tmp_file=location.file && (int_of_string tmp_line)=location.line && tmp_type=stype) then
+		(matchWarning:=true;
+		pathStmtId:= !count);
+	 )
+ in
+  List.iter iterWarningPath !warningPath 
 (* 
 let file_pathEnd location =
   !currentCheckFile=location.file && (!pathEndLineNumber)==location.line
@@ -153,23 +168,27 @@ object (self)
   val firstStmtIdMap = firstStmtIdMap
 
   method writeCfgCall f =
+    (*let isInstruFunc fname =
+	  let regStr = Str.regexp "^[__Crest|__DyVerify].+" in
+		Str.string_match regStr fname 0
+	in*)
     if List.mem_assq f firstStmtIdMap then
       Printf.fprintf out " %d" (List.assq f firstStmtIdMap).sid
-    else
-      Printf.fprintf out " %s" f.vname
+    else (*if not (isInstruFunc f.vname)then*)
+      Printf.fprintf out " %s" f.vname 
 
   method writeCfgInst i =
      match i with
-         Call(_, Lval(Var f, _), _, _) -> self#writeCfgCall f
+         Call(_, Lval(Var f, _), _, _) -> self#writeCfgCall f 
        | _ -> ()
 
   method vstmt(s) =
     Printf.fprintf out "%d" s.sid ;
-    List.iter (fun dst -> Printf.fprintf out " %d" dst.sid) s.succs ;
+	List.iter (fun dst -> Printf.fprintf out " %d" dst.sid ) s.succs;
     (match s.skind with
-         Instr is -> List.iter self#writeCfgInst is
-       | _       -> ()) ;
-    output_string out "\n" ;
+         Instr is ->List.iter self#writeCfgInst is 
+	  | _	->());
+	output_string out "\n";
     DoChildren
 
 end
@@ -332,6 +351,8 @@ class crestInstrumentVisitor f =
   let memAddrArg =("memAddr", addrType, []) in
   let retPtrAddrArg =("retPtrAddr", addrType,[]) in 
   let retPtrValueArg =("retPtrValue", addrType, []) in
+  let pathIdArg =("pathIdArg",idType, []) in
+  let pathStmtIdArg = ("pathStmtIdArg",idType,[]) in
 
   let mkInstFunc name args =
     let ty = TFun (voidType, Some (idArg :: args), false, []) in
@@ -381,7 +402,9 @@ class crestInstrumentVisitor f =
   *)
   let csvLiveMemory = mkCsvInstFunc "LiveMemory" [memAddrArg;valArg] in
   let csvStaticPathEnd = mkCsvInstFunc "StaticPathEnd" [] in
-  let csvIsWarningMem = mkCsvInstFunc "IsWarningMem" [memAddrArg] in
+
+  let csvPathMark = mkCsvInstFunc "PathMark" [pathIdArg;pathStmtIdArg] in
+  (*let csvIsWarningMem = mkCsvInstFunc "IsWarningMem" [memAddrArg] in*)
   (*
    * Functions to create calls to the above instrumentation functions.
    *)
@@ -454,8 +477,12 @@ class crestInstrumentVisitor f =
   let mkCsvClearPointerStack ()  = mkInstCall csvClearPointerStackFunc [] in
   *)
   let mkCsvLiveMemory addr value = mkInstCall csvLiveMemory [toAddr addr; toValue value] in
+  
   let mkStaticPathEnd = mkInstCall csvStaticPathEnd [] in
+  let mkPathMark pathId pathStmtId = mkInstCall csvPathMark [integer pathId; integer pathStmtId] in
+  (*
   let mkIsWarningMem memAddr = mkInstCall csvIsWarningMem [toAddr memAddr] in
+  *)
   (*
    * Instrument an expression.
    *)
@@ -526,16 +553,24 @@ object (self)
   method vstmt(s) =
     match s.skind with
       | If (e, b1, b2, location) ->
-          (*if(file_pathEnd location) then
-            self#queueInstr [mkStaticPathEnd];
-			*)
+			
           let getFirstStmtId blk = (List.hd blk.bstmts).sid in
           let b1_sid = getFirstStmtId b1 in
           let b2_sid = getFirstStmtId b2 in
 	    (self#queueInstr (instrumentExpr e) ;
 	     prependToBlock [mkBranch b1_sid 1] b1 ;
 	     prependToBlock [mkBranch b2_sid 0] b2 ;
-             addBranchPair (b1_sid, b2_sid)) ;
+             addBranchPair (b1_sid, b2_sid);
+			  matchWarning:=false;
+			   instruPathMark "BT" location;
+			   if (!matchWarning) then
+				  prependToBlock [mkPathMark !warningId !pathStmtId] b1 ;
+			   matchWarning:=false;	
+			   instruPathMark "BF" location;
+			   if (!matchWarning) then
+				  prependToBlock [mkPathMark !warningId !pathStmtId] b2 ;
+			   matchWarning:=false;
+			) ;
             DoChildren
 
       | Return (Some e, location) ->
@@ -749,7 +784,7 @@ let feature : featureDescr =
           Cfg.clearFileCFG f ;
 
     	  readCurrentCheckFile();
-		  (* debug*)
+		  (* debug
 		  Printf.printf "%d\n" !warningId;
 		  (let printWarningPath lines =
 		     let printlines s =
@@ -757,6 +792,7 @@ let feature : featureDescr =
 			 List.iter printlines lines;
 			 Printf.printf "\n" in
 		  List.iter printWarningPath !warningPath ) ;
+		  *)
 
 
           (* Read the ID and statement counts from files.  (This must

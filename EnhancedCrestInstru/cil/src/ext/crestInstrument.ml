@@ -228,7 +228,6 @@ let handleCallEdgesAndWriteCfg cilFile =
    writeCfg cilFile stmtMap ;
    writeFirstStmtIdMap stmtMap
 
-
 (* Utilities *)
 
 let noAddr = zero
@@ -241,7 +240,6 @@ let prependToBlock (is : instr list) (b : block) =
 let isSymbolicType ty = isIntegralType (unrollType ty)
 let isPointerType ty = isPointerType (unrollType ty)
 
-
 (* These definitions must match those in "libcrest/crest.h". *)
 let idType   = intType
 let bidType  = intType
@@ -250,6 +248,56 @@ let valType  = TInt (ILongLong, [])
 let addrType = TInt (IULong, [])
 let boolType = TInt (IUChar, [])
 let opType   = intType  (* enum *)
+
+(*Visitor which walks the AST and Instrument the PathMark
+  so that when compute CFG it can be write into cfg file
+  and this is before the crestInstrument *)
+
+class instruPathMarkVisitor f =
+	let idArg   = ("id",   idType,   []) in
+	let pathIdArg =("pathIdArg",idType, []) in
+	let pathStmtIdArg = ("pathStmtIdArg",idType,[]) in
+
+	let mkPathMarkInstFunc name args =
+		let ty = TFun (voidType, Some (idArg :: args), false, []) in
+		let func = findOrCreateFunc f ("__Static" ^ name) ty in
+		func.vstorage <- Extern ;
+		func.vattr <- [Attr ("crest_skip", [])] ;
+		func
+	in
+	let mkInstCall func args =
+	 let args' = integer (getNewId ()) :: args in
+	   Call (None, Lval (var func), args', locUnknown)
+	in
+	let mkPathMark pathId pathStmtId = 
+	  let pathIdStr = string_of_int pathId in
+	  let pathStmtIdStr = string_of_int pathStmtId in
+	  let csvPathMark = mkPathMarkInstFunc ("PathMark_P"^pathIdStr^"_S"^pathStmtIdStr) [pathIdArg;pathStmtIdArg] in
+		mkInstCall csvPathMark [integer pathId; integer pathStmtId]
+	in
+object (self)
+	inherit nopCilVisitor
+
+	method vstmt(s) =
+	  match s.skind with
+      | If (e, b1, b2, location) ->
+		matchWarning:=false;
+		instruPathMark "BT" location;
+		if (!matchWarning) then
+		  prependToBlock [mkPathMark !warningId !pathStmtId] b1 ;
+		matchWarning:=false;	
+		instruPathMark "BF" location;
+		if (!matchWarning) then
+		  prependToBlock [mkPathMark !warningId !pathStmtId] b2 ;
+		matchWarning:=false;
+    DoChildren
+	  | _ ->
+	DoChildren
+end
+
+
+
+
 
 
 (*
@@ -351,8 +399,6 @@ class crestInstrumentVisitor f =
   let memAddrArg =("memAddr", addrType, []) in
   let retPtrAddrArg =("retPtrAddr", addrType,[]) in 
   let retPtrValueArg =("retPtrValue", addrType, []) in
-  let pathIdArg =("pathIdArg",idType, []) in
-  let pathStmtIdArg = ("pathStmtIdArg",idType,[]) in
 
   let mkInstFunc name args =
     let ty = TFun (voidType, Some (idArg :: args), false, []) in
@@ -403,7 +449,6 @@ class crestInstrumentVisitor f =
   let csvLiveMemory = mkCsvInstFunc "LiveMemory" [memAddrArg;valArg] in
   let csvStaticPathEnd = mkCsvInstFunc "StaticPathEnd" [] in
 
-  let csvPathMark = mkCsvInstFunc "PathMark" [pathIdArg;pathStmtIdArg] in
   (*let csvIsWarningMem = mkCsvInstFunc "IsWarningMem" [memAddrArg] in*)
   (*
    * Functions to create calls to the above instrumentation functions.
@@ -479,7 +524,6 @@ class crestInstrumentVisitor f =
   let mkCsvLiveMemory addr value = mkInstCall csvLiveMemory [toAddr addr; toValue value] in
   
   let mkStaticPathEnd = mkInstCall csvStaticPathEnd [] in
-  let mkPathMark pathId pathStmtId = mkInstCall csvPathMark [integer pathId; integer pathStmtId] in
   (*
   let mkIsWarningMem memAddr = mkInstCall csvIsWarningMem [toAddr memAddr] in
   *)
@@ -560,16 +604,7 @@ object (self)
 	    (self#queueInstr (instrumentExpr e) ;
 	     prependToBlock [mkBranch b1_sid 1] b1 ;
 	     prependToBlock [mkBranch b2_sid 0] b2 ;
-             addBranchPair (b1_sid, b2_sid);
-			  matchWarning:=false;
-			   instruPathMark "BT" location;
-			   if (!matchWarning) then
-				  prependToBlock [mkPathMark !warningId !pathStmtId] b1 ;
-			   matchWarning:=false;	
-			   instruPathMark "BF" location;
-			   if (!matchWarning) then
-				  prependToBlock [mkPathMark !warningId !pathStmtId] b2 ;
-			   matchWarning:=false;
+             addBranchPair (b1_sid, b2_sid)
 			) ;
             DoChildren
 
@@ -802,6 +837,10 @@ let feature : featureDescr =
           readStmtCount () ;
           readFunCount () ;
           (* Compute the control-flow graph. *)
+		  (*instrument static warning path mark before compute CFG *)
+		(let ipmv = new instruPathMarkVisitor f in
+			visitCilFileSameGlobals (ipmv :> cilVisitor) f) ; 
+
           Cfg.computeFileCFG f ;
           (* Adds function calls to the CFG, by building a map from
            * function names to the first statements in those functions
@@ -813,6 +852,7 @@ let feature : featureDescr =
              visitCilFileSameGlobals (instVisitor :> cilVisitor) f) ;
           (* Add a function to initialize the instrumentation library. *)
           addCrestInitializer f ;
+
           (* Write the ID and statement counts, the branches. *)
           writeIdCount () ;
           writeStmtCount () ;

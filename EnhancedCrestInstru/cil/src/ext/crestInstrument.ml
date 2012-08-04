@@ -135,12 +135,7 @@ let instruPathMark stype location =
 	 )
  in
   List.iter iterWarningPath !warningPath 
-(* 
-let file_pathEnd location =
-  !currentCheckFile=location.file && (!pathEndLineNumber)==location.line
-let file_targetMem location =
-  !currentCheckFile=location.file && (!warningMemLine)==location.line  	
- *) 
+  
 let writeIdCount () = writeCounter "idcount" !idCount
 let writeStmtCount () = writeCounter "stmtcount" !stmtCount
 let writeFunCount () = writeCounter "funcount" !funCount
@@ -290,9 +285,16 @@ object (self)
 		if (!matchWarning) then
 		  prependToBlock [mkPathMark !warningId !pathStmtId] b2 ;
 		matchWarning:=false;
-    DoChildren
+		DoChildren
+      | Return (_,location) ->
+	    matchWarning:=false;
+		instruPathMark "LK" location;
+		if (!matchWarning) then
+          self#queueInstr [mkPathMark !warningId !pathStmtId] ;
+		matchWarning:=false;
+        SkipChildren
 	  | _ ->
-	DoChildren
+		DoChildren
 end
 
 
@@ -596,33 +598,38 @@ object (self)
    *)
   method vstmt(s) =
     match s.skind with
-      | If (e, b1, b2, location) ->
+      | If (e, b1, b2, _) ->
 			
           let getFirstStmtId blk = (List.hd blk.bstmts).sid in
           let b1_sid = getFirstStmtId b1 in
           let b2_sid = getFirstStmtId b2 in
-	    (self#queueInstr (instrumentExpr e) ;
-	     prependToBlock [mkBranch b1_sid 1] b1 ;
-	     prependToBlock [mkBranch b2_sid 0] b2 ;
-             addBranchPair (b1_sid, b2_sid)
-			) ;
+		  (self#queueInstr (instrumentExpr e) ;
+		   prependToBlock [mkBranch b1_sid 1] b1 ;
+		   prependToBlock [mkBranch b2_sid 0] b2 ;
+		   addBranchPair (b1_sid, b2_sid)
+		  ) ;
             DoChildren
 
       | Return (Some e, location) ->
-	  (*
-          if(file_pathEnd location) then
-            self#queueInstr [mkStaticPathEnd];
-			*)
           if isSymbolicType (typeOf e) then
             self#queueInstr (instrumentExpr e) ;
           self#queueInstr [mkReturn ()] ;
+		(*instru PathEnd*)
+			(matchWarning:=false;
+			instruPathMark "LK" location;
+			if (!matchWarning) then
+				self#queueInstr [mkStaticPathEnd] ;
+			matchWarning:=false);
           SkipChildren
 
       | Return (None, location) ->
-          (*if(file_pathEnd location) then
-            self#queueInstr [mkStaticPathEnd];
-			*)
           self#queueInstr [mkReturn ()] ;
+		  (*instru PathEnd*)
+			(matchWarning:=false;
+			instruPathMark "LK" location;
+			if (!matchWarning) then
+				self#queueInstr [mkStaticPathEnd] ;
+			matchWarning:=false);
           SkipChildren
 
       | _ -> DoChildren
@@ -640,11 +647,7 @@ object (self)
            *)
   method vinst(i) =
     match i with
-      | Set (lv, e, location) ->
-	  (*
-          if(file_pathEnd location) then
-            self#queueInstr [mkStaticPathEnd];
-			*)
+      | Set (lv, e, _) ->
         (match lv with
           | (Mem memExp,_) ->
             if (isSymbolicType (typeOf e)) && (hasAddress lv) then
@@ -667,23 +670,17 @@ object (self)
          SkipChildren
           
       (* Don't instrument calls to functions marked as uninstrumented. *)
-      | Call (_, Lval (Var f, NoOffset), _, location)
+      | Call (_, Lval (Var f, NoOffset), _, _)
           when shouldSkipFunction f -> 
-		  (*
-          	if(file_pathEnd location) then
-            	self#queueInstr [mkStaticPathEnd];
-				*)
         SkipChildren
         
-      | Call (ret, Lval (Var f, NoOffset),args,location)
+      | Call (ret, Lval (Var f, NoOffset),args,_)
           when f.vname = "malloc" ->
         	let sizeArg = List.hd args in
             (match ret with
               |  Some lv when (hasAddress lv) ->
 			  (*
-          		if(file_pathEnd location) then
-                   		ChangeTo [i ;  mkCsvMalloc (Lval lv) sizeArg; mkStaticPathEnd]
-	  		else if(file_targetMem location ) then
+				 if(file_targetMem location ) then
 	    			ChangeTo [i ;  mkCsvMalloc (Lval lv) sizeArg; mkIsWarningMem (Lval lv)]
                    	else *) 
               	   		ChangeTo [i ;  mkCsvMalloc (Lval lv) sizeArg]
@@ -691,7 +688,7 @@ object (self)
               |  _ -> DoChildren
             )
               
-      | Call(None, Lval(Var f, NoOffset),args,location)
+      | Call(None, Lval(Var f, NoOffset),args,_)
           when f.vname = "free" ->	
             let frPtr = List.hd args in
         	(match frPtr with
@@ -711,7 +708,7 @@ object (self)
        *  to instrument pointer args
        *)
 
-      | Call (ret, _, args, location) ->
+      | Call (ret, _, args, _) ->
           let isSymbolicExp e = isSymbolicType (typeOf e) in
          (* let isPointerExp e = isPointerType (typeOf e) in	*)
           let isSymbolicLval lv = isSymbolicType (typeOfLval lv) in
@@ -723,13 +720,7 @@ object (self)
          (*	self#queueInstr (concatMap instrumentPointerExpr pointerArgsToInst) ;	*)
             (match ret with
                | Some lv when ((isSymbolicLval lv) && (hasAddress lv)) ->
-			   (*
-          	  if(file_pathEnd location) then
                    ChangeTo [i ;
-                             mkHandleReturn (Lval lv) ;
-                             mkStore (addressOf lv) ;
-                             mkStaticPathEnd]
-                   else *)ChangeTo [i ;
                              mkHandleReturn (Lval lv) ;
                              mkStore (addressOf lv)]
                (*  
@@ -739,13 +730,7 @@ object (self)
                              mkCsvStorePointer (addressOf lv) (Lval lv)]
                 *) 
                | _ ->
-			   (*
-          	  if(file_pathEnd location) then
-                   ChangeTo [i ; 
-                     		 (*mkCsvClearPointerStack () ; *)
-                     		 mkClearStack ();
-                             mkStaticPathEnd]
-        		else*) ChangeTo [i ; 
+        		 ChangeTo [i ; 
         					 mkClearStack ()])
       | _ -> DoChildren
 

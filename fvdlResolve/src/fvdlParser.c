@@ -84,9 +84,11 @@ void getTraceInfo(xmlDocPtr doc,xmlNodePtr cur,FILE* fp){
 	xmlNodeSetPtr nodeset;
 	xmlXPathObjectPtr result;
 	xmlNodePtr nodeChild;
+	xmlNodePtr reasonChildNode;
 
 	xmlChar *file,*line,*lineEnd,*actionType,*actionString;
 	xmlChar *markWord=NULL;
+	xmlChar *traceRefId;
 	
 	result=getnodeset((xmlDocPtr)cur,nodeXpath);
 	if(result){
@@ -111,12 +113,19 @@ void getTraceInfo(xmlDocPtr doc,xmlNodePtr cur,FILE* fp){
 						markWord=(unsigned char*)"BF";		//branch false
 					else if(!xmlStrcmp(actionType,(const xmlChar*)"BranchTaken"))
 						markWord=(unsigned char*)"BT";		//branch true
-					//else if((!xmlStrcmp(actionType,(const xmlChar*)"(null)"))
-						//&& matchReg(actionString,"^.*refers to dynamically allocated memory$"))  
+					else if((!xmlStrcmp(actionType,(const xmlChar*)"Assign"))
+						&& matchReg((char*)actionString,(char*)"^.*= malloc.*$"))
+						markWord=(unsigned char*)"MA";
 					  /*when actionType=(null) && actionString matchs *refers to dynamically allocated memory!
 					     this is for isWarningsMemory mark and support guide to instrument DyVerifyIsWarnings
 						 but this need to operate together with "Reason" Node ,and that've not been implemented
 					  */
+					else if((!xmlStrcmp(actionType,(const xmlChar*)"Assign"))
+						&& matchReg((char*)actionString,(char*)"^.*= calloc.*$"))
+						markWord=(unsigned char*)"CA";
+					else if((!xmlStrcmp(actionType,(const xmlChar*)"Assign"))
+						&& matchReg((char*)actionString,(char*)"^.*= realloc.*$"))
+						markWord=(unsigned char*)"RA";
 					else if((!xmlStrcmp(actionType,(const xmlChar*)"EndScope")) 
 								&& matchReg((char*)actionString,(char*)"^.*Memory leaked$"))
 						markWord=(unsigned char*)"LK";		//leak point
@@ -126,9 +135,13 @@ void getTraceInfo(xmlDocPtr doc,xmlNodePtr cur,FILE* fp){
 					fprintf(fp,"%s\t",markWord);
 					xmlFree(actionType);
 					xmlFree(actionString);
-				}/*else if ("Reason")  not handled , this can be a little complicated! 
-				to find Reason/TraceRef, and TraceRef can ref another TraceRef!
-				*/
+				}else if(!xmlStrcmp(nodeChild->name,(const xmlChar*)"Reason")){
+					reasonChildNode = nodeChild->xmlChildrenNode;
+					if(!xmlStrcmp(reasonChildNode->name,(const xmlChar*)"TraceRef")){
+						traceRefId=xmlGetProp(reasonChildNode,(const xmlChar*)"id");	
+						printf("%s\n",traceRefId);
+					}
+				}
 				nodeChild=nodeChild->next;
 			}
 			fprintf(fp,"\n");

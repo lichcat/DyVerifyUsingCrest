@@ -367,7 +367,7 @@ void SymbolicInterpreter::DyVerifyStaticPathEnd(id_t id){
 	IFDEBUG(fprintf(stderr,"Static Path End!  \n"));
 	ConstShadowHeapIt it;
 	for(it=shadowHeap_.begin();it!=shadowHeap_.end();it++){
-		if(it->second->isWarningMem)
+		//if(it->second->isWarningMem)	have this when we got the isWarningMem down
 			it->second->liveFlag='S';
 	}
 	IFDEBUG(DyVerifyDumpShadowHeap());

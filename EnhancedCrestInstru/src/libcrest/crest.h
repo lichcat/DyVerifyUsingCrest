@@ -232,7 +232,7 @@ EXTERN void __csvClearPointerStack(__CREST_ID) __SKIP;
 */
 EXTERN void __DyVerifyLiveMemory(__CREST_ID, __CREST_ADDR, __CREST_VALUE) __SKIP;
 EXTERN void __DyVerifyStaticPathEnd(__CREST_ID) __SKIP;
-EXTERN void __DyVerifyPathMark(__CREST_ID,__CREST_ID,__CREST_ID) __SKIP;
+EXTERN void __StaticPathMark(__CREST_ID,__CREST_ID,__CREST_ID) __SKIP;
 /*
 EXTERN void __DyVerifyIsWarningMem(__CREST_ID, __CREST_ADDR) __SKIP;
 */

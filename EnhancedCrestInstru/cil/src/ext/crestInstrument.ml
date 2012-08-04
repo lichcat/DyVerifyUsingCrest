@@ -69,6 +69,11 @@ let warningId = ref 0
 let warningPath = ref []
 let pathStmtId = ref 0
 let matchWarning = ref false
+(*when a __StaticPathMark(id,pathId,pathStmtId) instru-ed,
+ put into storePathMarkIdList, because when writting
+ cfg,need to write the name^pahtId^pathStmtId
+ *)
+let storePathMarkIdList = ref [] 
 
 (* Control-flow graph is stored inside the CIL AST. *)
 
@@ -169,6 +174,11 @@ object (self)
 	in*)
     if List.mem_assq f firstStmtIdMap then
       Printf.fprintf out " %d" (List.assq f firstStmtIdMap).sid
+	else if (f.vname="__StaticPathMark")then
+	  (let (curpathId,curpathStmtId) = List.hd !storePathMarkIdList in
+		Printf.fprintf out " %s" (f.vname^"_P"^(string_of_int curpathId)^"_S"^(string_of_int curpathStmtId));
+		storePathMarkIdList:=List.tl !storePathMarkIdList
+	   )	
     else (*if not (isInstruFunc f.vname)then*)
       Printf.fprintf out " %s" f.vname 
 
@@ -265,10 +275,11 @@ class instruPathMarkVisitor f =
 	   Call (None, Lval (var func), args', locUnknown)
 	in
 	let mkPathMark pathId pathStmtId = 
-	  let pathIdStr = string_of_int pathId in
-	  let pathStmtIdStr = string_of_int pathStmtId in
-	  let csvPathMark = mkPathMarkInstFunc ("PathMark_P"^pathIdStr^"_S"^pathStmtIdStr) [pathIdArg;pathStmtIdArg] in
+	  let csvPathMark = mkPathMarkInstFunc ("PathMark") [pathIdArg;pathStmtIdArg] in
 		mkInstCall csvPathMark [integer pathId; integer pathStmtId]
+	in
+	let pushtoSPMIL pid psid =
+		storePathMarkIdList := (pid,psid)::!storePathMarkIdList
 	in
 object (self)
 	inherit nopCilVisitor
@@ -279,18 +290,24 @@ object (self)
 		matchWarning:=false;
 		instruPathMark "BT" location;
 		if (!matchWarning) then
-		  prependToBlock [mkPathMark !warningId !pathStmtId] b1 ;
+		  (prependToBlock [mkPathMark !warningId !pathStmtId] b1;
+		   pushtoSPMIL !warningId !pathStmtId
+		   );
 		matchWarning:=false;	
 		instruPathMark "BF" location;
 		if (!matchWarning) then
-		  prependToBlock [mkPathMark !warningId !pathStmtId] b2 ;
+		  (prependToBlock [mkPathMark !warningId !pathStmtId] b1;
+		   pushtoSPMIL !warningId !pathStmtId
+		   );
 		matchWarning:=false;
 		DoChildren
       | Return (_,location) ->
 	    matchWarning:=false;
 		instruPathMark "LK" location;
 		if (!matchWarning) then
-          self#queueInstr [mkPathMark !warningId !pathStmtId] ;
+          (self#queueInstr [mkPathMark !warningId !pathStmtId];
+		   pushtoSPMIL !warningId !pathStmtId
+		   );
 		matchWarning:=false;
         SkipChildren
 	  | _ ->
@@ -825,7 +842,12 @@ let feature : featureDescr =
 		  (*instrument static warning path mark before compute CFG *)
 		(let ipmv = new instruPathMarkVisitor f in
 			visitCilFileSameGlobals (ipmv :> cilVisitor) f) ; 
-
+		  (*when writting to cfg we've changed the __StaticPathMark to
+		   __StaticPathMark_P[digit]+_S[digit]+, by record the 
+		   pathId and pathStmtId into a list(storePathMarkIdList)
+		   but add to its front, so reverse the storePathMarkIdList here!
+		   *)
+		  storePathMarkIdList := List.rev !storePathMarkIdList;
           Cfg.computeFileCFG f ;
           (* Adds function calls to the CFG, by building a map from
            * function names to the first statements in those functions

@@ -1,5 +1,12 @@
 0
 path_concolic.c	24	PP	
+BEGIN_TraceRef	RefId:1
+path_concolic.c	8	BT	
+path_concolic.c	9	MA	
+path_concolic.c	9	PP	
+path_concolic.c	11	BF	
+path_concolic.c	15	PP	
+END_TraceRef
 path_concolic.c	26	PP	
 path_concolic.c	28	BF	
 path_concolic.c	33	BF	

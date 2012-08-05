@@ -78,13 +78,19 @@ xmlXPathObjectPtr getnodeset(xmlDocPtr doc, xmlChar *xpath){
 	return result;
 
 }
+void callUnifiedTracePool(traceRefId){
+	
+}
 void getTraceInfo(xmlDocPtr doc,xmlNodePtr cur,FILE* fp){
-	int i;
-	xmlChar* nodeXpath=(unsigned char*)"//fvdl:Entry/fvdl:Node";
+	int i,j;
+	xmlChar* nodeXpath=(unsigned char*)"//fvdl:Primary/fvdl:Entry/fvdl:Node";
 	xmlNodeSetPtr nodeset;
 	xmlXPathObjectPtr result;
 	xmlNodePtr nodeChild;
 	xmlNodePtr reasonChildNode;
+	xmlChar* refxpath=NULL;
+	xmlNodeSetPtr refNodeset=NULL;
+	xmlXPathObjectPtr refResult=NULL;
 
 	xmlChar *file,*line,*lineEnd,*actionType,*actionString;
 	xmlChar *markWord=NULL;
@@ -139,7 +145,20 @@ void getTraceInfo(xmlDocPtr doc,xmlNodePtr cur,FILE* fp){
 					reasonChildNode = nodeChild->xmlChildrenNode;
 					if(!xmlStrcmp(reasonChildNode->name,(const xmlChar*)"TraceRef")){
 						traceRefId=xmlGetProp(reasonChildNode,(const xmlChar*)"id");	
-						printf("%s\n",traceRefId);
+						//printf("%s\n",traceRefId);
+						refxpath=(unsigned char*)"//fvdl:UnifiedTracePool/fvdl:Trace";
+						refResult=getnodeset(doc,refxpath);
+						if(refResult){
+							refNodeset = refResult ->nodesetval;
+							for(j=0;j< refNodeset->nodeNr; j++){
+								if(!xmlStrcmp(traceRefId,xmlGetProp(refNodeset->nodeTab[j],(const xmlChar*)"id"))){
+									fprintf(fp,"\nBEGIN_TraceRef\tRefId:%s\n",traceRefId);
+									getTraceInfo(doc,refNodeset->nodeTab[j],fp);
+									fprintf(fp,"END_TraceRef");
+								}
+							}
+							xmlXPathFreeObject(refResult);
+						}
 					}
 				}
 				nodeChild=nodeChild->next;
@@ -156,7 +175,7 @@ int main(int argc, char** argv){
 
 	FILE *fp=NULL;
 	xmlChar *xpath=(unsigned char*)"//fvdl:Vulnerability[./fvdl:ClassInfo/fvdl:Type='Memory Leak']"
-					"/fvdl:AnalysisInfo/fvdl:Unified/fvdl:Trace/fvdl:Primary";
+					"/fvdl:AnalysisInfo/fvdl:Unified/fvdl:Trace";
 	xmlNodeSetPtr nodeset;
 	xmlXPathObjectPtr result;
 

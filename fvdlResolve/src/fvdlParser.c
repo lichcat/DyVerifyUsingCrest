@@ -78,8 +78,13 @@ xmlXPathObjectPtr getnodeset(xmlDocPtr doc, xmlChar *xpath){
 	return result;
 
 }
-void callUnifiedTracePool(traceRefId){
-	
+int isAssignOrReturn(xmlChar* actionType){
+	if(!xmlStrcmp(actionType,(const xmlChar*)"Assign"))
+		return 1;
+	else if(!xmlStrcmp(actionType,(const xmlChar*)"Return"))
+		return 1;
+	else 
+		return 0;
 }
 void getTraceInfo(xmlDocPtr doc,xmlNodePtr cur,FILE* fp){
 	int i,j;
@@ -120,19 +125,24 @@ void getTraceInfo(xmlDocPtr doc,xmlNodePtr cur,FILE* fp){
 						markWord=(unsigned char*)"BF";		//branch false
 					else if(!xmlStrcmp(actionType,(const xmlChar*)"BranchTaken"))
 						markWord=(unsigned char*)"BT";		//branch true
-					else if((!xmlStrcmp(actionType,(const xmlChar*)"Assign"))
-						&& matchReg((char*)actionString,(char*)"^.*= malloc.*$"))
+					else if(isAssignOrReturn(actionType)
+						&& matchReg((char*)actionString,(char*)"^.*malloc.*$"))
 						markWord=(unsigned char*)"MA";
-					  /*when actionType=(null) && actionString matchs *refers to dynamically allocated memory!
-					     this is for isWarningsMemory mark and support guide to instrument DyVerifyIsWarnings
-						 but this need to operate together with "Reason" Node ,and that've not been implemented
-					  */
-					else if((!xmlStrcmp(actionType,(const xmlChar*)"Assign"))
-						&& matchReg((char*)actionString,(char*)"^.*= calloc.*$"))
+					else if(isAssignOrReturn(actionType)
+						&& matchReg((char*)actionString,(char*)"^.*calloc.*$"))
 						markWord=(unsigned char*)"CA";
-					else if((!xmlStrcmp(actionType,(const xmlChar*)"Assign"))
-						&& matchReg((char*)actionString,(char*)"^.*= realloc.*$"))
+					else if(isAssignOrReturn(actionType)
+						&& matchReg((char*)actionString,(char*)"^.*realloc.*$"))
 						markWord=(unsigned char*)"RA";
+					else if(isAssignOrReturn(actionType)
+						&& matchReg((char*)actionString,(char*)"^.*xmalloc.*$"))
+						markWord=(unsigned char*)"XMA";
+					else if(isAssignOrReturn(actionType)
+						&& matchReg((char*)actionString,(char*)"^.*xstrdup.*$"))
+						markWord=(unsigned char*)"XSD";
+					else if(isAssignOrReturn(actionType)
+						&& matchReg((char*)actionString,(char*)"^.*xcalloc.*$"))
+						markWord=(unsigned char*)"XCA";
 					else if((!xmlStrcmp(actionType,(const xmlChar*)"EndScope")) 
 								&& matchReg((char*)actionString,(char*)"^.*Memory leaked$"))
 						markWord=(unsigned char*)"LK";		//leak point

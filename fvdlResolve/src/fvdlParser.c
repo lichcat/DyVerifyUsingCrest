@@ -92,7 +92,8 @@ void getTraceInfo(xmlDocPtr doc,xmlNodePtr cur,FILE* fp){
 	xmlNodeSetPtr refNodeset=NULL;
 	xmlXPathObjectPtr refResult=NULL;
 
-	xmlChar *file,*line,*lineEnd,*actionType,*actionString;
+	xmlChar *file,*line,*actionType,*actionString;
+	//xmlChar *lineEnd
 	xmlChar *markWord=NULL;
 	xmlChar *traceRefId;
 	
@@ -105,13 +106,13 @@ void getTraceInfo(xmlDocPtr doc,xmlNodePtr cur,FILE* fp){
 				if(!xmlStrcmp(nodeChild->name,(const xmlChar*)"SourceLocation")){
 					file=xmlGetProp(nodeChild,(const xmlChar*)"path");
 					line=xmlGetProp(nodeChild,(const xmlChar*)"line");
-					lineEnd=xmlGetProp(nodeChild,(const xmlChar*)"lineEnd");
-					assert(!xmlStrcmp(line,lineEnd));
+					//lineEnd=xmlGetProp(nodeChild,(const xmlChar*)"lineEnd");
+					//assert(!xmlStrcmp(line,lineEnd));
 					fprintf(fp,"%s\t%s\t",file,line);
 					
 					xmlFree(file);
 					xmlFree(line);
-					xmlFree(lineEnd);
+					//xmlFree(lineEnd);
 				}else if(!xmlStrcmp(nodeChild->name,(const xmlChar*)"Action")){
 					actionType=xmlGetProp(nodeChild,(const xmlChar*)"type");
 					actionString=xmlNodeListGetString(doc,nodeChild->xmlChildrenNode,1);

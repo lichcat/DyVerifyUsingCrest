@@ -236,7 +236,7 @@ void dfSearch(graph_t *graph,int currId,vector<vector<bool> > &reachability,vect
 	copyReach(reachability[currId],sourceReach);
 }
 
-void reachability(graph_t *graph,int mainId){
+void reachability(graph_t *graph,int mainId,set<int> &branches){
 	unsigned int i;
 	vector<bool> reach(pathLen,false);
 	vector<vector<bool> > reachability(graph->size(),reach);
@@ -255,6 +255,8 @@ void reachability(graph_t *graph,int mainId){
 
 	unsigned j,k;
 	for(j=0;j< reachability.size();j++){
+		if(branches.find(j)==branches.end())
+			continue;
 		out<<j;
 		for(k=0;k< (reachability[j]).size();k++){
 			out<<" "<<(reachability[j][k]==true?1:0);	
@@ -298,7 +300,7 @@ int main(void) {
 
 	//IFDEBUG(dumpCFG(&cfg));
 
-	reachability(&cfg,mainId);
+	reachability(&cfg,mainId,branches);
 
 	//IFDEBUG(fprintf(stderr,"-----------pathLen %d\n",pathLen));
 

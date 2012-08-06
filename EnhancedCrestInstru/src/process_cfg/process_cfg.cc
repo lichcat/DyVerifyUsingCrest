@@ -42,6 +42,8 @@ typedef vector<int> adj_list_t;
 typedef vector<adj_list_t> graph_t;
 typedef set<int>::const_iterator BranchIt;
 
+typedef enum{white,black,gray} color_t;
+
 namespace __gnu_cxx {
 	template<> struct hash<string> {
 		size_t operator()(const string& x) const {
@@ -51,6 +53,8 @@ namespace __gnu_cxx {
 }
 
 hash_map<int,bool>  funcNodeMap;
+
+unsigned int pathLen=0;		// count staticpathstmt number
 
 void readBranches(set<int>* branches) {
 	ifstream in("branches");
@@ -89,7 +93,7 @@ bool isPathMark(string funcname){
 		exit(1);
 	}
 }
-void readCfg(graph_t* graph, int &pathLen) {
+void readCfg(graph_t* graph) {
 
 	// No we can read in the CFG edges, substituting the correct CFG nodes
 	// for function calls.
@@ -197,15 +201,86 @@ void addFuncNb2FuncOut(graph_t *graph){
 		}
 	}
 }
+void copyReach(vector<bool> &srcReach,vector<bool> &dstReach){
+	unsigned int i;
+	for(i=0;i<pathLen;i++){
+		if(srcReach[i])
+			dstReach[i]=true;
+	}
+}
+void dfSearch(graph_t *graph,int currId,vector<vector<bool> > &reachability,vector<bool> &sourceReach,hash_map<int,color_t> &visited){
+	unsigned int i;
+	/*if(currId<0){		//pathMark case
+		visited[currId]=black;
+		sourceReach[-currId]=true;
+		return ;
+	}*/
+	//gray the currId
+	visited[currId]=gray;
+	adj_list_t &nbhrs = (*graph)[currId];
+
+	for(i=0;i<nbhrs.size();i++){
+		if(nbhrs[i]<0){
+			unsigned int pathStmtId=-nbhrs[i];
+			reachability[currId][pathStmtId-1]=true;
+		}else if(visited[nbhrs[i]]==white){
+			dfSearch(graph,nbhrs[i],reachability,reachability[currId],visited);
+		}else if(visited[nbhrs[i]]==black ){
+			copyReach(reachability[nbhrs[i]],reachability[currId]);
+		}	
+	}
+
+	//leave with black
+	visited[currId]=black;
+
+	copyReach(reachability[currId],sourceReach);
+}
+
+void reachability(graph_t *graph,int mainId){
+	unsigned int i;
+	vector<bool> reach(pathLen,false);
+	vector<vector<bool> > reachability(graph->size(),reach);
+	hash_map<int,color_t>	visitedMap;
+	/*for(i=1;i<=pathLen;i++)
+		visitedMap[-i]=white;
+		*/
+	for(i=1;i< graph->size(); i++)
+		visitedMap[i]=white;
+
+	dfSearch(graph,mainId,reachability,reachability[mainId],visitedMap);
+
+	//write reachability file
+
+	
+	// print 
+	unsigned j,k;
+	for(j=0;j< reachability.size();j++){
+		fprintf(stderr,"i=%d :",j);
+		for(k=0;k< (reachability[j]).size();k++){
+			fprintf(stderr," %d ",(reachability[j][k]==true?1:0));	
+		}
+		fprintf(stderr,"\n");
+	}
+	//	
+
+
+}
 int main(void) {
+	int mainId=0;
 	// First we have to read in the function -> CFG node map.
 	{ ifstream in("cfg_func_map");
 		string func;
 		int sid;
 		while (in >> func >> sid) {
+			if(!func.compare("main"))
+				mainId=sid;
 			funcNodeMap[sid] = false;
 		}
 		in.close();
+	}
+	if(mainId==0){
+		fprintf(stderr,"not found main\n");
+		exit(1);
 	}
 	// Read in the set of branches.
 	set<int> branches;
@@ -213,19 +288,20 @@ int main(void) {
 	fprintf(stderr, "Read %d branches.\n", branches.size());
 
 	// Read in the CFG.
-	int pathLen=0;		// count staticpathstmt number
 
 	graph_t cfg;
 	cfg.reserve(1000000);
-	readCfg(&cfg,pathLen);
+	readCfg(&cfg);
 	fprintf(stderr, "Read %d nodes.\n", cfg.size());
-	IFDEBUG(dumpCFG(&cfg));
+	//IFDEBUG(dumpCFG(&cfg));
 	
 	addFuncNb2FuncOut(&cfg);
 
-	IFDEBUG(dumpCFG(&cfg));
+	//IFDEBUG(dumpCFG(&cfg));
 
-	//IFDEBUG(printf("pathLen %d\n",pathLen);)
+	reachability(&cfg,mainId);
+
+	//IFDEBUG(fprintf(stderr,"-----------pathLen %d\n",pathLen));
 
 	return 0;
 }

@@ -251,18 +251,17 @@ void reachability(graph_t *graph,int mainId){
 
 	//write reachability file
 
-	
-	// print 
+	ofstream out("reachability");
+
 	unsigned j,k;
 	for(j=0;j< reachability.size();j++){
-		fprintf(stderr,"i=%d :",j);
+		out<<j;
 		for(k=0;k< (reachability[j]).size();k++){
-			fprintf(stderr," %d ",(reachability[j][k]==true?1:0));	
+			out<<" "<<(reachability[j][k]==true?1:0);	
 		}
-		fprintf(stderr,"\n");
+		out<<endl;
 	}
-	//	
-
+	out.close();
 
 }
 int main(void) {

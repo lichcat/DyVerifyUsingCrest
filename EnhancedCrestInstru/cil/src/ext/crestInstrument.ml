@@ -696,10 +696,6 @@ object (self)
         	let sizeArg = List.hd args in
             (match ret with
               |  Some lv when (hasAddress lv) ->
-			  (*
-				 if(file_targetMem location ) then
-	    			ChangeTo [i ;  mkCsvMalloc (Lval lv) sizeArg; mkIsWarningMem (Lval lv)]
-                   	else *) 
               	   		ChangeTo [i ;  mkCsvMalloc (Lval lv) sizeArg]
                 (* ChangeTo [i ;  mkCsvMalloc (addressOf lv) (Lval lv) sizeArg]	*)
               |  _ -> DoChildren
@@ -710,20 +706,18 @@ object (self)
             let frPtr = List.hd args in
         	(match frPtr with
               |  CastE (_,Lval castExp)->
-			  (*
-          		if(file_pathEnd location) then
-                		ChangeTo [i ;  mkCsvFree (Lval castExp); mkStaticPathEnd]
-						
-                 	else *)
                    		ChangeTo [i ;  mkCsvFree (Lval castExp)]
                 (* ChangeTo [i ;  mkCsvFree (addressOf castExp) (Lval castExp)] *)
               |  _ -> DoChildren
          	)
-      (*  
-       *  lichcat add 
-       *  isPointerExp for pointerArgsToInst
-       *  to instrument pointer args
-       *)
+      | Call(None, Lval(Var f, NoOffset),args,_)
+          when f.vname = "scanf" ->
+		  (*let printArg exp =
+			
+		  in
+		  List.iter printArg args;
+		  *)
+		  DoChildren
 
       | Call (ret, _, args, _) ->
           let isSymbolicExp e = isSymbolicType (typeOf e) in
@@ -830,7 +824,6 @@ let feature : featureDescr =
 			 Printf.printf "\n" in
 		  List.iter printWarningPath !warningPath ) ;
 		  *)
-
 
           (* Read the ID and statement counts from files.  (This must
            * occur after clearFileCFG, because clearFileCfg clobbers

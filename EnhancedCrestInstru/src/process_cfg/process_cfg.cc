@@ -1,4 +1,4 @@
-// Copyright (c) 2008, Jacob Burnim (jburnim@cs.berkeley.edu)
+// copyright (c) 2008, jacob burnim (jburnim@cs.berkeley.edu)
 //
 // This file is part of CREST, which is distributed under the revised
 // BSD license.  A copy of this license can be found in the file LICENSE.
@@ -23,6 +23,7 @@
 //for print debug
 //#include <iostream>
 #include <assert.h>
+#include <queue>
 
 #ifdef DEBUG
 #define IFDEBUG(x) x
@@ -48,6 +49,8 @@ namespace __gnu_cxx {
 		}
 	};
 }
+
+hash_map<int,bool>  funcNodeMap;
 
 void readBranches(set<int>* branches) {
 	ifstream in("branches");
@@ -86,24 +89,13 @@ bool isPathMark(string funcname){
 		exit(1);
 	}
 }
-void readCfg(graph_t* graph) {
-	// First we have to read in the function -> CFG node map.
-	hash_map<string,int> funcNodeMap;
-	{ ifstream in("cfg_func_map");
-		string func;
-		int sid;
-		while (in >> func >> sid) {
-			funcNodeMap[func] = sid;
-		}
-		in.close();
-	}
+void readCfg(graph_t* graph, int &pathLen) {
 
 	// No we can read in the CFG edges, substituting the correct CFG nodes
 	// for function calls.
 	ifstream in("cfg");
 
 	string line;
-	int pathLen=0;		// count staticpathstmt number
 	while (getline(in, line)) {
 		istringstream line_in(line);
 		int src;
@@ -123,10 +115,13 @@ void readCfg(graph_t* graph) {
 			} else {
 				string func;
 				line_in >> func;
-				hash_map<string,int>::iterator it = funcNodeMap.find(func);
-				if (it != funcNodeMap.end())
+				/*hash_map<string,int>::iterator it = funcNodeMap.find(func);
+				if (it != funcNodeMap.end()){
+					printf("----------func: %s %d \n",it->first.c_str(),it->second);
 					nbhrs.push_back(it->second);
-				else if (isPathMark(func)){
+				}
+				else */
+				if (isPathMark(func)){
 					pathLen++;
 					string pNsN,stmtStr;
 					pNsN=func.substr(16);
@@ -140,7 +135,6 @@ void readCfg(graph_t* graph) {
 			line_in.get();
 		}
 	}
-	//cout<<"pathLen "<<pathLen<<endl;
 	in.close();
 }
 void dumpCFG(graph_t *graph){
@@ -154,19 +148,84 @@ void dumpCFG(graph_t *graph){
 		fprintf(stderr,"\n");	
 	}
 }
-int main(void) {
 
+
+void addToFuncOut(graph_t *graph,int addedIndex, int funcInId){
+	//from funcInId , bfs find the out node of function and add the addedIndex to out node(s)
+	unsigned int k,i;
+	hash_map<int,bool>	visitedMap;
+	for(k=0;k< graph->size(); k++)
+		visitedMap[k]=false;	
+	
+	int cur;
+
+	queue<int> q;
+	q.push(funcInId);
+	while(!q.empty()){
+		cur=q.front();
+		visitedMap[cur]=true;	//visit cur
+		q.pop();
+		adj_list_t &nbhrs=(*graph)[cur];
+
+		for(i=0;i<nbhrs.size();i++){
+			if(nbhrs[i]<=0 || (funcNodeMap.find(nbhrs[i])!=funcNodeMap.end()))
+				continue;
+			if(!visitedMap[nbhrs[i]])
+				q.push(nbhrs[i]);
+		}
+		if(nbhrs.size()==0)	//the out of func cfg
+			nbhrs.push_back(addedIndex);
+	}
+}
+void addFuncNb2FuncOut(graph_t *graph){
+	unsigned int i,j;
+
+	for(i=0;i<graph->size();i++){
+		adj_list_t &nbhrs = (*graph)[i];
+		for(j=0;j<nbhrs.size();j++){
+			hash_map<int,bool>::iterator it = funcNodeMap.find(nbhrs[j]);
+			if(it != funcNodeMap.end() && !funcNodeMap[it->first]){		//call a unAddedOut func here
+				int k= j-1;
+				while(k>=0){
+					if(funcNodeMap.end() == funcNodeMap.find(nbhrs[k])){
+						funcNodeMap[nbhrs[j]]=true;				//mark func as added
+						addToFuncOut(graph,nbhrs[k],nbhrs[j]);	
+					}
+					k--;
+				}
+			}
+		}
+	}
+}
+int main(void) {
+	// First we have to read in the function -> CFG node map.
+	{ ifstream in("cfg_func_map");
+		string func;
+		int sid;
+		while (in >> func >> sid) {
+			funcNodeMap[sid] = false;
+		}
+		in.close();
+	}
 	// Read in the set of branches.
 	set<int> branches;
 	readBranches(&branches);
 	fprintf(stderr, "Read %d branches.\n", branches.size());
 
 	// Read in the CFG.
+	int pathLen=0;		// count staticpathstmt number
+
 	graph_t cfg;
 	cfg.reserve(1000000);
-	readCfg(&cfg);
+	readCfg(&cfg,pathLen);
 	fprintf(stderr, "Read %d nodes.\n", cfg.size());
-	//IFDEBUG(dumpCFG(&cfg);)
+	IFDEBUG(dumpCFG(&cfg));
+	
+	addFuncNb2FuncOut(&cfg);
+
+	IFDEBUG(dumpCFG(&cfg));
+
+	//IFDEBUG(printf("pathLen %d\n",pathLen);)
 
 	return 0;
 }

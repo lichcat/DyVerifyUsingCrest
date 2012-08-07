@@ -253,7 +253,12 @@ let valType  = TInt (ILongLong, [])
 let addrType = TInt (IULong, [])
 let boolType = TInt (IUChar, [])
 let opType   = intType  (* enum *)
-
+let argIntType = TPtr (TInt (IInt, []),[])
+let argUIntType = TPtr (TInt (IUInt, []), [])
+let argUShortType = TPtr (TInt (IUShort, []), [])
+let argShortType = TPtr (TInt (IShort, []), [])
+let argCharType = TPtr (TInt (IChar, []), [])
+let argUCharType = TPtr (TInt (IUChar, []), [])
 (*Visitor which walks the AST and Instrument the PathMark
   so that when compute CFG it can be write into cfg file
   and this is before the crestInstrument *)
@@ -416,8 +421,14 @@ class crestInstrumentVisitor f =
    *)
   let ptrAddrArg =("ptrAddr", addrType, []) in
   let memAddrArg =("memAddr", addrType, []) in
-  let retPtrAddrArg =("retPtrAddr", addrType,[]) in 
+  let retPtrAddrArg =("retPtrAddr", addrType,[]) in
   let retPtrValueArg =("retPtrValue", addrType, []) in
+  let inputIntArg =("x", argIntType,[]) in
+  let inputUIntArg =("x", argUIntType,[]) in
+  let inputUShortArg =("x", argUShortType,[]) in
+  let inputShortArg =("x",argShortType,[]) in
+  let inputCharArg =("x",argCharType,[]) in
+  let inputUCharArg =("x",argUCharType,[]) in
 
   let mkInstFunc name args =
     let ty = TFun (voidType, Some (idArg :: args), false, []) in
@@ -436,16 +447,14 @@ class crestInstrumentVisitor f =
   let callFunc         = mkInstFunc "Call" [fidArg] in
   let returnFunc       = mkInstFunc "Return" [] in
   let handleReturnFunc = mkInstFunc "HandleReturn" [valArg] in
-  (*
-     add by lichcat
-     csvMallocFunc for __csvMalloc
-     csvFreeFunc for __csvFree
-     csvLoadPointerFunc for __csvLoadPointer
-     csvStorePointerFunc for __csvStorePointer
-     csvPointerApply1/2 for __csvPointerApply1/2
-     csvHandleReturnPointer for __csvHandleReturnPointer
-     csvClearPointerStack fro __csvClearPointerStack
-   *)
+
+  let inputCharFunc	 = mkInstFunc "Char" [inputCharArg] in
+  let inputUCharFunc	 = mkInstFunc "UChar" [inputUCharArg] in
+  let inputShortFunc	 = mkInstFunc "Short" [inputShortArg] in
+  let inputUShortFunc	 = mkInstFunc "UShort" [inputUShortArg] in
+  let inputUIntFunc	 = mkInstFunc "UInt" [inputUIntArg] in
+  let inputIntFunc	 = mkInstFunc "Int" [inputIntArg] in
+
   let mkCsvInstFunc name args =
     let ty = TFun (voidType, Some (idArg :: args), false, []) in
     let func = findOrCreateFunc f ("__DyVerify" ^ name) ty in
@@ -455,16 +464,7 @@ class crestInstrumentVisitor f =
   in
   let csvMallocFunc  = mkCsvInstFunc "Malloc" [memAddrArg;valArg] in
   let csvFreeFunc  =mkCsvInstFunc "Free" [memAddrArg] in
-  (*
-  let csvMallocFunc  = mkCsvInstFunc "Malloc" [ptrAddrArg;memAddrArg;valArg] in
-  let csvFreeFunc  =mkCsvInstFunc "Free" [ptrAddrArg;memAddrArg] in
-  let csvLoadPointerFunc  = mkCsvInstFunc "LoadPointer" [ptrAddrArg;memAddrArg] in
-  let csvStorePointerFunc  = mkCsvInstFunc "StorePointer" [ptrAddrArg;memAddrArg] in
-  let csvPointerApply1 = mkCsvInstFunc "PointerApply1" [opArg; valArg] in
-  let csvPointerApply2 = mkCsvInstFunc "PointerApply2" [opArg; valArg] in
-  let csvHandleReturnPointerFunc = mkCsvInstFunc "HandleReturnPointer" [retPtrAddrArg; retPtrValueArg] in
-  let csvClearPointerStackFunc = mkCsvInstFunc "ClearPointerStack" [] in
-  *)
+
   let csvLiveMemory = mkCsvInstFunc "LiveMemory" [memAddrArg;valArg] in
   let csvStaticPathEnd = mkCsvInstFunc "StaticPathEnd" [] in
 
@@ -710,14 +710,46 @@ object (self)
                 (* ChangeTo [i ;  mkCsvFree (addressOf castExp) (Lval castExp)] *)
               |  _ -> DoChildren
          	)
-      | Call(None, Lval(Var f, NoOffset),args,_)
+      | Call(None, Lval(Var f, NoOffset),args,_)		(* int scanf( const char* format, ...); *)
           when f.vname = "scanf" ->
-		  (*let printArg exp =
-			
+		  let instruList = ref [] in
+		  let instruINPUTs = ref [] in
+		  let handleInput  arg =
+		    (match arg with
+			 |	CastE (_,Const CStr cstr) ->
+				let remove_blank = Str.global_replace (Str.regexp "[ \t]") "" in
+				let inputTypes = Str.split (Str.regexp "%") (remove_blank cstr) in
+				let addToInstruList typStr =
+					let match_format fm_exp = Str.string_match (Str.regexp fm_exp) typStr 0 in
+					if(match_format "^.*hhu$") then instruList:="UChar"::!instruList
+					else if(match_format "^.*hu$") then instruList:="UShort"::!instruList
+					else if(match_format "^.*u$") then instruList:="UInt"::!instruList
+					else if(match_format "^.*h[dioxX]$") then instruList:="Short"::!instruList
+					else if(match_format "^.*[dioxX]$") then instruList:="Int"::!instruList
+					else if(match_format "^.*c$") then instruList:="Char"::!instruList 
+					(*else if(match_format "^.*s$") then(instruList:=()::!instruList)*)
+					(*else if(match_format "fFeEgG") then()*)
+				in
+				(List.iter addToInstruList  inputTypes;
+				instruList:= List.rev !instruList)
+			 |	AddrOf lval -> 
+				let funcname = List.hd !instruList in
+				instruList:=List.tl !instruList;
+				(match funcname with
+				 | "UChar" -> instruINPUTs := (mkInstCall inputUCharFunc [arg])::!instruINPUTs 
+				 | "Char" ->instruINPUTs := (mkInstCall inputCharFunc [arg])::!instruINPUTs
+				 | "UShort" ->instruINPUTs := (mkInstCall inputUShortFunc [arg])::!instruINPUTs
+				 | "Short" ->instruINPUTs := (mkInstCall inputShortFunc [arg])::!instruINPUTs
+				 | "UInt" ->instruINPUTs := (mkInstCall inputUIntFunc [arg])::!instruINPUTs
+				 | "Int" ->instruINPUTs := (mkInstCall inputIntFunc [arg])::!instruINPUTs
+				 | _ ->()
+				 )
+			 |  _ -> ()
+			)
 		  in
-		  List.iter printArg args;
-		  *)
-		  DoChildren
+		  List.iter handleInput args;
+		  instruINPUTs := List.rev !instruINPUTs;
+		  ChangeTo !instruINPUTs
 
       | Call (ret, _, args, _) ->
           let isSymbolicExp e = isSymbolicType (typeOf e) in

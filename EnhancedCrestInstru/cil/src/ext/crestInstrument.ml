@@ -711,7 +711,7 @@ object (self)
               |  _ -> DoChildren
          	)
       | Call(None, Lval(Var f, NoOffset),args,_)		(* int scanf( const char* format, ...); *)
-          when f.vname = "scanf" ->
+          when ((f.vname = "scanf") or (f.vname = "fscanf")) -> (*| f.vname = "sscanf"*)
 		  let instruList = ref [] in
 		  let instruINPUTs = ref [] in
 		  let handleInput  arg =
@@ -721,7 +721,8 @@ object (self)
 				let inputTypes = Str.split (Str.regexp "%") (remove_blank cstr) in
 				let addToInstruList typStr =
 					let match_format fm_exp = Str.string_match (Str.regexp fm_exp) typStr 0 in
-					if(match_format "^.*hhu$") then instruList:="UChar"::!instruList
+					if (match_format ".*\\*.*") then ()
+					else if(match_format "^.*hhu$") then instruList:="UChar"::!instruList
 					else if(match_format "^.*hu$") then instruList:="UShort"::!instruList
 					else if(match_format "^.*u$") then instruList:="UInt"::!instruList
 					else if(match_format "^.*h[dioxX]$") then instruList:="Short"::!instruList
@@ -747,6 +748,9 @@ object (self)
 			 |  _ -> ()
 			)
 		  in
+		  if(f.vname = "fscanf") then
+			List.iter handleInput (List.tl args)
+		  else
 		  List.iter handleInput args;
 		  instruINPUTs := List.rev !instruINPUTs;
 		  ChangeTo !instruINPUTs

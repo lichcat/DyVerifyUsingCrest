@@ -211,26 +211,6 @@ void __csvCalloc(__CREST_ID, __CREST_ADDR ptrAddr, __CREST_ADDR, __CREST_SIZE, _
 void __DyVerifyFree(__CREST_ID id, __CREST_ADDR memAddr) {
 	SI->DyVerifyFree(id,memAddr);
 }
-/*
-void __csvLoadPointer(__CREST_ID id, __CREST_ADDR ptrAddr, __CREST_ADDR memAddr){
-
-}
-void __csvStorePointer(__CREST_ID id, __CREST_ADDR ptrAddr, __CREST_ADDR memAddr){
-
-}
-void __csvPointerApply1(__CREST_ID id, __CREST_OP op, __CREST_VALUE value){
-
-}
-void __csvPointerApply2(__CREST_ID id, __CREST_OP op, __CREST_VALUE value){
-
-}
-void __csvHandleReturnPointer(__CREST_ID id, __CREST_ADDR retPtrAddr, __CREST_ADDR retPtrValue){
-
-}
-void __csvClearPointerStack(__CREST_ID id){
-
-}
-*/
 void __DyVerifyLiveMemory(__CREST_ID id, __CREST_ADDR memAddr, __CREST_VALUE value){
 	SI->DyVerifyLiveMemory(id,memAddr,value);
 }

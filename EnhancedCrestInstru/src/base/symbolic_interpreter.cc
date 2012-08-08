@@ -13,13 +13,21 @@
 #include <stdio.h>
 #include <utility>
 #include <vector>
+#include <map>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
 
 #include "base/symbolic_interpreter.h"
 #include "base/yices_solver.h"
 
+
 using std::make_pair;
 using std::swap;
 using std::vector;
+using std::istringstream;
+using std::ifstream;
 
 #ifdef DEBUG
 #define IFDEBUG(x) x
@@ -278,7 +286,28 @@ void SymbolicInterpreter::Branch(id_t id, branch_id_t bid, bool pred_value) {
 
   ex_.mutable_path()->Push(bid, pred_);
   pred_ = NULL;
+
   IFDEBUG(DumpMemory());
+
+  /*
+  //for unpassed pathMark branch should reach all of them
+  //if current branch can not reach all pathMark
+  //Note: currentPathMark equal to Pa_Sb 's b ,so smaller than b needn't to check
+  bool continue_run = true;
+  vector<bool> currentReachable = branch2pathMarkMap_[bid];
+  for(int i=currentPathMarkNum_;i<currentReachable.size();i++){
+		printf("i=%d \t",i);
+	  printf("----------------currentPathMarkNum_: %d curretnReachable.size(): %d \n",currentPathMarkNum_,currentReachable.size());
+	if(!currentReachable[i]){
+		continue_run = false;
+	}
+  }
+  if(!continue_run){
+	IFDEBUG(fprintf(stderr,"Current Execution exit, branch %d cannot reach the rest of path!\n",bid));
+	exit(-15);
+  }
+  */
+
 }
 
 
@@ -315,6 +344,27 @@ void SymbolicInterpreter::PushSymbolic(SymbolicExpr* expr, value_t value) {
 void SymbolicInterpreter::ClearPredicateRegister() {
   delete pred_;
   pred_ = NULL;
+}
+
+//read file "reachability"
+void SymbolicInterpreter::ReadReachability(){
+	ifstream in("reachability");
+	assert(in);
+
+	string line;
+	branch_id_t branchId;
+	int b_reach;
+	while(getline(in,line)){
+		istringstream line_in(line);
+		line_in >>branchId;
+		line_in.get();
+		while(line_in){
+			line_in>>b_reach;
+			branch2pathMarkMap_[branchId].push_back((b_reach==1)?true:false);
+			line_in.get();
+		}
+	}
+	in.close();	
 }
 
 void SymbolicInterpreter::DyVerifyMalloc(id_t id,addr_t memAddr,value_t size){
@@ -373,11 +423,12 @@ void SymbolicInterpreter::DyVerifyStaticPathEnd(id_t id){
 	IFDEBUG(DyVerifyDumpShadowHeap());
 }
 void SymbolicInterpreter::DyVerifyPathMark(id_t pathId,id_t pathStmtId){
+	currentPathMarkNum_=pathStmtId;
 	IFDEBUG(fprintf(stderr,"StaticPathMark_%d_%d \n",pathId,pathStmtId));
 }
 void SymbolicInterpreter::DyVerifyCheckShadowHeap(){
 	IFDEBUG(fprintf(stderr,"Check  \n"));
-
+	IFDEBUG(DyVerifyDumpShadowHeap());
 }
 /*
 void SymbolicInterpreter::DyVerifyIsWarningMem(id_t id, addr_t memAddr){

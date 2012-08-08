@@ -38,6 +38,12 @@ using std::random_shuffle;
 using std::stable_sort;
 using std::istringstream;
 
+#ifdef DEBUG
+#define IFDEBUG(x) x
+#else
+#define IFDEBUG(x)
+#endif
+
 namespace crest {
 
 namespace {
@@ -89,7 +95,6 @@ Search::Search(const string& program, int max_iterations)
     max_branch_ ++;
     max_function_ = branch_count_.size();
   }
-
   // Compute the paired-branch map.
   paired_branch_.resize(max_branch_);
   for (size_t i = 0; i < branches_.size(); i += 2) {
@@ -148,20 +153,18 @@ Search::Search(const string& program, int max_iterations)
   string line;
   unsigned int branchId;
   int b_reach;
-  int count;
   while(getline(in,line)){
 	  istringstream line_in(line);
 	  line_in >>branchId;
-	  count=0;
 	  line_in.get();
 	  while(line_in){
 		line_in>>b_reach;
 		branch2path_reachable_[branchId].push_back((b_reach==1)?true:false);
-		count++;
 		line_in.get();
 	  }
   
   }
+  in.close();
   /* */
   for(int i=0;i<branches_.size();i++){
 	fprintf(stderr,"branch %d : ",branches_[i]);
@@ -202,7 +205,6 @@ void Search::WriteCoverageToFileOrDie(const string& file) {
     perror("Error: ");
     exit(-1);
   }
-
   for (BranchIt i = branches_.begin(); i != branches_.end(); ++i) {
     if (total_covered_[*i]) {
       fprintf(f, "%d\n", *i);
@@ -231,7 +233,7 @@ void Search::LaunchProgram(const vector<value_t>& inputs) {
   redirection.append(" >runtime_output.txt 2>&1");
   */
 
-  prog_exit_value = system(program_.c_str());
+  system(program_.c_str());
 }
 
 
@@ -261,6 +263,7 @@ void Search::RunProgram(const vector<value_t>& inputs, SymbolicExecution* ex) {
 
 
 bool Search::UpdateCoverage(const SymbolicExecution& ex) {
+
   return UpdateCoverage(ex, NULL);
 }
 
@@ -435,7 +438,6 @@ int Search::PathGuidedSolveAtBranch(const SymbolicExecution& ex,
 bool Search::CheckPrediction(const SymbolicExecution& old_ex,
 			     const SymbolicExecution& new_ex,
 			     size_t branch_idx) {
-
   if ((old_ex.path().branches().size() <= branch_idx)
       || (new_ex.path().branches().size() <= branch_idx)) {
     return false;
@@ -564,16 +566,16 @@ void PathGuidedSearch::doPathGuided(size_t pos, int depth, SymbolicExecution& pr
 		
 
     if(pathSolveRet==-1){
-		fprintf(stderr,"-1:path fragment contradiction\n");
+		IFDEBUG(fprintf(stderr,"-1:path fragment contradiction\n"));
 		continue;
 	}else if(pathSolveRet==-2){
-		fprintf(stderr,"-2:normal contradiction\n");
+		IFDEBUG(fprintf(stderr,"-2:normal contradiction\n"));
 		continue;
 	}else if(pathSolveRet==-3){
-		fprintf(stderr,"-3:not all reachable\n");
+		IFDEBUG(fprintf(stderr,"-3:not all reachable\n"));
 		continue;
 	}else if(pathSolveRet==1){
-		fprintf(stderr,"1:can not solve constrains\n");
+		IFDEBUG(fprintf(stderr,"1:can not solve constrains\n"));
 		continue;
 	}
 

@@ -18,3 +18,5 @@ clean:
 	rm -f branches cfg cfg_func_map
 	rm -f funcount idcount stmtcount
 	rm -f *.o *.cil.c *.i
+	rm -f input coverage path_concolic path_concolic_comb.c 
+	rm -f reachability szd_execution

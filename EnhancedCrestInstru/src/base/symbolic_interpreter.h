@@ -70,6 +70,10 @@ class SymbolicInterpreter {
   void DumpPath();
   void DyVerifyDumpShadowHeap();
 
+  // Read file "reachability"
+  void ReadReachability();
+
+
   //Dynamic Verification for statically detected Memory leak
   void DyVerifyMalloc(id_t id,addr_t memAddr,value_t size);
   void DyVerifyFree(id_t id,addr_t memAddr);
@@ -100,6 +104,11 @@ class SymbolicInterpreter {
   // ShadowBitHeap map.
   map<addr_t,ShadowHeap*> shadowHeap_;
 
+  // reachability map ,from branch to whether reachable to path fragment
+  map<branch_id_t, vector<bool> > branch2pathMarkMap_;
+
+  // current path Mark passed number
+  int currentPathMarkNum_;
 
   // The symbolic execution (program path and inputs).
   SymbolicExecution ex_;

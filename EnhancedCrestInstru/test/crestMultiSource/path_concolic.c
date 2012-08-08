@@ -5,10 +5,10 @@
 int main() { 
 
 	int i;
-	CREST_int(i);
+	//CREST_int(i);
 	char *ptr,*q;
 
-	//scanf("%d",&i);
+	scanf("%d",&i);
 	ptr=foo(i);
 	
 	q=ptr;

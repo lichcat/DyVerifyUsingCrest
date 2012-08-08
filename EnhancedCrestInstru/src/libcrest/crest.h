@@ -191,7 +191,7 @@ EXTERN void __CrestHandleReturn(__CREST_ID, __CREST_VALUE) __SKIP;
 
 /*
  * Functions (macros) for obtaining symbolic inputs.
- */
+*/ 
 #define CREST_unsigned_char(x) __CrestUChar(&x)
 #define CREST_unsigned_short(x) __CrestUShort(&x)
 #define CREST_unsigned_int(x) __CrestUInt(&x)

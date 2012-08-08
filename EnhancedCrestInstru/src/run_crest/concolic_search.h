@@ -86,7 +86,6 @@ class Search {
   const string program_;
   const int max_iters_; 
   int num_iters_;
-  int prog_exit_value;
   /*
   struct sockaddr_un sock_;
   int sockd_;

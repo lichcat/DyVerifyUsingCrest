@@ -438,6 +438,13 @@ class crestInstrumentVisitor f =
       func
   in
 
+  let mkInputInstFunc name args =
+    let ty = TFun (voidType, Some (args), false, []) in
+    let func = findOrCreateFunc f ("__Crest" ^ name) ty in
+      func.vstorage <- Extern ;
+      func.vattr <- [Attr ("crest_skip", [])] ;
+      func
+  in
   let loadFunc         = mkInstFunc "Load"  [addrArg; valArg] in
   let storeFunc        = mkInstFunc "Store" [addrArg] in
   let clearStackFunc   = mkInstFunc "ClearStack" [] in
@@ -448,12 +455,12 @@ class crestInstrumentVisitor f =
   let returnFunc       = mkInstFunc "Return" [] in
   let handleReturnFunc = mkInstFunc "HandleReturn" [valArg] in
 
-  let inputCharFunc	 = mkInstFunc "Char" [inputCharArg] in
-  let inputUCharFunc	 = mkInstFunc "UChar" [inputUCharArg] in
-  let inputShortFunc	 = mkInstFunc "Short" [inputShortArg] in
-  let inputUShortFunc	 = mkInstFunc "UShort" [inputUShortArg] in
-  let inputUIntFunc	 = mkInstFunc "UInt" [inputUIntArg] in
-  let inputIntFunc	 = mkInstFunc "Int" [inputIntArg] in
+  let inputCharFunc	 = mkInputInstFunc "Char" [inputCharArg] in
+  let inputUCharFunc	 = mkInputInstFunc "UChar" [inputUCharArg] in
+  let inputShortFunc	 = mkInputInstFunc "Short" [inputShortArg] in
+  let inputUShortFunc	 = mkInputInstFunc "UShort" [inputUShortArg] in
+  let inputUIntFunc	 = mkInputInstFunc "UInt" [inputUIntArg] in
+  let inputIntFunc	 = mkInputInstFunc "Int" [inputIntArg] in
 
   let mkCsvInstFunc name args =
     let ty = TFun (voidType, Some (idArg :: args), false, []) in
@@ -475,6 +482,9 @@ class crestInstrumentVisitor f =
   let mkInstCall func args =
     let args' = integer (getNewId ()) :: args in
       Call (None, Lval (var func), args', locUnknown)
+  in
+  let mkInputInstCall func args =
+      Call (None, Lval (var func), args, locUnknown)
   in
 
   let unaryOpCode op =
@@ -737,12 +747,12 @@ object (self)
 				let funcname = List.hd !instruList in
 				instruList:=List.tl !instruList;
 				(match funcname with
-				 | "UChar" -> instruINPUTs := (mkInstCall inputUCharFunc [arg])::!instruINPUTs 
-				 | "Char" ->instruINPUTs := (mkInstCall inputCharFunc [arg])::!instruINPUTs
-				 | "UShort" ->instruINPUTs := (mkInstCall inputUShortFunc [arg])::!instruINPUTs
-				 | "Short" ->instruINPUTs := (mkInstCall inputShortFunc [arg])::!instruINPUTs
-				 | "UInt" ->instruINPUTs := (mkInstCall inputUIntFunc [arg])::!instruINPUTs
-				 | "Int" ->instruINPUTs := (mkInstCall inputIntFunc [arg])::!instruINPUTs
+				 | "UChar" -> instruINPUTs := (mkInputInstCall inputUCharFunc [arg])::!instruINPUTs 
+				 | "Char" ->instruINPUTs := (mkInputInstCall inputCharFunc [arg])::!instruINPUTs
+				 | "UShort" ->instruINPUTs := (mkInputInstCall inputUShortFunc [arg])::!instruINPUTs
+				 | "Short" ->instruINPUTs := (mkInputInstCall inputShortFunc [arg])::!instruINPUTs
+				 | "UInt" ->instruINPUTs := (mkInputInstCall inputUIntFunc [arg])::!instruINPUTs
+				 | "Int" ->instruINPUTs := (mkInputInstCall inputIntFunc [arg])::!instruINPUTs
 				 | _ ->()
 				 )
 			 |  _ -> ()

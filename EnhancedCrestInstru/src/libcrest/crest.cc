@@ -60,6 +60,7 @@ void __CrestInit() {
 
   SI = new SymbolicInterpreter(input);
 
+  SI->ReadReachability();
   pre_symbolic = 1;
 
   assert(!atexit(__CrestAtExit));

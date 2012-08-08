@@ -67,6 +67,10 @@ class Search {
 		     size_t branch_idx,
 		     vector<value_t>* input);
 
+  int PathGuidedSolveAtBranch(const SymbolicExecution& ex,
+			 size_t branch_idx,
+			 vector<value_t>* input);
+
   bool CheckPrediction(const SymbolicExecution& old_ex,
 		       const SymbolicExecution& new_ex,
 		       size_t branch_idx);

@@ -392,9 +392,10 @@ int Search::PathGuidedSolveAtBranch(const SymbolicExecution& ex,
   //reach all pathMarks of path fragment
   int paired_branch_idx = paired_branch_[branch_idx];
   vector<bool> paired_reachable = branch2path_reachable_[paired_branch_idx];
-  for(int i=0;i<paired_reachable.size();i++){}
+  for(int i=0;i<paired_reachable.size();i++){
 	if(!paired_reachable[i])
 		reachall = false;
+  }
 
   // return number
   if(contradic && reachall)		//path mark contradic
@@ -425,10 +426,10 @@ int Search::PathGuidedSolveAtBranch(const SymbolicExecution& ex,
     for (SolnIt i = soln.begin(); i != soln.end(); ++i) {
       (*input)[i->first] = i->second;
     }
-    return true;
+    return 0;	//solve success
   }
 
-  return false;
+  return 1;		//yices unsolvable
 }
 
 bool Search::CheckPrediction(const SymbolicExecution& old_ex,
@@ -559,9 +560,22 @@ void PathGuidedSearch::doPathGuided(size_t pos, int depth, SymbolicExecution& pr
 
   for (size_t i = pos; (i < path.constraints().size()) && (depth > 0); i++) {
     // Solve constraints[0..i].
-    if (!SolveAtBranch(prev_ex, i, &input)) {
-      continue;
-    }
+    int pathSolveRet= PathGuidedSolveAtBranch(prev_ex, i, &input); 
+		
+
+    if(pathSolveRet==-1){
+		fprintf(stderr,"-1:path fragment contradiction\n");
+		continue;
+	}else if(pathSolveRet==-2){
+		fprintf(stderr,"-2:normal contradiction\n");
+		continue;
+	}else if(pathSolveRet==-3){
+		fprintf(stderr,"-3:not all reachable\n");
+		continue;
+	}else if(pathSolveRet==1){
+		fprintf(stderr,"1:can not solve constrains\n");
+		continue;
+	}
 
     // Run on those constraints.
     RunProgram(input, &cur_ex);

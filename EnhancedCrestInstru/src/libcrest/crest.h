@@ -217,9 +217,9 @@ EXTERN void __CrestInt(int* x) __SKIP;
  * __csvLoadPointer,__csvStorePointer for pointer assignment
  */
 EXTERN void __DyVerifyMalloc(__CREST_ID, __CREST_ADDR, __CREST_SIZE) __SKIP;
-
-//EXTERN void __csvRealloc(__CREST_ID, __CREST_ADDR, __CREST_ADDR, __CREST_ADDR, __CREST_SIZE) __SKIP;
-//EXTERN void __csvCalloc(__CREST_ID, __CREST_ADDR, __CREST_ADDR, __CREST_SIZE, __CREST_SIZE) __SKIP;
+EXTERN void __DyVerifyCalloc(__CREST_ID, __CREST_ADDR, __CREST_SIZE, __CREST_SIZE) __SKIP;
+EXTERN void __DyVerifyRealloc(__CREST_ID, __CREST_ADDR, __CREST_ADDR, __CREST_SIZE) __SKIP;
+EXTERN void __DyVerifyStrDup(__CREST_ID, __CREST_ADDR, __CREST_ADDR) __SKIP;
 
 EXTERN void __DyVerifyFree(__CREST_ID, __CREST_ADDR) __SKIP;
 /*
@@ -230,11 +230,11 @@ EXTERN void __csvPointerApply2(__CREST_ID, __CREST_OP, __CREST_VALUE) __SKIP;
 EXTERN void __csvHandleReturnPointer(__CREST_ID, __CREST_ADDR, __CREST_ADDR) __SKIP;
 EXTERN void __csvClearPointerStack(__CREST_ID) __SKIP;
 */
-EXTERN void __DyVerifyLiveMemory(__CREST_ID, __CREST_ADDR, __CREST_VALUE) __SKIP;
+EXTERN void __DyVerifyLiveMemory(__CREST_ID, __CREST_ADDR) __SKIP;
 EXTERN void __DyVerifyStaticPathEnd(__CREST_ID) __SKIP;
 EXTERN void __StaticPathMark(__CREST_ID,__CREST_ID,__CREST_ID) __SKIP;
-/*
+
 EXTERN void __DyVerifyIsWarningMem(__CREST_ID, __CREST_ADDR) __SKIP;
-*/
+
 EXTERN void __DyVerifyCheckShadowHeap() __SKIP;
 #endif  /* LIBCREST_CREST_H__ */

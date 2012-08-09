@@ -12,7 +12,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
-
+#include <string.h>
 #include "base/symbolic_interpreter.h"
 #include "libcrest/crest.h"
 
@@ -69,7 +69,6 @@ void __CrestInit() {
 
 void __CrestAtExit() {
   const SymbolicExecution& ex = SI->execution();
-  
   __DyVerifyCheckShadowHeap();
   /* Write the execution out to file 'szd_execution'. */
   string buff;
@@ -199,21 +198,31 @@ void __CrestInt(int* x) {
  */
 
 void __DyVerifyMalloc(__CREST_ID id, __CREST_ADDR memAddr, __CREST_SIZE size) {
+	//TODO:check whether malloc success
 	SI->DyVerifyMalloc(id,memAddr,size);
 }
-/*
-void __csvRealloc(__CREST_ID id, __CREST_ADDR ptrAddr, __CREST_ADDR ptrAddr, __CREST_ADDR memAddr, __CREST_SIZE size) {
-
+void __DyVerifyCalloc(__CREST_ID id, __CREST_ADDR memAddr, __CREST_SIZE num, __CREST_SIZE size){
+	//TODO:check whether calloc success
+	SI->DyVerifyMalloc(id,memAddr,num*size);
 }
-void __csvCalloc(__CREST_ID, __CREST_ADDR ptrAddr, __CREST_ADDR, __CREST_SIZE, __CREST_SIZE) {
 
+void __DyVerifyRealloc(__CREST_ID id, __CREST_ADDR newAddr, __CREST_ADDR oldAddr, __CREST_SIZE size) {
+	//TODO:check whether re-allocate success 
+	SI->DyVerifyFree(id,oldAddr);
+	SI->DyVerifyMalloc(id,newAddr,size);
 }
-*/
+
+void __DyVerifyStrDup(__CREST_ID id, __CREST_ADDR newAddr, __CREST_ADDR oldAddr){
+	int len= strlen((char*)newAddr);
+	SI->DyVerifyMalloc(id,newAddr,len);
+}
+
+
 void __DyVerifyFree(__CREST_ID id, __CREST_ADDR memAddr) {
 	SI->DyVerifyFree(id,memAddr);
 }
-void __DyVerifyLiveMemory(__CREST_ID id, __CREST_ADDR memAddr, __CREST_VALUE value){
-	SI->DyVerifyLiveMemory(id,memAddr,value);
+void __DyVerifyLiveMemory(__CREST_ID id, __CREST_ADDR memAddr){
+	SI->DyVerifyLiveMemory(id,memAddr);
 }
 void __DyVerifyStaticPathEnd(__CREST_ID id){
 	SI->DyVerifyStaticPathEnd(id);
@@ -221,11 +230,11 @@ void __DyVerifyStaticPathEnd(__CREST_ID id){
 void __StaticPathMark(__CREST_ID id,__CREST_ID pathId,__CREST_ID pathStmtId){
 	SI->DyVerifyPathMark(pathId,pathStmtId);
 }
-/*
+
 void __DyVerifyIsWarningMem(__CREST_ID id, __CREST_ADDR memAddr){
 	SI->DyVerifyIsWarningMem(id,memAddr);
 }
-*/
+
 void __DyVerifyCheckShadowHeap(){
 	SI->DyVerifyCheckShadowHeap();
 }

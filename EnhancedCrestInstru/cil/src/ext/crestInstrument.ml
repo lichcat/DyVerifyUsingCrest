@@ -286,6 +286,15 @@ class instruPathMarkVisitor f =
 	let pushtoSPMIL pid psid =
 		storePathMarkIdList := (pid,psid)::!storePathMarkIdList
 	in
+	let instruMatchedPathMark self str location =
+	matchWarning:=false;
+	instruPathMark str location;
+	if (!matchWarning) then
+	(self#queueInstr [mkPathMark !warningId !pathStmtId];
+	 pushtoSPMIL !warningId !pathStmtId
+	);
+matchWarning:=false
+	in
 object (self)
 	inherit nopCilVisitor
 
@@ -307,16 +316,26 @@ object (self)
 		matchWarning:=false;
 		DoChildren
       | Return (_,location) ->
-	    matchWarning:=false;
-		instruPathMark "LK" location;
-		if (!matchWarning) then
-          (self#queueInstr [mkPathMark !warningId !pathStmtId];
-		   pushtoSPMIL !warningId !pathStmtId
-		   );
-		matchWarning:=false;
+		instruMatchedPathMark self "LK" location;
         SkipChildren
 	  | _ ->
 		DoChildren
+
+	method vinst(i) =
+		match i with 
+		| Call (_, Lval (Var f, NoOffset),args,location) ->
+		(match f.vname with
+		 | "malloc" -> instruMatchedPathMark self "MA" location
+		 | "calloc" -> instruMatchedPathMark self "CA" location
+		 | "realloc" -> instruMatchedPathMark self "RA" location
+		 | "xmalloc" -> instruMatchedPathMark self "XMA" location
+		 | "xcalloc" -> instruMatchedPathMark self "XCA" location
+		 | "xstrdup" -> instruMatchedPathMark self "XSD" location
+		 | _ ->()
+		 );
+		  DoChildren
+		| _ ->
+		  DoChildren
 end
 
 
@@ -419,6 +438,7 @@ class crestInstrumentVisitor f =
       ptrAddrArg and memAddrArg for alloc/free related functioin argument
       retPtrAddrArg and retPtrValueArg for return pointer related function argument
    *)
+  let numArg =("num",idType,[]) in
   let ptrAddrArg =("ptrAddr", addrType, []) in
   let memAddrArg =("memAddr", addrType, []) in
   let retPtrAddrArg =("retPtrAddr", addrType,[]) in
@@ -429,6 +449,8 @@ class crestInstrumentVisitor f =
   let inputShortArg =("x",argShortType,[]) in
   let inputCharArg =("x",argCharType,[]) in
   let inputUCharArg =("x",argUCharType,[]) in
+  let newAddrArg=("newAddr",addrType,[]) in
+  let oldAddrArg=("oldAddr",addrType,[]) in
 
   let mkInstFunc name args =
     let ty = TFun (voidType, Some (idArg :: args), false, []) in
@@ -470,12 +492,15 @@ class crestInstrumentVisitor f =
       func
   in
   let csvMallocFunc  = mkCsvInstFunc "Malloc" [memAddrArg;valArg] in
+  let csvCallocFunc = mkCsvInstFunc "Calloc" [memAddrArg;numArg;valArg] in
+  let csvReallocFunc = mkCsvInstFunc "Realloc" [newAddrArg;oldAddrArg;valArg] in
+  let csvStrDup = mkCsvInstFunc "StrDup" [newAddrArg;oldAddrArg] in
   let csvFreeFunc  =mkCsvInstFunc "Free" [memAddrArg] in
 
-  let csvLiveMemory = mkCsvInstFunc "LiveMemory" [memAddrArg;valArg] in
+  let csvLiveMemory = mkCsvInstFunc "LiveMemory" [memAddrArg] in
   let csvStaticPathEnd = mkCsvInstFunc "StaticPathEnd" [] in
 
-  (*let csvIsWarningMem = mkCsvInstFunc "IsWarningMem" [memAddrArg] in*)
+  let csvIsWarningMem = mkCsvInstFunc "IsWarningMem" [memAddrArg] in
   (*
    * Functions to create calls to the above instrumentation functions.
    *)
@@ -529,33 +554,23 @@ class crestInstrumentVisitor f =
   let mkHandleReturn value = mkInstCall handleReturnFunc [toValue value] in
   
   (*
-     Instrument csv functions 
-     __csvMalloc,__csvRealloc,__csvCalloc,__csvFree
-     __csvLoadPointer,__csvStorePointer
-     __csvPointerApply1,__csvPointerApply2
-     __csvHandleReturnPointer
-     __csvClearPointerStack
    *)
   let mkCsvMalloc memAddr size = mkInstCall csvMallocFunc [toAddr memAddr;toValue size] in 
+
+  let mkCsvCalloc memAddr num size = mkInstCall csvCallocFunc [toAddr memAddr;toValue num;toValue size] in
+
+  let mkCsvRealloc newAddr oldAddr size = mkInstCall csvReallocFunc [toAddr newAddr;toAddr oldAddr;toValue size] in
+
+  let mkCsvStrDup retAddr oldAddr = mkInstCall csvStrDup [toAddr retAddr;toAddr oldAddr] in
+
   let mkCsvFree memAddr = mkInstCall csvFreeFunc [toAddr memAddr] in
   
-  (* reference count
-  let mkCsvMalloc ptrAddr memAddr size = mkInstCall csvMallocFunc [toAddr ptrAddr; toAddr memAddr;toValue size] in 
-  let mkCsvFree ptrAddr memAddr = mkInstCall csvFreeFunc [toAddr ptrAddr; toAddr memAddr] in
- 
-  let mkCsvLoadPointer ptrAddr memAddr  = mkInstCall csvLoadPointerFunc [toAddr ptrAddr; toAddr memAddr] in
-  let mkCsvStorePointer ptrAddr memAddr   = mkInstCall csvStorePointerFunc [toAddr ptrAddr; toAddr memAddr] in
-  let mkCsvPointerApply1 op value = mkInstCall csvPointerApply1 [unaryOpCode op; toValue value] in
-  let mkCsvPointerApply2 op value = mkInstCall csvPointerApply2 [binaryOpCode op; toValue value] in
-  let mkCsvHandleReturnPointer retPtrAddr retPtrValue = mkInstCall csvHandleReturnPointerFunc [toAddr retPtrAddr; toValue retPtrValue] in
-  let mkCsvClearPointerStack ()  = mkInstCall csvClearPointerStackFunc [] in
-  *)
-  let mkCsvLiveMemory addr value = mkInstCall csvLiveMemory [toAddr addr; toValue value] in
+  let mkCsvLiveMemory addr = mkInstCall csvLiveMemory [toAddr addr] in
   
   let mkStaticPathEnd = mkInstCall csvStaticPathEnd [] in
-  (*
+  
   let mkIsWarningMem memAddr = mkInstCall csvIsWarningMem [toAddr memAddr] in
-  *)
+  
   (*
    * Instrument an expression.
    *)
@@ -566,7 +581,7 @@ class crestInstrumentVisitor f =
       match e with
         | Lval lv when hasAddress lv ->
           (match lv with
-            | (Mem memExp,_) ->[mkCsvLiveMemory (addressOf lv) e;mkLoad (addressOf lv) e]
+            | (Mem memExp,_) ->[mkCsvLiveMemory (addressOf lv);mkLoad (addressOf lv) e]
             | _ -> [mkLoad (addressOf lv) e]
           )
 
@@ -665,13 +680,6 @@ object (self)
   (*
    * Instrument assignment and call statements.
    *)
-        (*
-         * lichcat
-         * add isPointerType :handle pointer assignment
-         * and add insert __csvLoadPointer and __csvStorePointer 
-         self#queueInstr [mkCsvLiveMemory (addressOf lv) e];
-           
-           *)
   method vinst(i) =
     match i with
       | Set (lv, e, _) ->
@@ -680,7 +688,7 @@ object (self)
             if (isSymbolicType (typeOf e)) && (hasAddress lv) then
             (self#queueInstr (instrumentExpr e) ;
              self#queueInstr [mkStore (addressOf lv)]);
-            self#queueInstr [mkCsvLiveMemory (addressOf lv) (Lval lv)];
+            self#queueInstr [mkCsvLiveMemory (addressOf lv)];
           | _ -> 
             if (isSymbolicType (typeOf e)) && (hasAddress lv) then
             (self#queueInstr (instrumentExpr e) ;
@@ -701,16 +709,60 @@ object (self)
           when shouldSkipFunction f -> 
         SkipChildren
         
-      | Call (ret, Lval (Var f, NoOffset),args,_)
-          when f.vname = "malloc" ->
+      | Call (ret, Lval (Var f, NoOffset),args,location)
+          when ((f.vname = "malloc") or (f.vname="xmalloc"))->
         	let sizeArg = List.hd args in
             (match ret with
               |  Some lv when (hasAddress lv) ->
-              	   		ChangeTo [i ;  mkCsvMalloc (Lval lv) sizeArg]
-                (* ChangeTo [i ;  mkCsvMalloc (addressOf lv) (Lval lv) sizeArg]	*)
+			  (matchWarning:=false;
+			   if f.vname="malloc" then instruPathMark "MA" location
+			   else if f.vname="xmalloc" then instruPathMark "XMA" location;
+			   if (!matchWarning) then ChangeTo [i ; mkCsvMalloc (Lval lv) sizeArg ; mkIsWarningMem (Lval lv)]
+			   else ChangeTo [i ; mkCsvMalloc (Lval lv) sizeArg]
+			  )
               |  _ -> DoChildren
             )
               
+      | Call (ret, Lval (Var f, NoOffset),args,location)
+          when ((f.vname = "calloc") or (f.vname="xcalloc")) ->
+        	let numArg = List.nth args 0 in
+			let sizeArg = List.nth args 1 in
+            (match ret with
+              |  Some lv when (hasAddress lv) ->
+			  (matchWarning:=false;
+			   if f.vname="calloc" then instruPathMark "CA" location
+			   else if f.vname="xcalloc" then instruPathMark "XCA" location;
+			   if (!matchWarning) then ChangeTo [i ; mkCsvCalloc (Lval lv) numArg sizeArg ; mkIsWarningMem (Lval lv)]
+			   else ChangeTo [i ; mkCsvCalloc (Lval lv) numArg sizeArg]
+			  )
+              |  _ -> DoChildren
+            )
+	  | Call (ret, Lval (Var f, NoOffset),args,location)
+		  when f.vname = "realloc" ->
+        	let oldPtrArg = List.nth args 0 in
+			let sizeArg = List.nth args 1 in
+            (match ret with
+              |  Some lv when (hasAddress lv) ->
+			  (matchWarning:=false;
+			   instruPathMark "RA" location;
+			   if (!matchWarning) then ChangeTo [i ; mkCsvRealloc (Lval lv) oldPtrArg sizeArg ; mkIsWarningMem (Lval lv)]
+			   else ChangeTo [i ; mkCsvRealloc (Lval lv) oldPtrArg sizeArg]
+			  )
+              |  _ -> DoChildren
+            )
+	  | Call (ret, Lval (Var f, NoOffset),args,location)
+          when f.vname = "strdup" ->
+        	let strAddrArg = List.hd args in
+            (match ret with
+              |  Some lv when (hasAddress lv) ->
+			  (matchWarning:=false;
+			   instruPathMark "XSD" location;
+			   if (!matchWarning) then ChangeTo [i ; mkCsvStrDup (Lval lv) strAddrArg ; mkIsWarningMem (Lval lv)]
+			   else ChangeTo [i ; mkCsvStrDup (Lval lv) strAddrArg]
+			  )
+              |  _ -> DoChildren
+            )
+
       | Call(None, Lval(Var f, NoOffset),args,_)
           when f.vname = "free" ->	
             let frPtr = List.hd args in
@@ -720,7 +772,7 @@ object (self)
                 (* ChangeTo [i ;  mkCsvFree (addressOf castExp) (Lval castExp)] *)
               |  _ -> DoChildren
          	)
-      | Call(None, Lval(Var f, NoOffset),args,_)		(* int scanf( const char* format, ...); *)
+      | Call(_, Lval(Var f, NoOffset),args,_)		(* int scanf( const char* format, ...); *)
           when ((f.vname = "scanf") or (f.vname = "fscanf")) -> (*| f.vname = "sscanf"*)
 		  let instruList = ref [] in
 		  let instruINPUTs = ref [] in
@@ -767,13 +819,16 @@ object (self)
 
       | Call (ret, _, args, _) ->
           let isSymbolicExp e = isSymbolicType (typeOf e) in
-         (* let isPointerExp e = isPointerType (typeOf e) in	*)
+          let isPointerExp e = isPointerType (typeOf e) in	
           let isSymbolicLval lv = isSymbolicType (typeOfLval lv) in
          (* let isPointerLval lv = isPointerType (typeOfLval lv) in  *)
           let argsToInst = List.filter isSymbolicExp args in
-         (* let pointerArgsToInst = List.filter isPointerExp args in	*) 
-            self#queueInstr (concatMap instrumentExpr argsToInst) ;
-        	
+          let pointerArgsToCheck = List.filter isPointerExp args in	
+
+          self#queueInstr (concatMap instrumentExpr argsToInst) ;
+		  (*check pointer type argument for live memory use*)
+		  List.iter (fun x->  self#queueInstr [mkCsvLiveMemory x]) pointerArgsToCheck ;
+
          (*	self#queueInstr (concatMap instrumentPointerExpr pointerArgsToInst) ;	*)
             (match ret with
                | Some lv when ((isSymbolicLval lv) && (hasAddress lv)) ->

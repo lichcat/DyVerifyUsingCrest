@@ -77,11 +77,11 @@ class SymbolicInterpreter {
   //Dynamic Verification for statically detected Memory leak
   void DyVerifyMalloc(id_t id,addr_t memAddr,value_t size);
   void DyVerifyFree(id_t id,addr_t memAddr);
-  void DyVerifyLiveMemory(id_t id, addr_t memAddr, value_t value);
+  void DyVerifyLiveMemory(id_t id, addr_t memAddr);
   void DyVerifyCheckShadowHeap();
   void DyVerifyStaticPathEnd(id_t id);
   void DyVerifyPathMark(id_t pathId,id_t pathStmtId);
-  //void DyVerifyIsWarningMem(id_t id, addr_t memAddr);
+  void DyVerifyIsWarningMem(id_t id, addr_t memAddr);
 
  private:
   struct StackElem {
@@ -109,6 +109,9 @@ class SymbolicInterpreter {
 
   // current path Mark passed number
   int currentPathMarkNum_;
+
+  // current execution is along the path fragment ,set true @ pathEnd
+  bool is_along_path_ ;
 
   // The symbolic execution (program path and inputs).
   SymbolicExecution ex_;

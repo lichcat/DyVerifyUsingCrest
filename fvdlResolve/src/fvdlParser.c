@@ -207,6 +207,7 @@ int main(int argc, char** argv){
 		fp=fopen("checklists","w");
 		nodeset = result->nodesetval;
 		for(i=0;i< nodeset->nodeNr; i++){
+			fprintf(stderr,"%d\n",i);
 			fprintf(fp,"%d\n",i);
 			getTraceInfo(doc,nodeset->nodeTab[i],fp);
 			fprintf(fp,"END_PATH\n");

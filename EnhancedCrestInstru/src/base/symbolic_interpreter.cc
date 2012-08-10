@@ -392,6 +392,10 @@ void SymbolicInterpreter::DyVerifyFree(id_t id,addr_t memAddr){
 }
 void SymbolicInterpreter::DyVerifyLiveMemory(id_t id, addr_t memAddr){
 	IFDEBUG(fprintf(stderr,"LiveUse \tmemAddr: %lu \n",memAddr));
+	if(shadowHeap_.begin()==shadowHeap_.end()){
+		IFDEBUG(fprintf(stderr,"empty shadowHeap \n"));
+		return ;
+	}
 	ConstShadowHeapIt itup=shadowHeap_.upper_bound(memAddr);
 	itup--;
 	ConstShadowHeapIt checkIt=itup;

@@ -165,7 +165,7 @@ Search::Search(const string& program, int max_iterations)
   
   }
   in.close();
-  /* */
+  /* 
   for(int i=0;i<branches_.size();i++){
 	fprintf(stderr,"branch %d : ",branches_[i]);
 	for(int j=0;j<branch2path_reachable_[branches_[i]].size();j++){
@@ -173,7 +173,7 @@ Search::Search(const string& program, int max_iterations)
 	}
 	fprintf(stderr,"\n");
   }
- /*  */
+   */
 
 }
 

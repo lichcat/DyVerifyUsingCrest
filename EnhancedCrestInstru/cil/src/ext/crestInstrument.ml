@@ -751,7 +751,7 @@ object (self)
               |  _ -> DoChildren
             )
 	  | Call (ret, Lval (Var f, NoOffset),args,location)
-          when f.vname = "strdup" ->
+          when f.vname = "xstrdup" ->
         	let strAddrArg = List.hd args in
             (match ret with
               |  Some lv when (hasAddress lv) ->

@@ -38,12 +38,13 @@ using std::random_shuffle;
 using std::stable_sort;
 using std::istringstream;
 
-#ifdef DEBUG
-#define IFDEBUG(x) x
+/*
+#ifdef MDEBUG
+#define IFMDEBUG(x) x
 #else
-#define IFDEBUG(x)
+#define IFMDEBUG(x)
 #endif
-
+*/
 namespace crest {
 
 namespace {
@@ -566,16 +567,16 @@ void PathGuidedSearch::doPathGuided(size_t pos, int depth, SymbolicExecution& pr
 		
 
     if(pathSolveRet==-1){
-		IFDEBUG(fprintf(stderr,"-1:path fragment contradiction\n"));
+		//IFMDEBUG(fprintf(stderr,"-1:path fragment contradiction\n"));
 		continue;
 	}else if(pathSolveRet==-2){
-		IFDEBUG(fprintf(stderr,"-2:normal contradiction\n"));
+		//IFMDEBUG(fprintf(stderr,"-2:normal contradiction\n"));
 		continue;
 	}else if(pathSolveRet==-3){
-		IFDEBUG(fprintf(stderr,"-3:not all reachable\n"));
+		//IFMDEBUG(fprintf(stderr,"-3:not all reachable\n"));
 		continue;
 	}else if(pathSolveRet==1){
-		IFDEBUG(fprintf(stderr,"1:can not solve constrains\n"));
+		//IFMDEBUG(fprintf(stderr,"1:can not solve constrains\n"));
 		continue;
 	}
 

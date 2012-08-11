@@ -54,7 +54,7 @@ namespace __gnu_cxx {
 
 hash_map<int,bool>  funcNodeMap;
 hash_map<int,bool> notExitNodesMap;
-map<int,int> loopsMap;
+vector<pair<int,int> > loopsMap;
 map<int,int> parentMap;
 
 unsigned int pathLen=0;		// count staticpathstmt number
@@ -235,7 +235,7 @@ void dfSearch(graph_t *graph,int currId,vector<vector<bool> > &reachability,vect
 		}else if(visited[nbhrs[i]]==black ){
 			copyReach(reachability[nbhrs[i]],reachability[currId]);
 		}else if(visited[nbhrs[i]]==gray){
-			loopsMap[nbhrs[i]]=currId;		//nbhrs is gray means have loop,and from nbhrs[i]->currId has trace
+			loopsMap.push_back(pair<int,int>(nbhrs[i],currId));		//nbhrs is gray means have loop,and from nbhrs[i]->currId has trace
 		}
 	}
 
@@ -244,20 +244,36 @@ void dfSearch(graph_t *graph,int currId,vector<vector<bool> > &reachability,vect
 
 	copyReach(reachability[currId],sourceReach);
 }
+bool nothingCopy(vector<bool> &reach){	//nothing to copy ->true 
+	unsigned int i;
+	for(i=0;i<reach.size();i++){
+		if(reach[i])
+			return false;
+	}
+	return true;
+}
 void handleLoop(vector<vector<bool> > &reachability){
-	map<int,int>::const_iterator it;
-	for(it=loopsMap.begin();it!=loopsMap.end();++it){
-		fprintf(stderr,"Trace: %d=>%d:\n",it->first,it->second);
-		copyReach(reachability[it->first],reachability[it->second]);
+	unsigned int i;
+	//fprintf(stderr,"size %d\n",loopsMap.size());
+	
+	for(i=0;i<loopsMap.size();i++){
+		//fprintf(stderr,"Trace: %d=>%d:\n",loopsMap[i].first,loopsMap[i].second);
+		if(loopsMap[i].first==loopsMap[i].second)
+			continue;	
+		if(nothingCopy(reachability[loopsMap[i].first]))		//optimize: nothing to copy
+			continue;
+		copyReach(reachability[loopsMap[i].first],reachability[loopsMap[i].second]);
 		//to find first ->second 's trace
-		int curr=it->second;
-		while(parentMap[curr]!=it->first){
+		int curr=loopsMap[i].second;
+		//fprintf(stderr,"%d 's parent is %d",curr,parentMap[curr]);
+		while(parentMap[curr]!=(loopsMap[i].first)){
 			copyReach(reachability[curr],reachability[parentMap[curr]]);
-			fprintf(stderr,"%d<-",curr);
+			//fprintf(stderr,"%d<-",curr);
 			curr=parentMap[curr];
-			fprintf(stderr,"%d ",curr);
+			//fprintf(stderr,"%d ",curr);
 		}
-		fprintf(stderr,"\n");	
+		//fprintf(stderr,"%d<-%d\n",curr,parentMap[curr]);	
+		
 	}
 
 }
@@ -335,6 +351,8 @@ int main(void) {
 	//IFDEBUG(dumpCFG(&cfg));
 	
 	addFuncNb2FuncOut(&cfg);
+
+	//dumpCFG(&cfg);
 
 	//IFDEBUG(dumpCFG(&cfg));
 

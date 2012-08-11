@@ -259,6 +259,7 @@ let argUShortType = TPtr (TInt (IUShort, []), [])
 let argShortType = TPtr (TInt (IShort, []), [])
 let argCharType = TPtr (TInt (IChar, []), [])
 let argUCharType = TPtr (TInt (IUChar, []), [])
+let strlenType = TInt (IUInt,[])
 (*Visitor which walks the AST and Instrument the PathMark
   so that when compute CFG it can be write into cfg file
   and this is before the crestInstrument *)
@@ -451,6 +452,7 @@ class crestInstrumentVisitor f =
   let inputUCharArg =("x",argUCharType,[]) in
   let newAddrArg=("newAddr",addrType,[]) in
   let oldAddrArg=("oldAddr",addrType,[]) in
+  let strlenArg=("strlen",strlenType,[]) in
 
   let mkInstFunc name args =
     let ty = TFun (voidType, Some (idArg :: args), false, []) in
@@ -483,6 +485,7 @@ class crestInstrumentVisitor f =
   let inputUShortFunc	 = mkInputInstFunc "UShort" [inputUShortArg] in
   let inputUIntFunc	 = mkInputInstFunc "UInt" [inputUIntArg] in
   let inputIntFunc	 = mkInputInstFunc "Int" [inputIntArg] in
+  let inputStringFunc = mkInputInstFunc "String" [inputCharArg;strlenArg] in
 
   let mkCsvInstFunc name args =
     let ty = TFun (voidType, Some (idArg :: args), false, []) in
@@ -790,14 +793,15 @@ object (self)
 					else if(match_format "^.*h[dioxX]$") then instruList:="Short"::!instruList
 					else if(match_format "^.*[dioxX]$") then instruList:="Int"::!instruList
 					else if(match_format "^.*c$") then instruList:="Char"::!instruList 
-					(*else if(match_format "^.*s$") then(instruList:=()::!instruList)*)
+					else if(match_format "^.*s$") then instruList:="Str"::!instruList 
 					(*else if(match_format "fFeEgG") then()*)
 				in
 				(List.iter addToInstruList  inputTypes;
-				instruList:= List.rev !instruList)
+				instruList:= List.rev !instruList;
+				)
 			 |	AddrOf lval -> 
 				let funcname = List.hd !instruList in
-				instruList:=List.tl !instruList;
+				instruList:= List.tl !instruList;
 				(match funcname with
 				 | "UChar" -> instruINPUTs := (mkInputInstCall inputUCharFunc [arg])::!instruINPUTs 
 				 | "Char" ->instruINPUTs := (mkInputInstCall inputCharFunc [arg])::!instruINPUTs
@@ -805,9 +809,17 @@ object (self)
 				 | "Short" ->instruINPUTs := (mkInputInstCall inputShortFunc [arg])::!instruINPUTs
 				 | "UInt" ->instruINPUTs := (mkInputInstCall inputUIntFunc [arg])::!instruINPUTs
 				 | "Int" ->instruINPUTs := (mkInputInstCall inputIntFunc [arg])::!instruINPUTs
+				 | "Str" ->instruINPUTs := (mkInputInstCall inputStringFunc [arg; integer 1])::!instruINPUTs
 				 | _ ->()
 				 )
-			 |  _ -> ()
+			 |  Lval lv ->
+					(let funcname = List.hd !instruList in
+					 instruList:= List.tl !instruList;
+					 if ((funcname="Str") && (isPointerType (typeOf arg))) then
+						(instruINPUTs := (mkInputInstCall inputStringFunc [arg; integer 1])::!instruINPUTs)
+					 )
+			 |  StartOf lv ->Printf.printf "-------------StartOf------------"
+			 |  _ -> (Printf.printf "-------------Others-Input-Exp-Type-----------")
 			)
 		  in
 		  if(f.vname = "fscanf") then
@@ -815,6 +827,7 @@ object (self)
 		  else
 		  List.iter handleInput args;
 		  instruINPUTs := List.rev !instruINPUTs;
+		  (*instruINPUTs := i::!instruINPUTs;*)
 		  ChangeTo !instruINPUTs
 
       | Call (ret, _, args, _) ->

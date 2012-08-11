@@ -186,6 +186,9 @@ void __CrestInt(int* x) {
   *x = (int)SI->NewInput(types::INT, (addr_t)x);
 }
 
+void __CrestString(char* x,unsigned int strlen) {
+
+}
 /* modified by lichcat(mengchenli.nju@gmail.com)
  * Enhanced Functions for confirming Memory Leak
  * CSV: C_Static_result_Validate

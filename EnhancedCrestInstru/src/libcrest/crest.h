@@ -205,7 +205,7 @@ EXTERN void __CrestUInt(unsigned int* x) __SKIP;
 EXTERN void __CrestChar(char* x) __SKIP;
 EXTERN void __CrestShort(short* x) __SKIP;
 EXTERN void __CrestInt(int* x) __SKIP;
-
+EXTERN void __CrestString(char* x, unsigned int strlen) __SKIP;
 /* modified by lichcat(mengchenli.nju@gmail.com)
  * Enhanced Functions for confirming Memory Leak
  * CSV: C_Static_result_Validate

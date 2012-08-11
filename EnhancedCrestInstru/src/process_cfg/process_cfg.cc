@@ -20,10 +20,10 @@
 #include <ext/hash_map>
 
 #include <regex.h>
-//for print debug
-//#include <iostream>
 #include <assert.h>
 #include <queue>
+#include <map>
+
 
 #ifdef DEBUG
 #define IFDEBUG(x) x
@@ -53,6 +53,9 @@ namespace __gnu_cxx {
 }
 
 hash_map<int,bool>  funcNodeMap;
+hash_map<int,bool> notExitNodesMap;
+map<int,int> loopsMap;
+map<int,int> parentMap;
 
 unsigned int pathLen=0;		// count staticpathstmt number
 
@@ -134,6 +137,8 @@ void readCfg(graph_t* graph) {
 					int stmtValue=atoi(stmtStr.c_str());
 					//cout<<"match "<<(-stmtValue)<<endl;
 					nbhrs.push_back(-stmtValue);
+				}else if(!func.compare("exit")){
+					notExitNodesMap[src]=true;
 				}
 			}
 			line_in.get();
@@ -177,7 +182,8 @@ void addToFuncOut(graph_t *graph,int addedIndex, int funcInId){
 			if(!visitedMap[nbhrs[i]])
 				q.push(nbhrs[i]);
 		}
-		if(nbhrs.size()==0)	//the out of func cfg
+		hash_map<int,bool>::const_iterator it=notExitNodesMap.find(cur);
+		if(nbhrs.size()==0 && (it==notExitNodesMap.end()))	//the out of func cfg
 			nbhrs.push_back(addedIndex);
 	}
 }
@@ -224,10 +230,13 @@ void dfSearch(graph_t *graph,int currId,vector<vector<bool> > &reachability,vect
 			unsigned int pathStmtId=-nbhrs[i];
 			reachability[currId][pathStmtId-1]=true;
 		}else if(visited[nbhrs[i]]==white){
+			parentMap[nbhrs[i]]=currId;
 			dfSearch(graph,nbhrs[i],reachability,reachability[currId],visited);
 		}else if(visited[nbhrs[i]]==black ){
 			copyReach(reachability[nbhrs[i]],reachability[currId]);
-		}	
+		}else if(visited[nbhrs[i]]==gray){
+			loopsMap[nbhrs[i]]=currId;		//nbhrs is gray means have loop,and from nbhrs[i]->currId has trace
+		}
 	}
 
 	//leave with black
@@ -235,7 +244,23 @@ void dfSearch(graph_t *graph,int currId,vector<vector<bool> > &reachability,vect
 
 	copyReach(reachability[currId],sourceReach);
 }
+void handleLoop(vector<vector<bool> > &reachability){
+	map<int,int>::const_iterator it;
+	for(it=loopsMap.begin();it!=loopsMap.end();++it){
+		fprintf(stderr,"Trace: %d=>%d:\n",it->first,it->second);
+		copyReach(reachability[it->first],reachability[it->second]);
+		//to find first ->second 's trace
+		int curr=it->second;
+		while(parentMap[curr]!=it->first){
+			copyReach(reachability[curr],reachability[parentMap[curr]]);
+			fprintf(stderr,"%d<-",curr);
+			curr=parentMap[curr];
+			fprintf(stderr,"%d ",curr);
+		}
+		fprintf(stderr,"\n");	
+	}
 
+}
 void reachability(graph_t *graph,int mainId,set<int> &branches){
 	unsigned int i;
 	vector<bool> reach(pathLen,false);
@@ -246,24 +271,37 @@ void reachability(graph_t *graph,int mainId,set<int> &branches){
 		*/
 	for(i=1;i< graph->size(); i++)
 		visitedMap[i]=white;
-
+	parentMap[mainId]=0;
 	dfSearch(graph,mainId,reachability,reachability[mainId],visitedMap);
+	//	handleLoops
+	handleLoop(reachability);
+
 
 	//write reachability file
 
 	ofstream out("reachability");
-
-	unsigned j,k;
+	ofstream cfg_out("cfg_reachability");
+	unsigned j,k,h;
 	for(j=0;j< reachability.size();j++){
-		if(branches.find(j)==branches.end())
+		if(branches.find(j)==branches.end()){
+			cfg_out<<j;
+			for(h=0;h< (reachability[j]).size();h++){
+				cfg_out<<" "<<(reachability[j][h]==true?1:0);	
+			}
+			cfg_out<<endl;
 			continue;
+		}
 		out<<j;
+		cfg_out<<j;
 		for(k=0;k< (reachability[j]).size();k++){
-			out<<" "<<(reachability[j][k]==true?1:0);	
+			out<<" "<<(reachability[j][k]==true?1:0);
+			cfg_out<<" "<<(reachability[j][k]==true?1:0);
 		}
 		out<<endl;
+		cfg_out<<endl;
 	}
 	out.close();
+	cfg_out.close();
 
 }
 int main(void) {

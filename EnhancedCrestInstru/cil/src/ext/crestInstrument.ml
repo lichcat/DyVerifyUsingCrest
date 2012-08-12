@@ -311,7 +311,7 @@ object (self)
 		matchWarning:=false;	
 		instruPathMark "BF" location;
 		if (!matchWarning) then
-		  (prependToBlock [mkPathMark !warningId !pathStmtId] b1;
+		  (prependToBlock [mkPathMark !warningId !pathStmtId] b2;
 		   pushtoSPMIL !warningId !pathStmtId
 		   );
 		matchWarning:=false;

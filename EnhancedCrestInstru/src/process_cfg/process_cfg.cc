@@ -23,7 +23,7 @@
 #include <assert.h>
 #include <queue>
 #include <map>
-
+#include <stack>
 
 #ifdef DEBUG
 #define IFDEBUG(x) x
@@ -55,9 +55,10 @@ namespace __gnu_cxx {
 hash_map<int,bool>  funcNodeMap;
 hash_map<int,bool> notExitNodesMap;
 vector<pair<int,int> > loopsMap;
-map<int,int> parentMap;
-
+hash_map<int,hash_map<int,bool> > vertexVisited;
+queue<pair<int,int> > copyLaterPairs;
 unsigned int pathLen=0;		// count staticpathstmt number
+
 
 void readBranches(set<int>* branches) {
 	ifstream in("branches");
@@ -230,7 +231,6 @@ void dfSearch(graph_t *graph,int currId,vector<vector<bool> > &reachability,vect
 			unsigned int pathStmtId=-nbhrs[i];
 			reachability[currId][pathStmtId-1]=true;
 		}else if(visited[nbhrs[i]]==white){
-			parentMap[nbhrs[i]]=currId;
 			dfSearch(graph,nbhrs[i],reachability,reachability[currId],visited);
 		}else if(visited[nbhrs[i]]==black ){
 			copyReach(reachability[nbhrs[i]],reachability[currId]);
@@ -252,32 +252,194 @@ bool nothingCopy(vector<bool> &reach){	//nothing to copy ->true
 	}
 	return true;
 }
-void handleLoop(vector<vector<bool> > &reachability){
+bool sameReachable(vector<bool> &reachPrt,vector<bool> &reachSon){
 	unsigned int i;
-	//fprintf(stderr,"size %d\n",loopsMap.size());
-	
-	for(i=0;i<loopsMap.size();i++){
-		//fprintf(stderr,"Trace: %d=>%d:\n",loopsMap[i].first,loopsMap[i].second);
-		if(loopsMap[i].first==loopsMap[i].second)
-			continue;	
-		if(nothingCopy(reachability[loopsMap[i].first]))		//optimize: nothing to copy
-			continue;
-		copyReach(reachability[loopsMap[i].first],reachability[loopsMap[i].second]);
-		//to find first ->second 's trace
-		int curr=loopsMap[i].second;
-		//fprintf(stderr,"%d 's parent is %d",curr,parentMap[curr]);
-		while(parentMap[curr]!=(loopsMap[i].first)){
-			copyReach(reachability[curr],reachability[parentMap[curr]]);
-			//fprintf(stderr,"%d<-",curr);
-			curr=parentMap[curr];
-			//fprintf(stderr,"%d ",curr);
+	for(i=0;i<pathLen;i++){
+		if(reachPrt[i]!=reachSon[i])
+			return false;
+	}
+	return true;
+}
+
+void dumpStack(vector<int> &mystack){
+	unsigned int i;
+	fprintf(stderr,"bottom: ");
+	for(i=0;i<mystack.size();i++){
+		fprintf(stderr,"%d->",mystack[i]);
+	}
+	fprintf(stderr,"top\n");
+}
+void findAllPath(graph_t *graph,int begin,int end,vector<vector<bool> > &reachability,unsigned int bound){
+	unsigned int k,j,i;
+	hash_map<int,bool>	isInStack;
+	for(k=1;k< graph->size(); k++){
+		isInStack[k]=false;
+		adj_list_t &nbhrs=(*graph)[k];
+		adj_list_t::iterator it;
+		for(it=nbhrs.begin();it!=nbhrs.end();){
+			if(*it<0){
+				it=nbhrs.erase(it);
+			}else{
+				it++;
+			}
 		}
-		//fprintf(stderr,"%d<-%d\n",curr,parentMap[curr]);	
+	}
+	
+	vector<int>	myStack;	//int type element ,use vector to store
+	myStack.push_back(begin);
+	isInStack[begin]=true;
+	while(!myStack.empty()){
+		//dumpStack(myStack);				//print
+
+		int peek=myStack.back();
+
+		//check bound
+		unsigned int dist=(peek>end)?(peek-end+1):(end-peek+1);
 		
+		if(dist>bound){
+			isInStack[peek]=true;
+			myStack.pop_back();
+			continue;
+		}
+
+		adj_list_t &nbhrs=(*graph)[peek];
+		int v=-1;
+		for(j=0;j<nbhrs.size();j++){	//get a adjVertex that not in stack && not from peek visited
+			if(nbhrs[j]<0)
+				continue;
+			if(isInStack[nbhrs[j]])
+				continue;
+			if((vertexVisited[peek].find(nbhrs[j]))!=(vertexVisited[peek].end()))
+				continue;
+			if(funcNodeMap.find(nbhrs[j])!=funcNodeMap.end()){		//nbhrs[j] is a func call, record and copyReach later
+				int h=j-1;
+				while(h>=0 && funcNodeMap.find(nbhrs[h])==funcNodeMap.end()){
+					copyLaterPairs.push(pair<int,int>(nbhrs[j],nbhrs[h]));
+					h--;
+				}
+				h=j+1;
+				while(h<nbhrs.size()){
+					copyLaterPairs.push(pair<int,int>(nbhrs[j],nbhrs[h]));
+					h++;
+				}
+				continue;
+			}		
+			v=nbhrs[j];
+		}
+		if(v==-1){			//not found
+			vertexVisited[peek].clear();
+			myStack.pop_back();
+			isInStack[peek]=false;
+		}else{
+			vertexVisited[peek][v]=true;
+			myStack.push_back(v);
+			isInStack[v]=true;
+		}
+		//dumpStack(myStack);				//print
+
+		if((!myStack.empty()) && (myStack.back()==end)){
+			fprintf(stderr,"---------find:%d--------\n",end);
+			//get a trace in myStack
+			assert(myStack[0]==begin);
+			for(i=1;i<myStack.size();i++){
+				copyReach(reachability[begin],reachability[myStack[i]]);
+			}
+			myStack.pop_back();
+			isInStack[end]=false;
+		}
+	
+	
 	}
 
 }
-void reachability(graph_t *graph,int mainId,set<int> &branches){
+
+void handleLoop(graph_t *graph,vector<vector<bool> > &reachability){
+	unsigned int i;
+	int first,second;
+	//fprintf(stderr,"size %d\n",loopsMap.size());
+	vector<pair<int,int> > prevent;	
+	for(i=0;i<loopsMap.size();i++){
+		first=loopsMap[i].first;
+		second=loopsMap[i].second;
+		fprintf(stderr,"Trace: %d=>%d:\n",first,second);
+		if(first==second)
+			continue;	
+		if(nothingCopy(reachability[first])){		//optimize: nothing to copy
+			prevent.push_back(pair<int,int>(first,second));
+			continue;
+		}
+		if(sameReachable(reachability[first],reachability[second]))
+			continue;
+		//a find all path algorithm
+		//bound is |first-second|+1
+		int bound=(first>second)?(first-second+1):(second-first+1);
+		assert(bound>1);
+		findAllPath(graph,first,second,reachability,bound);
+
+	}
+	vector<pair<int,int> >::iterator it;
+	bool changed=true;
+	while(changed){
+		changed=false;
+		for(it=prevent.begin();it!=prevent.end();){
+			first=prevent[i].first;
+			second=prevent[i].second; 
+			if(!nothingCopy(reachability[prevent[i].first])){
+				changed=true;
+				int bound=(first>second)?(first-second+1):(second-first+1);
+				findAllPath(graph,prevent[i].first,prevent[i].second,reachability,bound);
+				it=prevent.erase(it);
+			}else{
+				it++;
+			}
+		}
+	}
+
+
+
+
+}
+void copyToFunctionReach(graph_t *cfg_origin,int dst,int src,vector<vector<bool> > &reachability){		//copy src to all func node of dst
+	
+	unsigned int k,i;
+	hash_map<int,bool>	visitedMap;
+	for(k=0;k< cfg_origin->size(); k++)
+		visitedMap[k]=false;	
+	
+	int cur;
+
+	queue<int> q;
+	q.push(dst);
+	while(!q.empty()){
+		cur=q.front();
+		visitedMap[cur]=true;	//visit cur
+		q.pop();
+		adj_list_t &nbhrs=(*cfg_origin)[cur];
+
+		for(i=0;i<nbhrs.size();i++){
+			if(nbhrs[i]<=0)
+				continue;
+			if(funcNodeMap.find(nbhrs[i])!=funcNodeMap.end()){		//in dst ,call another func nbhrs[i],just add pair to copyLater
+				int h=i-1;
+				while(h>=0 && funcNodeMap.find(nbhrs[h])==funcNodeMap.end()){
+					copyLaterPairs.push(pair<int,int>(nbhrs[i],nbhrs[h]));
+					h--;
+				}
+				h=i+1;
+				while(h<nbhrs.size()){
+					copyLaterPairs.push(pair<int,int>(nbhrs[i],nbhrs[h]));
+					h++;
+				}
+				continue;
+			}		
+			if(!visitedMap[nbhrs[i]]){
+				copyReach(reachability[src],reachability[nbhrs[i]]);
+				q.push(nbhrs[i]);
+			}
+		}
+	}
+}
+void reachability(graph_t *graph,int mainId,set<int> &branches,graph_t *cfg_origin){
 	unsigned int i;
 	vector<bool> reach(pathLen,false);
 	vector<vector<bool> > reachability(graph->size(),reach);
@@ -287,37 +449,51 @@ void reachability(graph_t *graph,int mainId,set<int> &branches){
 		*/
 	for(i=1;i< graph->size(); i++)
 		visitedMap[i]=white;
-	parentMap[mainId]=0;
 	dfSearch(graph,mainId,reachability,reachability[mainId],visitedMap);
 	//	handleLoops
-	handleLoop(reachability);
+	handleLoop(graph,reachability);
+	//	copyToFunctionReach;
 
+	while(!copyLaterPairs.empty()){
+
+		int first=copyLaterPairs.front().first;
+		int second=copyLaterPairs.front().second;
+		copyLaterPairs.pop();
+		//copy Reach from second to function node of first
+		
+		if(nothingCopy(reachability[second]))
+			continue;
+		assert(funcNodeMap.find(first)!=funcNodeMap.end());
+		copyToFunctionReach(cfg_origin,first,second,reachability);
+	}
 
 	//write reachability file
 
 	ofstream out("reachability");
-	ofstream cfg_out("cfg_reachability");
-	unsigned j,k,h;
+	//ofstream cfg_out("cfg_reachability");
+	unsigned j,k;
+	//unsigned h;
 	for(j=0;j< reachability.size();j++){
 		if(branches.find(j)==branches.end()){
-			cfg_out<<j;
+			/*cfg_out<<j;
 			for(h=0;h< (reachability[j]).size();h++){
 				cfg_out<<" "<<(reachability[j][h]==true?1:0);	
 			}
 			cfg_out<<endl;
+			*/
 			continue;
 		}
 		out<<j;
-		cfg_out<<j;
+		//cfg_out<<j;
 		for(k=0;k< (reachability[j]).size();k++){
 			out<<" "<<(reachability[j][k]==true?1:0);
-			cfg_out<<" "<<(reachability[j][k]==true?1:0);
+			//cfg_out<<" "<<(reachability[j][k]==true?1:0);
 		}
 		out<<endl;
-		cfg_out<<endl;
+		//cfg_out<<endl;
 	}
 	out.close();
-	cfg_out.close();
+	//cfg_out.close();
 
 }
 int main(void) {
@@ -348,15 +524,16 @@ int main(void) {
 	cfg.reserve(1000000);
 	readCfg(&cfg);
 	fprintf(stderr, "Read %d nodes.\n", cfg.size());
+	graph_t cfg_origin(cfg);
 	//IFDEBUG(dumpCFG(&cfg));
-	
 	addFuncNb2FuncOut(&cfg);
 
+	//dumpCFG(&cfg_origin);
 	//dumpCFG(&cfg);
 
 	//IFDEBUG(dumpCFG(&cfg));
 
-	reachability(&cfg,mainId,branches);
+	reachability(&cfg,mainId,branches,&cfg_origin);
 
 	//IFDEBUG(fprintf(stderr,"-----------pathLen %d\n",pathLen));
 

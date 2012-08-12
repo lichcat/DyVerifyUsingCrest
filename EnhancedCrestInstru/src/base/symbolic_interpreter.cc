@@ -296,7 +296,7 @@ void SymbolicInterpreter::Branch(id_t id, branch_id_t bid, bool pred_value) {
 
   IFDEBUG(DumpMemory());
 
-  /*
+  
   //for unpassed pathMark branch should reach all of them
   //if current branch can not reach all pathMark
   //Note: currentPathMark equal to Pa_Sb 's b ,so smaller than b needn't to check
@@ -311,7 +311,7 @@ void SymbolicInterpreter::Branch(id_t id, branch_id_t bid, bool pred_value) {
 	IFDEBUG(fprintf(stderr,"Current Execution exit, branch %d cannot reach the rest of path!\n",bid));
 	exit(-1);
   }
-  */
+  
   
 
 }

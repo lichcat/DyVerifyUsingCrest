@@ -200,9 +200,10 @@ void addFuncNb2FuncOut(graph_t *graph){
 				}
 				k=j+1;
 				while(k<nbhrs.size()){
-					if(0==funcNodeMap.count(nbhrs[k]))
+					if(0==funcNodeMap.count(nbhrs[k])){
 						funcAddMap[nbhrs[j]].push_back(nbhrs[k]);
 						fprintf(stderr,"------------%d not func after func:%d----------\n",nbhrs[k],nbhrs[j]);
+					}
 					k++;
 				}
 			}

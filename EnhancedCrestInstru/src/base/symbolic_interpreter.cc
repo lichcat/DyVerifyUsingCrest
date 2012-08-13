@@ -308,7 +308,7 @@ void SymbolicInterpreter::Branch(id_t id, branch_id_t bid, bool pred_value) {
 	}
   }
   if(!continue_run){
-	IFDEBUG(fprintf(stderr,"Current Execution exit, branch %d cannot reach the rest of path!\n",bid));
+	IFMDEBUG(fprintf(stderr,"Current Execution exit, branch %d cannot reach the rest of path!\n",bid));
 	exit(-1);
   }
   

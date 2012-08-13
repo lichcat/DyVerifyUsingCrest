@@ -218,7 +218,7 @@ let buildFirstStmtIdMap cilFile =
 let writeFirstStmtIdMap firstStmtIdMap =
   let writeEntry out (f,s) =
     (* To help avoid "collisions", skip static functions. *)
-    if not (f.vstorage = Static) then
+    (*if not (f.vstorage = Static) then*)
       Printf.fprintf out "%s %d\n" f.vname s.sid
   in
   try
@@ -324,7 +324,7 @@ object (self)
 
 	method vinst(i) =
 		match i with 
-		| Call (_, Lval (Var f, NoOffset),args,location) ->
+		| Call (_, Lval (Var f, _),args,location) ->
 		(match f.vname with
 		 | "malloc" -> instruMatchedPathMark self "MA" location
 		 | "calloc" -> instruMatchedPathMark self "CA" location

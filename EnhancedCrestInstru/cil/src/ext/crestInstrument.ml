@@ -686,11 +686,6 @@ object (self)
   method vinst(i) =
     match i with
       | Set (lv, e, _) ->
-            (*if (isSymbolicType (typeOf e)) && (hasAddress lv) then
-            (self#queueInstr (instrumentExpr e) ;
-             self#queueInstr [mkStore (addressOf lv)];
-			 Printf.printf "in yLiveMemIstr")(*;
-            self#queueInstr [mkCsvLiveMemory (addressOf lv)]*)*)
         (match lv with
           | (Mem memExp,offset) ->
 			let isbitfield f =
@@ -698,22 +693,27 @@ object (self)
 				|None -> false
 				|Some i -> true
 			in
-			(match offset with
-			 |Field (fieldinfo,_) ->
-				 if (isbitfield fieldinfo.fbitfield) then ()
-				 else (
-					 if (isSymbolicType (typeOf e)) && (hasAddress lv) then
+			let hasField off =
+				match off with
+				| Field (_,_)->true
+				| _ ->false
+			in
+			let rec isBitField parent =
+				match parent with
+				|Field (pinfo,child) ->(
+					if (hasField child) then (isBitField child)
+					else (isbitfield  pinfo.fbitfield)
+					)
+				| _ -> false
+			in
+
+			if (not (isBitField offset)) then
+				(if (isSymbolicType (typeOf e)) && (hasAddress lv) then
 						(self#queueInstr (instrumentExpr e) ;
 						self#queueInstr [mkStore (addressOf lv)]);
 					 self#queueInstr [mkCsvLiveMemory (addressOf lv)]
-					 )
-				 
-			 | _ -> if (isSymbolicType (typeOf e)) && (hasAddress lv) then
-						(self#queueInstr (instrumentExpr e) ;
-						self#queueInstr [mkStore (addressOf lv)]);
-					 self#queueInstr [mkCsvLiveMemory (addressOf lv)]
+				)
 					
-			 )
 			
           | _ ->if (isSymbolicType (typeOf e)) && (hasAddress lv) then
 				  (self#queueInstr (instrumentExpr e) ;
@@ -855,11 +855,44 @@ object (self)
 
       | Call (ret, _, args, _) ->
           let isSymbolicExp e = isSymbolicType (typeOf e) in
-          let isPointerExp e = isPointerType (typeOf e) in	
+		  let liveMemArg e =
+			let isPointerExp e = isPointerType (typeOf e) in
+			let notbitfield e =
+				(match e with
+				 |CastE (_,Const c)->false	(*althrough not bitfield but not instru, so false*)
+				 |Lval lv ->
+					(match lv with
+					 | (Mem memExp,offset) ->
+						let isbitfield f =
+							match f with
+							|None -> false
+							|Some i ->true
+							in
+						let hasField off =
+							match off with
+							| Field (_,_)->true
+							| _ ->false
+							in
+						let rec isBitField parent =
+							match parent with
+							|Field (pinfo,child) ->(
+								if (hasField child) then (isBitField child)
+								else (isbitfield  pinfo.fbitfield)
+								)
+							| _ -> false
+							in
+						isBitField offset
+					| _ ->true
+					)
+				| _ -> true
+				)
+			in
+			(isPointerExp e) && (notbitfield e)
+		  in
           let isSymbolicLval lv = isSymbolicType (typeOfLval lv) in
          (* let isPointerLval lv = isPointerType (typeOfLval lv) in  *)
           let argsToInst = List.filter isSymbolicExp args in
-          let pointerArgsToCheck = List.filter isPointerExp args in	
+          let pointerArgsToCheck = List.filter liveMemArg args in	
 
           self#queueInstr (concatMap instrumentExpr argsToInst) ;
 		  (*check pointer type argument for live memory use*)

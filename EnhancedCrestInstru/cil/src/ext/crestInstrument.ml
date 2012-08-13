@@ -686,16 +686,39 @@ object (self)
   method vinst(i) =
     match i with
       | Set (lv, e, _) ->
+            (*if (isSymbolicType (typeOf e)) && (hasAddress lv) then
+            (self#queueInstr (instrumentExpr e) ;
+             self#queueInstr [mkStore (addressOf lv)];
+			 Printf.printf "in yLiveMemIstr")(*;
+            self#queueInstr [mkCsvLiveMemory (addressOf lv)]*)*)
         (match lv with
-          | (Mem memExp,_) ->
-            if (isSymbolicType (typeOf e)) && (hasAddress lv) then
-            (self#queueInstr (instrumentExpr e) ;
-             self#queueInstr [mkStore (addressOf lv)]);
-            self#queueInstr [mkCsvLiveMemory (addressOf lv)];
-          | _ -> 
-            if (isSymbolicType (typeOf e)) && (hasAddress lv) then
-            (self#queueInstr (instrumentExpr e) ;
-             self#queueInstr [mkStore (addressOf lv)])
+          | (Mem memExp,offset) ->
+			let isbitfield f =
+				match f with
+				|None -> false
+				|Some i -> true
+			in
+			(match offset with
+			 |Field (fieldinfo,_) ->
+				 if (isbitfield fieldinfo.fbitfield) then ()
+				 else (
+					 if (isSymbolicType (typeOf e)) && (hasAddress lv) then
+						(self#queueInstr (instrumentExpr e) ;
+						self#queueInstr [mkStore (addressOf lv)]);
+					 self#queueInstr [mkCsvLiveMemory (addressOf lv)]
+					 )
+				 
+			 | _ -> if (isSymbolicType (typeOf e)) && (hasAddress lv) then
+						(self#queueInstr (instrumentExpr e) ;
+						self#queueInstr [mkStore (addressOf lv)]);
+					 self#queueInstr [mkCsvLiveMemory (addressOf lv)]
+					
+			 )
+			
+          | _ ->if (isSymbolicType (typeOf e)) && (hasAddress lv) then
+				  (self#queueInstr (instrumentExpr e) ;
+				   self#queueInstr [mkStore (addressOf lv)])
+				  
         );
           
          (* else if (isPointerType (typeOf e)) && (hasAddress lv) then  

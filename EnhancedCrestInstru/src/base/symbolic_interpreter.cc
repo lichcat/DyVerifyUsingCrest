@@ -451,7 +451,7 @@ void SymbolicInterpreter::DyVerifyCheckShadowHeap(){
 
 	}
 	//release our ShadowHeap
-	IFMDEBUG(fprintf(stderr,"Release ShadowHeap\n"));
+	IFMDEBUG(fprintf(stderr,"Release  ShadowHeap\n"));
 	ConstShadowHeapIt it;
 	for(it=shadowHeap_.begin();it!=shadowHeap_.end();++it){
 		delete it->second;	

@@ -149,7 +149,7 @@ void getTraceInfo(xmlDocPtr doc,xmlNodePtr cur,FILE* fp){
 					else
 						markWord=(unsigned char*)"PP";		//normal path point
 
-					fprintf(fp,"%s\t",markWord);
+					fprintf(fp,"%s\n",markWord);
 					xmlFree(actionType);
 					xmlFree(actionString);
 				}else if(!xmlStrcmp(nodeChild->name,(const xmlChar*)"Reason")){
@@ -163,9 +163,9 @@ void getTraceInfo(xmlDocPtr doc,xmlNodePtr cur,FILE* fp){
 							refNodeset = refResult ->nodesetval;
 							for(j=0;j< refNodeset->nodeNr; j++){
 								if(!xmlStrcmp(traceRefId,xmlGetProp(refNodeset->nodeTab[j],(const xmlChar*)"id"))){
-									fprintf(fp,"\nBEGIN_TraceRef\tRefId:%s\n",traceRefId);
+									//fprintf(fp,"BEGIN_TraceRef\tRefId:%s\n",traceRefId);
 									getTraceInfo(doc,refNodeset->nodeTab[j],fp);
-									fprintf(fp,"END_TraceRef");
+									//fprintf(fp,"END_TraceRef");
 								}
 							}
 							xmlXPathFreeObject(refResult);
@@ -174,7 +174,7 @@ void getTraceInfo(xmlDocPtr doc,xmlNodePtr cur,FILE* fp){
 				}
 				nodeChild=nodeChild->next;
 			}
-			fprintf(fp,"\n");
+			//fprintf(fp,"\n");
 		}
 		xmlXPathFreeObject(result);
 	}

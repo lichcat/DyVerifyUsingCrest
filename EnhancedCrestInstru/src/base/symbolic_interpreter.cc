@@ -28,6 +28,7 @@ using std::vector;
 using std::istringstream;
 using std::ifstream;
 
+
 #ifdef DEBUG
 #define IFDEBUG(x) x
 #else
@@ -48,14 +49,14 @@ typedef map<addr_t,ShadowHeap*>::const_iterator ConstShadowHeapIt;
 SymbolicInterpreter::SymbolicInterpreter()
   : pred_(NULL), ex_(true), num_inputs_(0) {
   stack_.reserve(16);
-  is_along_path_ = false;
+  get_pathend_ = false;
 }
 
 SymbolicInterpreter::SymbolicInterpreter(const vector<value_t>& input)
   : pred_(NULL), ex_(true) {
   stack_.reserve(16);
   ex_.mutable_inputs()->assign(input.begin(), input.end());
-  is_along_path_ = false;
+  get_pathend_ = false;
 }
 
 void SymbolicInterpreter::DumpMemory() {
@@ -296,7 +297,6 @@ void SymbolicInterpreter::Branch(id_t id, branch_id_t bid, bool pred_value) {
 
   IFDEBUG(DumpMemory());
 
-  
   //for unpassed pathMark branch should reach all of them
   //if current branch can not reach all pathMark
   //Note: currentPathMark equal to Pa_Sb 's b ,so smaller than b needn't to check
@@ -311,7 +311,6 @@ void SymbolicInterpreter::Branch(id_t id, branch_id_t bid, bool pred_value) {
 	IFMDEBUG(fprintf(stderr,"Current Execution exit, branch %d cannot reach the rest of path!\n",bid));
 	exit(-1);
   }
-  
   
 
 }
@@ -381,7 +380,7 @@ void SymbolicInterpreter::DyVerifyMalloc(id_t id,addr_t memAddr,value_t size){
 	if(!inserted){	//memAddr exists in shadowHeap_
 		fprintf(stderr,"Err: in DyVerifyMalloc id:%d\n\t Malloc %lld bytes @ %lu ,where already exist memory block in ShadowHeap!\n ",id,size,memAddr);
 		delete sMem;
-		exit(-1);
+		//exit(-1);
 	}
 	IFMDEBUG(DyVerifyDumpShadowHeap());
 }
@@ -425,13 +424,14 @@ void SymbolicInterpreter::DyVerifyDumpShadowHeap(){
 	ConstShadowHeapIt it;
 	for(it=shadowHeap_.begin();it!=shadowHeap_.end();it++){
 		ShadowHeap* mem=it->second;
-		fprintf(stderr, "\tmemAdrr: %lu sizeofMem: %u liveFlag: %c isWarning: %u \n", mem->memAddr,mem->sizeOfMem,mem->liveFlag,mem->isWarningMem);
+		if(mem->isWarningMem)
+			fprintf(stderr, "\tmemAdrr: %lu sizeofMem: %u liveFlag: %c isWarning: %u \n", mem->memAddr,mem->sizeOfMem,mem->liveFlag,mem->isWarningMem);
 	}
 
 }
 void SymbolicInterpreter::DyVerifyStaticPathEnd(id_t id){
 	IFMDEBUG(fprintf(stderr,"Static Path End!\n"));
-	is_along_path_ = true;
+	get_pathend_ = true;
 	ConstShadowHeapIt it;
 	for(it=shadowHeap_.begin();it!=shadowHeap_.end();it++){
 		if(it->second->isWarningMem)	//have this when we got the isWarningMem down
@@ -441,14 +441,16 @@ void SymbolicInterpreter::DyVerifyStaticPathEnd(id_t id){
 }
 void SymbolicInterpreter::DyVerifyPathMark(id_t pathId,id_t pathStmtId){
 	currentPathMarkNum_=pathStmtId;
-	IFMDEBUG(fprintf(stderr,"StaticPathMark_%d_%d \n",pathId,pathStmtId));
+
+	//TODO: to record this reach for later select
+	fprintf(stderr,"StaticPathMark_%d_%d \n",pathId,pathStmtId);
 }
 void SymbolicInterpreter::DyVerifyCheckShadowHeap(){
-	if(is_along_path_){		//along path fragment
-		IFMDEBUG(fprintf(stderr,"Check\n"));
-		IFMDEBUG(DyVerifyDumpShadowHeap());
+	if(get_pathend_){		//along path fragment
+		fprintf(stderr,"Check\n");
+		DyVerifyDumpShadowHeap();
 		//TODO:check all the isWarningMem 's Status
-
+		
 	}
 	//release our ShadowHeap
 	IFMDEBUG(fprintf(stderr,"Release  ShadowHeap\n"));

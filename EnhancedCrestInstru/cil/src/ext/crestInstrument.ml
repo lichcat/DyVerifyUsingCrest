@@ -114,17 +114,32 @@ let readCurrentCheckFile () =
 	let rec iter_lines chan =
 	try
 		let words = Str.split (Str.regexp "[ \t]+") (input_line chan) in
-		warningPath:= words::!warningPath;
+		if (List.length words)=1 then 
+		(let oneword= List.nth words 0 in
+		 if oneword<>"END_PATH" then
+			warningId:=int_of_string oneword
+		 )else(
+			 let alreadyIn =
+				List.mem words !warningPath
+			 in
+			 let notPP =
+				let st = List.nth words 2 in
+				if st="PP" then false
+				else true
+			 in
+			 if(notPP && not(alreadyIn)) then
+				warningPath:= words::!warningPath
+			 );
 		iter_lines chan
 	with End_of_file -> () in
 	iter_lines f;
 	close_in f;
-  warningPath:=List.tl !warningPath;
   warningPath:=List.rev !warningPath;
-  let lines=List.hd !warningPath in
-  let hdline=List.hd lines in
-  warningId:=int_of_string hdline;
-  warningPath:=List.tl !warningPath
+  let printPathMark word =
+	List.iter (fun x-> Printf.printf "%s " x) word;
+	Printf.printf "\n"
+  in
+  List.iter printPathMark !warningPath
 
 let instruPathMark stype location =
 	pathStmtId:= 0;
@@ -285,6 +300,10 @@ class instruPathMarkVisitor f =
 		mkInstCall csvPathMark [integer pathId; integer pathStmtId]
 	in
 	let pushtoSPMIL pid psid =
+	  (*let alreadyInList =
+		List.mem (pid,psid) !storePathMarkIdList
+	  in
+		if (not alreadyInList) then*)
 		storePathMarkIdList := (pid,psid)::!storePathMarkIdList
 	in
 	let instruMatchedPathMark self str location =
@@ -334,6 +353,8 @@ object (self)
 		 | "xstrdup" -> instruMatchedPathMark self "XSD" location
 		 | _ ->()
 		 );
+		  DoChildren
+	    | Set (_,_,location) -> instruMatchedPathMark self "LK" location;
 		  DoChildren
 		| _ ->
 		  DoChildren

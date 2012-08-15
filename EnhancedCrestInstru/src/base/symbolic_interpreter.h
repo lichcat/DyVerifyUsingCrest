@@ -106,12 +106,12 @@ class SymbolicInterpreter {
 
   // reachability map ,from branch to whether reachable to path fragment
   map<branch_id_t, vector<bool> > branch2pathMarkMap_;
-
   // current path Mark passed number
   int currentPathMarkNum_;
+  //record current execution 's reach to PathMark
 
   // current execution is along the path fragment ,set true @ pathEnd
-  bool is_along_path_ ;
+  bool get_pathend_ ;
 
   // The symbolic execution (program path and inputs).
   SymbolicExecution ex_;

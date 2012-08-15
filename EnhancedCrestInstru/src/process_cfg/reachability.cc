@@ -123,12 +123,13 @@ void readCfg(graph_t* graph) {
 				string func;
 				line_in >> func;
 				if (isPathMark(func)){
-					pathLen++;
+					//pathLen++;  can have more than 1 PathMarks who have same stmtId so ,can not just count to decide pathLen
 					string pNsN,stmtStr;
 					pNsN=func.substr(16);
 					size_t stmtIdPos=pNsN.find_last_of("S");
 					stmtStr = pNsN.substr(stmtIdPos+1);
 					int stmtValue=atoi(stmtStr.c_str());
+					pathLen=(pathLen>=stmtValue)?pathLen:stmtValue;
 					//cout<<"match "<<(-stmtValue)<<endl;
 					nbhrs.push_back(-stmtValue);
 				}else if(!func.compare("exit")){
@@ -152,7 +153,7 @@ void dumpCFG(graph_t *graph){
 	}
 }
 
-void addToFuncOut(graph_t *graph,vector<int> &addedIndex, int funcInId){
+void addToFuncOut(graph_t *graph,graph_t *auxiliary,vector<int> &addedIndex, int funcInId){
 	//from funcInId , bfs find the out node of function and add the addedIndex to out node(s)
 	unsigned int k,i,j;
 	hash_map<int,bool>	visitedMap;
@@ -160,7 +161,6 @@ void addToFuncOut(graph_t *graph,vector<int> &addedIndex, int funcInId){
 		visitedMap[k]=false;	
 	
 	int cur;
-
 	queue<int> q;
 	q.push(funcInId);
 	while(!q.empty()){
@@ -177,14 +177,16 @@ void addToFuncOut(graph_t *graph,vector<int> &addedIndex, int funcInId){
 		}
 		hash_map<int,bool>::const_iterator it=notExitNodesMap.find(cur);
 		if((nbhrs.size()==0) && (it==notExitNodesMap.end())){	//the out of func cfg
+			adj_list_t &auxiliary_nbhrs=(*auxiliary)[cur];
 			for(j=0;j<addedIndex.size();j++){
-				if(addedIndex[j]!=cur)
-					nbhrs.push_back(addedIndex[j]);
+				if(addedIndex[j]!=cur){
+					auxiliary_nbhrs.push_back(addedIndex[j]);
+				}
 			}
 		}
 	}
 }
-void addFuncNb2FuncOut(graph_t *graph){
+void addFuncNb2FuncOut(graph_t *graph,graph_t *auxiliary){
 	unsigned int i,j;
 	map<int,vector<int> > funcAddMap;
 	for(i=0;i<graph->size();i++){
@@ -203,7 +205,7 @@ void addFuncNb2FuncOut(graph_t *graph){
 					if(0==funcNodeMap.count(nbhrs[k])){
 						funcAddMap[nbhrs[j]].push_back(nbhrs[k]);
 						fprintf(stderr,"------------%d not func after func:%d----------\n",nbhrs[k],nbhrs[j]);
-					}
+						}
 					k++;
 				}
 			}
@@ -212,7 +214,7 @@ void addFuncNb2FuncOut(graph_t *graph){
 	
 	map<int,vector<int> >::iterator it;
 	for(it=funcAddMap.begin();it!=funcAddMap.end();it++){
-		addToFuncOut(graph,it->second, it->first);
+		addToFuncOut(graph,auxiliary,it->second, it->first);
 	}
 
 }
@@ -221,7 +223,6 @@ void reverseGraph(graph_t *graph,graph_t * reverseCfg){
 	unsigned int size=graph->size();
 	int pathnode;
 	reverseCfg->resize(size+pathLen);
-	//fprintf(stderr,"%d,%d\n",size,reverseCfg->size());
 	for(i=0;i<size;i++){
 		adj_list_t &nbhrs = (*graph)[i];
 		for(j=0;j<nbhrs.size();j++){
@@ -244,24 +245,28 @@ void reachability(int size,set<int> &branches,graph_t *reverseCfg){
 	queue<int> q;
 	unsigned int i,j,k;
 	hash_map<int,bool>	visitedMap;
+	//hash_map<int,int> parent;
 	for(i=0;i<pathLen;i++){
 		//BFS
 		for(j=0;j<reverseCfg->size();j++)
 			visitedMap[j]=false;
 		
 		int begin=size+i;
-
 		q.push(begin);
+		visitedMap[begin]=true;
+		//parent[begin]=0;
 		while(!q.empty()){
 			int peek=q.front();
-			visitedMap[peek]=true;
 			q.pop();
 			adj_list_t &nbhrs=(*reverseCfg)[peek];
 			for(k=0;k<nbhrs.size();k++){
-				if(!visitedMap[nbhrs[k]])
+				if(!visitedMap[nbhrs[k]]){
 					q.push(nbhrs[k]);
-				if(nbhrs[k]<size)
-					reachability[nbhrs[k]][i]=true;
+					//parent[nbhrs[k]]=peek;
+					visitedMap[nbhrs[k]]=true;
+					if(nbhrs[k]<size)
+						reachability[nbhrs[k]][i]=true;
+				}
 			}
 		}
 	}
@@ -281,6 +286,17 @@ void reachability(int size,set<int> &branches,graph_t *reverseCfg){
 		out<<endl;
 	}
 	out.close();
+
+	/*ofstream cfr_out("cfg_reachability");
+	for(m=0;m< reachability.size();m++){
+		cfr_out<<m;
+		for(n=0;n< (reachability[m]).size();n++){
+			cfr_out<<" "<<(reachability[m][n]==true?1:0);
+		}
+		cfr_out<<endl;
+	}
+	cfr_out.close();
+*/	
 
 }
 int main(void) {
@@ -314,14 +330,19 @@ int main(void) {
 
 	fprintf(stderr, "Read %d nodes.\n", cfg.size());
 
+	fprintf(stderr, "Instrument path fragemtn's length: %d\n",pathLen);
 	//dumpCFG(&cfg);
-	addFuncNb2FuncOut(&cfg);
+	graph_t auxiliaryCfg(cfg);
+	fprintf(stderr, "auxiliary size %d",auxiliaryCfg.size());
+	addFuncNb2FuncOut(&cfg,&auxiliaryCfg);
 
 	graph_t reverseCfg;
 	reverseCfg.reserve(1000000);
-	reverseGraph(&cfg,&reverseCfg);
-	
-	//dumpCFG(&cfg);
+	reverseGraph(&auxiliaryCfg,&reverseCfg);
+	fprintf(stderr,"after reverseGraph: reverseSize:%d\n",reverseCfg.size());
+	dumpCFG(&cfg);
+	fprintf(stderr,"ohohoh\n");
+	dumpCFG(&auxiliaryCfg);
 	//dumpCFG(&reverseCfg);
 
 	//IFDEBUG(dumpCFG(&cfg));

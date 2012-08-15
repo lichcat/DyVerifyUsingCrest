@@ -308,7 +308,7 @@ void SymbolicInterpreter::Branch(id_t id, branch_id_t bid, bool pred_value) {
 	}
   }
   if(!continue_run){
-	IFMDEBUG(fprintf(stderr,"Current Execution exit, branch %d cannot reach the rest of path!\n",bid));
+	fprintf(stderr,"branch %d cannot reach path!\n",bid);
 	exit(-1);
   }
   
@@ -324,8 +324,28 @@ value_t SymbolicInterpreter::NewInput(type_t type, addr_t addr) {
   if (num_inputs_ < ex_.inputs().size()) {
     ret = ex_.inputs()[num_inputs_];
   } else {
-    // New inputs are initially zero.  (Could randomize instead.)
-    ex_.mutable_inputs()->push_back(0);
+    // New inputs are initially randomly instead.)
+	unsigned long long val =0;
+	for(size_t j=0;j<8;j++)
+		val = ((val<<8) + rand()/256);
+
+	const char CCH[] = "_0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	int x = val%(sizeof(CCH) - 2);
+	char ch = CCH[x];	
+	
+	switch (type){
+		case types::U_CHAR:	ex_.mutable_inputs()->push_back((unsigned char)ch); break;
+		case types::CHAR:	ex_.mutable_inputs()->push_back((char)ch); break;
+		case types::U_SHORT:	ex_.mutable_inputs()->push_back((unsigned short)val); break;
+		case types::SHORT:	ex_.mutable_inputs()->push_back((short)val); break;
+		case types::U_INT:	ex_.mutable_inputs()->push_back((unsigned int)val); break;
+		case types::INT:	ex_.mutable_inputs()->push_back((int)val); break;
+		case types::U_LONG:	ex_.mutable_inputs()->push_back((unsigned long)val); break;
+		case types::LONG:	ex_.mutable_inputs()->push_back((long)val); break;
+		case types::U_LONG_LONG:	ex_.mutable_inputs()->push_back((unsigned long long)val); break;
+		case types::LONG_LONG:	ex_.mutable_inputs()->push_back((long long)val); break;
+
+	}
   }
 
   num_inputs_ ++;
@@ -378,17 +398,27 @@ void SymbolicInterpreter::DyVerifyMalloc(id_t id,addr_t memAddr,value_t size){
 	bool inserted=(shadowHeap_.insert(std::pair<addr_t,ShadowHeap*>(memAddr,sMem))).second;
 
 	if(!inserted){	//memAddr exists in shadowHeap_
-		fprintf(stderr,"Err: in DyVerifyMalloc id:%d\n\t Malloc %lld bytes @ %lu ,where already exist memory block in ShadowHeap!\n ",id,size,memAddr);
+		fprintf(stderr,"Err: in Malloc id:%d\n\t Malloc %lld bytes @ %lu ,already exists in ShadowHeap!\n ",id,size,memAddr);
 		delete sMem;
 		//exit(-1);
 	}
 	IFMDEBUG(DyVerifyDumpShadowHeap());
 }
+void SymbolicInterpreter::DyVerifyChangeSize(addr_t memAddr,value_t size){
+	IFMDEBUG(fprintf(stderr,"Changed memAddr:%lu 's size to %lld\n", memAddr,size));
+	ConstShadowHeapIt it=shadowHeap_.find(memAddr);
+	if(it==shadowHeap_.end()){
+		fprintf(stderr,"Err: in ChangeSize find no memAddr\n");
+	}else{
+		if(it->second!=NULL)
+			it->second->sizeOfMem=size;
+	}
+}
 void SymbolicInterpreter::DyVerifyFree(id_t id,addr_t memAddr){
 	IFMDEBUG(fprintf(stderr, "Free \tfree: %lu \n",memAddr));
 	ConstShadowHeapIt it=shadowHeap_.find(memAddr);
 	if(it==shadowHeap_.end()){
-		fprintf(stderr,"Err: in DyVerifyFree id:%d\n\tTry to Free %lu , where couldn't find in ShadowHeap!\n",id,memAddr);
+		fprintf(stderr,"Err: in Free id:%d\n\tTry to Free %lu , on find in ShadowHeap!\n",id,memAddr);
 		exit(-1);
 	}
 	delete it->second;
@@ -420,8 +450,9 @@ void SymbolicInterpreter::DyVerifyLiveMemory(id_t id, addr_t memAddr){
 
 }
 void SymbolicInterpreter::DyVerifyDumpShadowHeap(){
-	IFMDEBUG(fprintf(stderr,"SHeap: \n"));
+	fprintf(stderr,"SHeap: \n");
 	ConstShadowHeapIt it;
+	//int leak,isWarningLeak,freedWarning
 	for(it=shadowHeap_.begin();it!=shadowHeap_.end();it++){
 		ShadowHeap* mem=it->second;
 		if(mem->isWarningMem)
@@ -430,7 +461,7 @@ void SymbolicInterpreter::DyVerifyDumpShadowHeap(){
 
 }
 void SymbolicInterpreter::DyVerifyStaticPathEnd(id_t id){
-	IFMDEBUG(fprintf(stderr,"Static Path End!\n"));
+	fprintf(stderr,"Path End!\n");
 	get_pathend_ = true;
 	ConstShadowHeapIt it;
 	for(it=shadowHeap_.begin();it!=shadowHeap_.end();it++){
@@ -442,14 +473,14 @@ void SymbolicInterpreter::DyVerifyStaticPathEnd(id_t id){
 void SymbolicInterpreter::DyVerifyPathMark(id_t pathId,id_t pathStmtId){
 	currentPathMarkNum_=pathStmtId;
 
-	//TODO: to record this reach for later select
-	fprintf(stderr,"StaticPathMark_%d_%d \n",pathId,pathStmtId);
+	IFMDEBUG(fprintf(stderr,"StaticPathMark_%d_%d \n",pathId,pathStmtId));
 }
 void SymbolicInterpreter::DyVerifyCheckShadowHeap(){
+	fprintf(stderr,"size:%d\n",shadowHeap_.size());
 	if(get_pathend_){		//along path fragment
 		fprintf(stderr,"Check\n");
 		DyVerifyDumpShadowHeap();
-		//TODO:check all the isWarningMem 's Status
+		//check all the isWarningMem 's Status
 		
 	}
 	//release our ShadowHeap

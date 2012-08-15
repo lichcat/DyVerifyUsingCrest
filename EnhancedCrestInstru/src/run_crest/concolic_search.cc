@@ -120,6 +120,8 @@ Search::Search(const string& program, int max_iterations)
   total_covered_.resize(max_branch_, false);
   reached_.resize(max_function_, false);
 
+  run_return_=0;
+  cover_to_end_=0;
 #if 0
   { // Read in any previous coverage (for faster debugging).
     ifstream in("coverage");
@@ -234,14 +236,17 @@ void Search::LaunchProgram(const vector<value_t>& inputs) {
   redirection.append(" >runtime_output.txt 2>&1");
   */
 
-  system(program_.c_str());
+  run_return_=system(program_.c_str());
+  if(run_return_!=-1)
+	  cover_to_end_++;
 }
 
 
 void Search::RunProgram(const vector<value_t>& inputs, SymbolicExecution* ex) {
   if (++num_iters_ > max_iters_) {
     // TODO(jburnim): Devise a better system for capping the iterations.
-	fprintf(stderr,"----------------Beyond max_iters:%d!--------------\n",max_iters_);
+	fprintf(stderr,"------Beyond max_iters:%d!-------\n",max_iters_);
+    fprintf(stderr,"-------%d times COVER PATHEND------\n",cover_to_end_);
     exit(0);
   }
 
@@ -551,6 +556,7 @@ void PathGuidedSearch::Run() {
   UpdateCoverage(ex);
 
   doPathGuided(0, max_depth_, ex);
+  fprintf(stderr,"-------%d times COVER PATHEND-------\n",cover_to_end_);
 }
 
 

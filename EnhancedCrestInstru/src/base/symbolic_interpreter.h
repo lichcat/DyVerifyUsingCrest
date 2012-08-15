@@ -82,7 +82,7 @@ class SymbolicInterpreter {
   void DyVerifyStaticPathEnd(id_t id);
   void DyVerifyPathMark(id_t pathId,id_t pathStmtId);
   void DyVerifyIsWarningMem(id_t id, addr_t memAddr);
-
+  void DyVerifyChangeSize(addr_t memAddr,value_t new_size);
  private:
   struct StackElem {
     SymbolicExpr* expr;  // NULL to indicate concrete.

@@ -186,16 +186,18 @@ void __CrestInt(int* x) {
   *x = (int)SI->NewInput(types::INT, (addr_t)x);
 }
 
-ssize_t __CrestString(char* x,unsigned int strlen) {
+void __CrestString(char* x) {
 	pre_symbolic = 0;
-	int max=(strlen>STRING_L)?STRING_L:strlen;
+	if(x==(char*)NULL)
+		return ;
+	int len= strlen((char*)x);
+	int max=(len>STRING_L)?STRING_L:len;
 	for(int i=0;i<max-1;i++){
 		*(x+i)=(char)SI->NewInput(types::CHAR,(addr_t)(x+i));	
 	}
-	for(unsigned int i=max-1;i<strlen;i++){
+	for(unsigned int i=max-1;i<len;i++){
 		*(x+i)='\0';
 	}
-	return strlen;
 	
 }
 /* modified by lichcat(mengchenli.nju@gmail.com)
@@ -210,21 +212,48 @@ ssize_t __CrestString(char* x,unsigned int strlen) {
  */
 
 void __DyVerifyMalloc(__CREST_ID id, __CREST_ADDR memAddr, __CREST_SIZE size) {
-	//TODO:check whether malloc success
+	if(memAddr==(__CREST_ADDR)NULL)
+		return;
 	SI->DyVerifyMalloc(id,memAddr,size);
 }
 void __DyVerifyCalloc(__CREST_ID id, __CREST_ADDR memAddr, __CREST_SIZE num, __CREST_SIZE size){
-	//TODO:check whether calloc success
+	if(memAddr==(__CREST_ADDR)NULL)
+		return;
 	SI->DyVerifyMalloc(id,memAddr,num*size);
 }
 
 void __DyVerifyRealloc(__CREST_ID id, __CREST_ADDR newAddr, __CREST_ADDR oldAddr, __CREST_SIZE size) {
-	//TODO:check whether re-allocate success 
-	SI->DyVerifyFree(id,oldAddr);
-	SI->DyVerifyMalloc(id,newAddr,size);
+	bool oNULL=(oldAddr==(__CREST_ADDR)NULL); 
+	bool nNULL=(newAddr==(__CREST_ADDR)NULL);
+	bool zsize=(size==(__CREST_SIZE)0);
+	if(size<0)
+		return;
+	if(oNULL && nNULL)	//malloc fail
+		return ;
+	if(oNULL && !nNULL){	//malloc sucess
+		SI->DyVerifyMalloc(id,newAddr,size);
+		return;
+	}
+	if(!oNULL && zsize){	//free oNULL
+		SI->DyVerifyFree(id,oldAddr);
+		return;
+	}
+	if(!oNULL && !zsize && nNULL)	//realloc fail
+		return;
+	if(!oNULL && !zsize && !nNULL){	//realloc success
+		if(newAddr==oldAddr)
+			SI->DyVerifyChangeSize(oldAddr,size);	//expand original size
+		else{
+			SI->DyVerifyFree(id,oldAddr);			//move to new addr
+			SI->DyVerifyMalloc(id,newAddr,size);
+		}
+
+	}
 }
 
 void __DyVerifyStrDup(__CREST_ID id, __CREST_ADDR newAddr, __CREST_ADDR oldAddr){
+	if(newAddr==(__CREST_ADDR)NULL)
+		return ;
 	int len= strlen((char*)newAddr);
 	SI->DyVerifyMalloc(id,newAddr,len);
 }

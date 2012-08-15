@@ -58,6 +58,8 @@ class Search {
 
   //reachability of branch to statical path fragment
   map<branch_id_t,vector<bool> > branch2path_reachable_;
+  int run_return_;
+  int cover_to_end_;
 
   time_t start_time_;
 

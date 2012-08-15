@@ -274,7 +274,6 @@ let argUShortType = TPtr (TInt (IUShort, []), [])
 let argShortType = TPtr (TInt (IShort, []), [])
 let argCharType = TPtr (TInt (IChar, []), [])
 let argUCharType = TPtr (TInt (IUChar, []), [])
-let strlenType = TInt (IUInt,[])
 (*Visitor which walks the AST and Instrument the PathMark
   so that when compute CFG it can be write into cfg file
   and this is before the crestInstrument *)
@@ -473,7 +472,6 @@ class crestInstrumentVisitor f =
   let inputUCharArg =("x",argUCharType,[]) in
   let newAddrArg=("newAddr",addrType,[]) in
   let oldAddrArg=("oldAddr",addrType,[]) in
-  let strlenArg=("strlen",strlenType,[]) in
 
   let mkInstFunc name args =
     let ty = TFun (voidType, Some (idArg :: args), false, []) in
@@ -506,7 +504,7 @@ class crestInstrumentVisitor f =
   let inputUShortFunc	 = mkInputInstFunc "UShort" [inputUShortArg] in
   let inputUIntFunc	 = mkInputInstFunc "UInt" [inputUIntArg] in
   let inputIntFunc	 = mkInputInstFunc "Int" [inputIntArg] in
-  let inputStringFunc = mkInputInstFunc "String" [inputCharArg;strlenArg] in
+  let inputStringFunc = mkInputInstFunc "String" [inputCharArg] in
 
   let mkCsvInstFunc name args =
     let ty = TFun (voidType, Some (idArg :: args), false, []) in
@@ -819,12 +817,33 @@ object (self)
                 (* ChangeTo [i ;  mkCsvFree (addressOf castExp) (Lval castExp)] *)
               |  _ -> DoChildren
          	)
-      | Call(_, Lval(Var f, NoOffset),args,_)		(* int scanf( const char* format, ...); *)
-		  when (f.vname ="read") ->
-			let argBuf = List.nth args 1 in
-			let argCount = List.nth args 2 in
-			ChangeTo  [i;mkInputInstCall inputStringFunc [argBuf; argCount]]
-			
+      | Call(ret, Lval(Var f, NoOffset),args,_)		(* int scanf( const char* format, ...); *)
+		  when ((f.vname ="read") or (f.vname = "fread")) ->
+			let argBuf = 
+				match f.vname with
+				| "read"-> List.nth args 1
+				| "fread"-> List.nth args 0
+			in
+			(*let argCount = List.nth args 2 in*)
+			(match ret with
+			| Some lv when (hasAddress lv) ->
+				ChangeTo  [i;mkInputInstCall inputStringFunc [argBuf]]
+			| _ -> DoChildren
+			)
+
+	  | Call(ret, Lval(Var f, NoOffset),_,_)		(* int scanf( const char* format, ...); *)
+		  when ((f.vname ="fgets") or (f.vname = "gets") or (f.vname = "fgetc") or (f.vname = "getchar") or (f.vname = "getc")) ->
+			(match ret with
+			| Some lv  ->
+				(match f.vname with
+				 | "fgets"  -> ChangeTo  [i;mkInputInstCall inputStringFunc [Lval lv]]
+				 | "gets"   -> ChangeTo  [i;mkInputInstCall inputStringFunc [Lval lv]]
+				 | "fgetc" when (hasAddress lv) -> ChangeTo [i;mkInputInstCall inputCharFunc [addressOf lv]]
+				 | "getchar" when (hasAddress lv) -> ChangeTo [i;mkInputInstCall inputCharFunc [addressOf lv]]
+				 | "getc" when (hasAddress lv) -> ChangeTo [i;mkInputInstCall inputCharFunc [addressOf lv]]
+				)
+			| _ -> DoChildren
+			)
 
       | Call(_, Lval(Var f, NoOffset),args,_)		(* int scanf( const char* format, ...); *)
           when ((f.vname = "scanf") or (f.vname = "fscanf")) -> (*| f.vname = "sscanf"*)

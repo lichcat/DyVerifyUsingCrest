@@ -15,7 +15,7 @@
 #include <string.h>
 #include "base/symbolic_interpreter.h"
 #include "libcrest/crest.h"
-
+#define STRING_L 100
 using std::vector;
 using namespace crest;
 
@@ -188,9 +188,9 @@ void __CrestInt(int* x) {
 
 ssize_t __CrestString(char* x,unsigned int strlen) {
 	pre_symbolic = 0;
-	int max=(strlen>44)?44:strlen;
+	int max=(strlen>STRING_L)?STRING_L:strlen;
 	for(int i=0;i<max-1;i++){
-		*(x+i)=(int)SI->NewInput(types::CHAR,(addr_t)(x+i));	
+		*(x+i)=(char)SI->NewInput(types::CHAR,(addr_t)(x+i));	
 	}
 	for(unsigned int i=max-1;i<strlen;i++){
 		*(x+i)='\0';

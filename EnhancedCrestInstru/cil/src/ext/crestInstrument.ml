@@ -823,13 +823,26 @@ object (self)
 		  when (f.vname ="read") ->
 			let argBuf = List.nth args 1 in
 			let argCount = List.nth args 2 in
-			ChangeTo  [mkInputInstCall inputStringFunc [argBuf; argCount]]
+			ChangeTo  [i;mkInputInstCall inputStringFunc [argBuf; argCount]]
+			
 
       | Call(_, Lval(Var f, NoOffset),args,_)		(* int scanf( const char* format, ...); *)
           when ((f.vname = "scanf") or (f.vname = "fscanf")) -> (*| f.vname = "sscanf"*)
 		  let instruList = ref [] in
 		  let instruINPUTs = ref [] in
 		  let handleInput  arg =
+			let instrumatchedINPUTs funcname =
+				(match funcname with
+				 | "UChar" -> instruINPUTs := (mkInputInstCall inputUCharFunc [arg])::!instruINPUTs 
+				 | "Char" ->instruINPUTs := (mkInputInstCall inputCharFunc [arg])::!instruINPUTs
+				 | "UShort" ->instruINPUTs := (mkInputInstCall inputUShortFunc [arg])::!instruINPUTs
+				 | "Short" ->instruINPUTs := (mkInputInstCall inputShortFunc [arg])::!instruINPUTs
+				 | "UInt" ->instruINPUTs := (mkInputInstCall inputUIntFunc [arg])::!instruINPUTs
+				 | "Int" ->instruINPUTs := (mkInputInstCall inputIntFunc [arg])::!instruINPUTs
+				 | "Str" ->instruINPUTs := (mkInputInstCall inputStringFunc [arg; integer 1])::!instruINPUTs
+				 | _ ->()
+				)
+			in
 		    (match arg with
 			 |	CastE (_,Const CStr cstr) ->
 				let remove_blank = Str.global_replace (Str.regexp "[ \t]") "" in
@@ -852,23 +865,15 @@ object (self)
 			 |	AddrOf lval -> 
 				let funcname = List.hd !instruList in
 				instruList:= List.tl !instruList;
-				(match funcname with
-				 | "UChar" -> instruINPUTs := (mkInputInstCall inputUCharFunc [arg])::!instruINPUTs 
-				 | "Char" ->instruINPUTs := (mkInputInstCall inputCharFunc [arg])::!instruINPUTs
-				 | "UShort" ->instruINPUTs := (mkInputInstCall inputUShortFunc [arg])::!instruINPUTs
-				 | "Short" ->instruINPUTs := (mkInputInstCall inputShortFunc [arg])::!instruINPUTs
-				 | "UInt" ->instruINPUTs := (mkInputInstCall inputUIntFunc [arg])::!instruINPUTs
-				 | "Int" ->instruINPUTs := (mkInputInstCall inputIntFunc [arg])::!instruINPUTs
-				 | "Str" ->instruINPUTs := (mkInputInstCall inputStringFunc [arg; integer 1])::!instruINPUTs
-				 | _ ->()
-				 )
+				instrumatchedINPUTs funcname
 			 |  Lval lv ->
-					(let funcname = List.hd !instruList in
+					let funcname = List.hd !instruList in
 					 instruList:= List.tl !instruList;
-					 if ((funcname="Str") && (isPointerType (typeOf arg))) then
-						(instruINPUTs := (mkInputInstCall inputStringFunc [arg; integer 1])::!instruINPUTs)
-					 )
-			 |  StartOf lv ->Printf.printf "-------------StartOf------------"
+				     instrumatchedINPUTs funcname
+			 |  StartOf lv ->
+					let funcname = List.hd !instruList in
+					 instruList:= List.tl !instruList;
+				     instrumatchedINPUTs funcname
 			 |  _ -> (Printf.printf "-------------Others-Input-Exp-Type-----------")
 			)
 		  in

@@ -820,6 +820,12 @@ object (self)
               |  _ -> DoChildren
          	)
       | Call(_, Lval(Var f, NoOffset),args,_)		(* int scanf( const char* format, ...); *)
+		  when (f.vname ="read") ->
+			let argBuf = List.nth args 1 in
+			let argCount = List.nth args 2 in
+			ChangeTo  [mkInputInstCall inputStringFunc [argBuf; argCount]]
+
+      | Call(_, Lval(Var f, NoOffset),args,_)		(* int scanf( const char* format, ...); *)
           when ((f.vname = "scanf") or (f.vname = "fscanf")) -> (*| f.vname = "sscanf"*)
 		  let instruList = ref [] in
 		  let instruINPUTs = ref [] in

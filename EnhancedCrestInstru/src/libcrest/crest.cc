@@ -186,8 +186,17 @@ void __CrestInt(int* x) {
   *x = (int)SI->NewInput(types::INT, (addr_t)x);
 }
 
-void __CrestString(char* x,unsigned int strlen) {
-
+ssize_t __CrestString(char* x,unsigned int strlen) {
+	pre_symbolic = 0;
+	int max=(strlen>44)?44:strlen;
+	for(int i=0;i<max-1;i++){
+		*(x+i)=(int)SI->NewInput(types::CHAR,(addr_t)(x+i));	
+	}
+	for(unsigned int i=max-1;i<strlen;i++){
+		*(x+i)='\0';
+	}
+	return strlen;
+	
 }
 /* modified by lichcat(mengchenli.nju@gmail.com)
  * Enhanced Functions for confirming Memory Leak

@@ -333,16 +333,13 @@ int main(void) {
 	fprintf(stderr, "Instrument path fragemtn's length: %d\n",pathLen);
 	//dumpCFG(&cfg);
 	graph_t auxiliaryCfg(cfg);
-	fprintf(stderr, "auxiliary size %d",auxiliaryCfg.size());
 	addFuncNb2FuncOut(&cfg,&auxiliaryCfg);
 
 	graph_t reverseCfg;
 	reverseCfg.reserve(1000000);
 	reverseGraph(&auxiliaryCfg,&reverseCfg);
-	fprintf(stderr,"after reverseGraph: reverseSize:%d\n",reverseCfg.size());
-	dumpCFG(&cfg);
-	fprintf(stderr,"ohohoh\n");
-	dumpCFG(&auxiliaryCfg);
+	//dumpCFG(&cfg);
+	//dumpCFG(&auxiliaryCfg);
 	//dumpCFG(&reverseCfg);
 
 	//IFDEBUG(dumpCFG(&cfg));

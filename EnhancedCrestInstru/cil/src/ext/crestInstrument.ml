@@ -704,7 +704,7 @@ object (self)
    *)
   method vinst(i) =
     match i with
-      | Set (lv, e, _) ->
+      | Set (lv, e, location) ->
         (match lv with
           | (Mem memExp,offset) ->
 			let isbitfield f =
@@ -739,6 +739,12 @@ object (self)
 				   self#queueInstr [mkStore (addressOf lv)])
 				  
         );
+		(*instru PathEnd*)
+		(matchWarning:=false;
+		 instruPathMark "LK" location;
+		 if (!matchWarning) then
+		 self#queueInstr [mkStaticPathEnd] ;
+		 matchWarning:=false);
           
          (* else if (isPointerType (typeOf e)) && (hasAddress lv) then  
             ((*self#queueInstr (instrumentExpr e) ;

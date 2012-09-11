@@ -72,6 +72,9 @@ class SymbolicInterpreter {
 
   // Read file "reachability"
   void ReadReachability();
+  int wLeak_;
+  int sFreed_;
+  int lFreed_;
 
 
   //Dynamic Verification for statically detected Memory leak
@@ -112,6 +115,7 @@ class SymbolicInterpreter {
 
   // current execution is along the path fragment ,set true @ pathEnd
   bool get_pathend_ ;
+
 
   // The symbolic execution (program path and inputs).
   SymbolicExecution ex_;

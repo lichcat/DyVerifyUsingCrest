@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
     } else {
       strategy = new crest::BoundedDepthFirstSearch(prog, num_iters, atoi(argv[4]));
     }
-  }else if(search_type == "-path_guide"){
+  }else if(search_type == "-path"){
 	strategy = new crest::PathGuidedSearch(prog,num_iters,1000000);
   } 
   else if (search_type == "-cfg") {

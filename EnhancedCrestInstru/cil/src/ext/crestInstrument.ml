@@ -134,12 +134,12 @@ let readCurrentCheckFile () =
 	with End_of_file -> () in
 	iter_lines f;
 	close_in f;
-  warningPath:=List.rev !warningPath;
+  warningPath:=List.rev !warningPath(*;
   let printPathMark word =
 	List.iter (fun x-> Printf.printf "%s " x) word;
 	Printf.printf "\n"
   in
-  List.iter printPathMark !warningPath
+  List.iter printPathMark !warningPath*)
 
 let instruPathMark stype location =
 	pathStmtId:= 0;
@@ -320,6 +320,12 @@ object (self)
 	method vstmt(s) =
 	  match s.skind with
       | If (e, b1, b2, location) ->
+		(*matchWarning:=false;
+		instruPathMark "LK" location;
+		if (!matchWarning) then
+		  (prependToBlock [mkPathMark !warningId !pathStmtId] b1;
+		   pushtoSPMIL !warningId !pathStmtId
+		   );*)
 		matchWarning:=false;
 		instruPathMark "BT" location;
 		if (!matchWarning) then
@@ -662,11 +668,16 @@ object (self)
    *)
   method vstmt(s) =
     match s.skind with
-      | If (e, b1, b2, _) ->
+      | If (e, b1, b2, location) ->
 			
           let getFirstStmtId blk = (List.hd blk.bstmts).sid in
           let b1_sid = getFirstStmtId b1 in
           let b2_sid = getFirstStmtId b2 in
+		   (*(*instru PathEnd*)
+			matchWarning:=false;
+			instruPathMark "LK" location;
+			if (!matchWarning) then
+				prependToBlock [mkStaticPathEnd] b1;*)
 		  (self#queueInstr (instrumentExpr e) ;
 		   prependToBlock [mkBranch b1_sid 1] b1 ;
 		   prependToBlock [mkBranch b2_sid 0] b2 ;
@@ -753,76 +764,105 @@ object (self)
              (*self#queueInstr [mkCsvLoadPointer (addressOf lv) e] ; *)
              self#queueInstr [mkCsvStorePointer (addressOf lv) (Lval lv)]) ;
             *)
-         SkipChildren
+        (* SkipChildren*)DoChildren
           
       (* Don't instrument calls to functions marked as uninstrumented. *)
       | Call (_, Lval (Var f, NoOffset), _, _)
           when shouldSkipFunction f -> 
         SkipChildren
-        
+       
       | Call (ret, Lval (Var f, NoOffset),args,location)
-          when ((f.vname = "malloc") or (f.vname="xmalloc"))->
+          (*when ((f.vname = "malloc") or (f.vname="xmalloc"))->*)
+          when (f.vname = "malloc") ->
         	let sizeArg = List.hd args in
+          let isSymbolicExp e = isSymbolicType (typeOf e) in
+			let isSymbolicLval lv = isSymbolicType (typeOfLval lv) in
+			let argsToInst = List.filter isSymbolicExp args in
+
+			self#queueInstr (concatMap instrumentExpr argsToInst) ;
             (match ret with
               |  Some lv when (hasAddress lv) ->
 			  (matchWarning:=false;
 			   if f.vname="malloc" then instruPathMark "MA" location
 			   else if f.vname="xmalloc" then instruPathMark "XMA" location;
-			   if (!matchWarning) then ChangeTo [i ; mkCsvMalloc (Lval lv) sizeArg ; mkIsWarningMem (Lval lv)]
-			   else ChangeTo [i ; mkCsvMalloc (Lval lv) sizeArg]
+			   if (!matchWarning) then ChangeTo [i ; mkCsvMalloc (Lval lv) sizeArg ; mkIsWarningMem (Lval lv) ; mkClearStack()]
+			   else ChangeTo [i ; mkCsvMalloc (Lval lv) sizeArg; mkClearStack()]
 			  )
-              |  _ -> DoChildren
+              |  _ -> ChangeTo [i ; mkClearStack()]
             )
               
       | Call (ret, Lval (Var f, NoOffset),args,location)
-          when ((f.vname = "calloc") or (f.vname="xcalloc")) ->
+          (*when ((f.vname = "calloc") or (f.vname="xcalloc")) ->*)
+          when (f.vname = "calloc")  ->
         	let numArg = List.nth args 0 in
 			let sizeArg = List.nth args 1 in
+          let isSymbolicExp e = isSymbolicType (typeOf e) in
+			let isSymbolicLval lv = isSymbolicType (typeOfLval lv) in
+			let argsToInst = List.filter isSymbolicExp args in
+
+			self#queueInstr (concatMap instrumentExpr argsToInst) ;
             (match ret with
               |  Some lv when (hasAddress lv) ->
 			  (matchWarning:=false;
 			   if f.vname="calloc" then instruPathMark "CA" location
 			   else if f.vname="xcalloc" then instruPathMark "XCA" location;
-			   if (!matchWarning) then ChangeTo [i ; mkCsvCalloc (Lval lv) numArg sizeArg ; mkIsWarningMem (Lval lv)]
-			   else ChangeTo [i ; mkCsvCalloc (Lval lv) numArg sizeArg]
+			   if (!matchWarning) then ChangeTo [i ; mkCsvCalloc (Lval lv) numArg sizeArg ; mkIsWarningMem (Lval lv); mkClearStack() ]
+			   else ChangeTo [i ; mkCsvCalloc (Lval lv) numArg sizeArg; mkClearStack()]
 			  )
-              |  _ -> DoChildren
+              |  _ -> ChangeTo [i ; mkClearStack() ]
             )
 	  | Call (ret, Lval (Var f, NoOffset),args,location)
 		  when f.vname = "realloc" ->
         	let oldPtrArg = List.nth args 0 in
 			let sizeArg = List.nth args 1 in
+          let isSymbolicExp e = isSymbolicType (typeOf e) in
+			let isSymbolicLval lv = isSymbolicType (typeOfLval lv) in
+			let argsToInst = List.filter isSymbolicExp args in
+
+			self#queueInstr (concatMap instrumentExpr argsToInst) ;
             (match ret with
               |  Some lv when (hasAddress lv) ->
 			  (matchWarning:=false;
 			   instruPathMark "RA" location;
-			   if (!matchWarning) then ChangeTo [i ; mkCsvRealloc (Lval lv) oldPtrArg sizeArg ; mkIsWarningMem (Lval lv)]
-			   else ChangeTo [i ; mkCsvRealloc (Lval lv) oldPtrArg sizeArg]
+			   if (!matchWarning) then ChangeTo [i ; mkCsvRealloc (Lval lv) oldPtrArg sizeArg ; mkIsWarningMem (Lval lv); mkClearStack()]
+			   else ChangeTo [i ; mkCsvRealloc (Lval lv) oldPtrArg sizeArg; mkClearStack()]
 			  )
-              |  _ -> DoChildren
+              |  _ -> ChangeTo [i ; mkClearStack()]
             )
+			
 	  | Call (ret, Lval (Var f, NoOffset),args,location)
           when f.vname = "xstrdup" ->
         	let strAddrArg = List.hd args in
+          let isSymbolicExp e = isSymbolicType (typeOf e) in
+			let isSymbolicLval lv = isSymbolicType (typeOfLval lv) in
+			let argsToInst = List.filter isSymbolicExp args in
+
+			self#queueInstr (concatMap instrumentExpr argsToInst) ;
             (match ret with
               |  Some lv when (hasAddress lv) ->
 			  (matchWarning:=false;
 			   instruPathMark "XSD" location;
-			   if (!matchWarning) then ChangeTo [i ; mkCsvStrDup (Lval lv) strAddrArg ; mkIsWarningMem (Lval lv)]
-			   else ChangeTo [i ; mkCsvStrDup (Lval lv) strAddrArg]
+			   if (!matchWarning) then ChangeTo [i ; mkCsvStrDup (Lval lv) strAddrArg ; mkIsWarningMem (Lval lv); mkClearStack()]
+			   else ChangeTo [i ; mkCsvStrDup (Lval lv) strAddrArg;mkClearStack()]
 			  )
-              |  _ -> DoChildren
+              |  _ -> ChangeTo [i ; mkClearStack()]
             )
 
       | Call(None, Lval(Var f, NoOffset),args,_)
           when f.vname = "free" ->	
             let frPtr = List.hd args in
+          let isSymbolicExp e = isSymbolicType (typeOf e) in
+			let isSymbolicLval lv = isSymbolicType (typeOfLval lv) in
+			let argsToInst = List.filter isSymbolicExp args in
+
+			self#queueInstr (concatMap instrumentExpr argsToInst) ;
         	(match frPtr with
               |  CastE (_,Lval castExp)->
-                   		ChangeTo [i ;  mkCsvFree (Lval castExp)]
+                   		ChangeTo [i ;  mkCsvFree (Lval castExp);mkClearStack()]
                 (* ChangeTo [i ;  mkCsvFree (addressOf castExp) (Lval castExp)] *)
-              |  _ -> DoChildren
+              |  _ -> ChangeTo [i ; mkClearStack()]
          	)
+		(*	
       | Call(ret, Lval(Var f, NoOffset),args,_)		(* int scanf( const char* format, ...); *)
 		  when ((f.vname ="read") or (f.vname = "fread")) ->
 			let argBuf = 
@@ -830,25 +870,36 @@ object (self)
 				| "read"-> List.nth args 1
 				| "fread"-> List.nth args 0
 			in
+          let isSymbolicExp e = isSymbolicType (typeOf e) in
+			let isSymbolicLval lv = isSymbolicType (typeOfLval lv) in
+			let argsToInst = List.filter isSymbolicExp args in
+
+			self#queueInstr (concatMap instrumentExpr argsToInst) ;
 			(*let argCount = List.nth args 2 in*)
 			(match ret with
 			| Some lv when (hasAddress lv) ->
-				ChangeTo  [i;mkInputInstCall inputStringFunc [argBuf]]
-			| _ -> DoChildren
+				ChangeTo  [i;mkInputInstCall inputStringFunc [argBuf];mkClearStack()]
+			|  _ -> ChangeTo [i ; mkClearStack()]
 			)
 
-	  | Call(ret, Lval(Var f, NoOffset),_,_)		(* int scanf( const char* format, ...); *)
+	  | Call(ret, Lval(Var f, NoOffset),args,_)		(* int scanf( const char* format, ...); *)
 		  when ((f.vname ="fgets") or (f.vname = "gets") or (f.vname = "fgetc") or (f.vname = "getchar") or (f.vname = "getc")) ->
+          let isSymbolicExp e = isSymbolicType (typeOf e) in
+			let isSymbolicLval lv = isSymbolicType (typeOfLval lv) in
+			let argsToInst = List.filter isSymbolicExp args in
+
+			self#queueInstr (concatMap instrumentExpr argsToInst) ;
 			(match ret with
 			| Some lv  ->
 				(match f.vname with
-				 | "fgets"  -> ChangeTo  [i;mkInputInstCall inputStringFunc [Lval lv]]
-				 | "gets"   -> ChangeTo  [i;mkInputInstCall inputStringFunc [Lval lv]]
-				 | "fgetc" when (hasAddress lv) -> ChangeTo [i;mkInputInstCall inputCharFunc [addressOf lv]]
-				 | "getchar" when (hasAddress lv) -> ChangeTo [i;mkInputInstCall inputCharFunc [addressOf lv]]
-				 | "getc" when (hasAddress lv) -> ChangeTo [i;mkInputInstCall inputCharFunc [addressOf lv]]
+				 | "fgets"  -> ChangeTo  [i;mkInputInstCall inputStringFunc [Lval lv];mkClearStack()]
+				 | "gets"   -> ChangeTo  [i;mkInputInstCall inputStringFunc [Lval lv];mkClearStack()]
+				 | "fgetc" when (hasAddress lv) -> ChangeTo [i;mkInputInstCall inputCharFunc [addressOf lv];mkClearStack()]
+				 | "getchar" when (hasAddress lv) -> ChangeTo [i;mkInputInstCall inputCharFunc [addressOf lv];mkClearStack()]
+				 | "getc" when (hasAddress lv) -> ChangeTo [i;mkInputInstCall inputCharFunc [addressOf lv];mkClearStack()]
+				 | _ ->ChangeTo[i]
 				)
-			| _ -> DoChildren
+			| _ -> ChangeTo [i ; mkClearStack()]
 			)
 
       | Call(_, Lval(Var f, NoOffset),args,_)		(* int scanf( const char* format, ...); *)
@@ -864,10 +915,15 @@ object (self)
 				 | "Short" ->instruINPUTs := (mkInputInstCall inputShortFunc [arg])::!instruINPUTs
 				 | "UInt" ->instruINPUTs := (mkInputInstCall inputUIntFunc [arg])::!instruINPUTs
 				 | "Int" ->instruINPUTs := (mkInputInstCall inputIntFunc [arg])::!instruINPUTs
-				 | "Str" ->instruINPUTs := (mkInputInstCall inputStringFunc [arg; integer 1])::!instruINPUTs
+				 | "Str" ->instruINPUTs := (mkInputInstCall inputStringFunc [arg;])::!instruINPUTs
 				 | _ ->()
 				)
 			in
+          let isSymbolicExp e = isSymbolicType (typeOf e) in
+			let isSymbolicLval lv = isSymbolicType (typeOfLval lv) in
+			let argsToInst = List.filter isSymbolicExp args in
+
+			self#queueInstr (concatMap instrumentExpr argsToInst) ;
 		    (match arg with
 			 |	CastE (_,Const CStr cstr) ->
 				let remove_blank = Str.global_replace (Str.regexp "[ \t]") "" in
@@ -888,17 +944,22 @@ object (self)
 				instruList:= List.rev !instruList;
 				)
 			 |	AddrOf lval -> 
+				if  (List.length !instruList)>0 then(
 				let funcname = List.hd !instruList in
 				instruList:= List.tl !instruList;
-				instrumatchedINPUTs funcname
+				instrumatchedINPUTs funcname)
+
 			 |  Lval lv ->
+				if  (List.length !instruList)>0 then(
 					let funcname = List.hd !instruList in
 					 instruList:= List.tl !instruList;
 				     instrumatchedINPUTs funcname
+					 )
 			 |  StartOf lv ->
+				if  (List.length !instruList)>0 then(
 					let funcname = List.hd !instruList in
 					 instruList:= List.tl !instruList;
-				     instrumatchedINPUTs funcname
+				     instrumatchedINPUTs funcname)
 			 |  _ -> (Printf.printf "-------------Others-Input-Exp-Type-----------")
 			)
 		  in
@@ -906,10 +967,11 @@ object (self)
 			List.iter handleInput (List.tl args)
 		  else
 		  List.iter handleInput args;
+		  instruINPUTs := (mkClearStack())::!instruINPUTs;
 		  instruINPUTs := List.rev !instruINPUTs;
 		  (*instruINPUTs := i::!instruINPUTs;*)
 		  ChangeTo !instruINPUTs
-
+*)
       | Call (ret, _, args, _) ->
           let isSymbolicExp e = isSymbolicType (typeOf e) in
 		  let liveMemArg e =

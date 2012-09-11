@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include <crest.h>
+#include <crest.h>
 #include <path_concolic.h>
 int main() { 
 
 	int i;
-	//CREST_int(i);
+	CREST_int(i);
 	char *ptr,*q,*ch,*ss;
 
 	scanf("%d",&i);

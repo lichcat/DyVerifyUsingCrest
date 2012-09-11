@@ -50,6 +50,9 @@ SymbolicInterpreter::SymbolicInterpreter()
   : pred_(NULL), ex_(true), num_inputs_(0) {
   stack_.reserve(16);
   get_pathend_ = false;
+  wLeak_=0;
+  sFreed_=0;
+  lFreed_=0;
 }
 
 SymbolicInterpreter::SymbolicInterpreter(const vector<value_t>& input)
@@ -57,6 +60,9 @@ SymbolicInterpreter::SymbolicInterpreter(const vector<value_t>& input)
   stack_.reserve(16);
   ex_.mutable_inputs()->assign(input.begin(), input.end());
   get_pathend_ = false;
+  wLeak_=0;
+  sFreed_=0;
+  lFreed_=0;
 }
 
 void SymbolicInterpreter::DumpMemory() {
@@ -309,7 +315,7 @@ void SymbolicInterpreter::Branch(id_t id, branch_id_t bid, bool pred_value) {
   }
   if(!continue_run){
 	fprintf(stderr,"branch %d cannot reach path!\n",bid);
-	exit(-1);
+	exit(101);
   }
   
 
@@ -393,7 +399,7 @@ void SymbolicInterpreter::ReadReachability(){
 }
 
 void SymbolicInterpreter::DyVerifyMalloc(id_t id,addr_t memAddr,value_t size){
-	IFMDEBUG(fprintf(stderr, "Malloc \tmemAddr: %lu size: %lld\n", memAddr,size));
+	//IFMDEBUG(fprintf(stderr, "Malloc \tmemAddr: %lu size: %lld\n", memAddr,size));
 	ShadowHeap* sMem=new ShadowHeap(memAddr,size,'I',false);
 	bool inserted=(shadowHeap_.insert(std::pair<addr_t,ShadowHeap*>(memAddr,sMem))).second;
 
@@ -402,10 +408,10 @@ void SymbolicInterpreter::DyVerifyMalloc(id_t id,addr_t memAddr,value_t size){
 		delete sMem;
 		//exit(-1);
 	}
-	IFMDEBUG(DyVerifyDumpShadowHeap());
+	//IFMDEBUG(DyVerifyDumpShadowHeap());
 }
 void SymbolicInterpreter::DyVerifyChangeSize(addr_t memAddr,value_t size){
-	IFMDEBUG(fprintf(stderr,"Changed memAddr:%lu 's size to %lld\n", memAddr,size));
+	//IFMDEBUG(fprintf(stderr,"Changed memAddr:%lu 's size to %lld\n", memAddr,size));
 	ConstShadowHeapIt it=shadowHeap_.find(memAddr);
 	if(it==shadowHeap_.end()){
 		fprintf(stderr,"Err: in ChangeSize find no memAddr\n");
@@ -415,25 +421,31 @@ void SymbolicInterpreter::DyVerifyChangeSize(addr_t memAddr,value_t size){
 	}
 }
 void SymbolicInterpreter::DyVerifyFree(id_t id,addr_t memAddr){
-	IFMDEBUG(fprintf(stderr, "Free \tfree: %lu \n",memAddr));
+	//IFMDEBUG(fprintf(stderr, "Free \tfree: %lu \n",memAddr));
 	ConstShadowHeapIt it=shadowHeap_.find(memAddr);
 	if(it==shadowHeap_.end()){
 		fprintf(stderr,"Err: in Free id:%d\n\tTry to Free %lu , on find in ShadowHeap!\n",id,memAddr);
 		exit(-1);
 	}
+	if((it->second!=NULL) && (it->second->isWarningMem)){
+		if(it->second->liveFlag=='S')
+			sFreed_ ++;
+		else if (it->second->liveFlag=='L')
+			lFreed_ ++;
+	}
 	delete it->second;
 	shadowHeap_.erase(it->first);
-	IFMDEBUG(DyVerifyDumpShadowHeap());
+	//IFMDEBUG(DyVerifyDumpShadowHeap());
 }
 void SymbolicInterpreter::DyVerifyLiveMemory(id_t id, addr_t memAddr){
-	//IFMDEBUG(fprintf(stderr,"LiveUse \tmemAddr: %lu \n",memAddr));
+	IFMDEBUG(fprintf(stderr,"LiveUse \tmemAddr: %lu \n",memAddr));
 	if(shadowHeap_.begin()==shadowHeap_.end()){
-		//IFMDEBUG(fprintf(stderr,"empty shadowHeap\n"));
+		IFMDEBUG(fprintf(stderr,"empty shadowHeap\n"));
 		return ;
 	}
 	ConstShadowHeapIt itup=shadowHeap_.upper_bound(memAddr);
 	if(itup==shadowHeap_.begin()){					//least one (begin) is bigger than memAddr
-		//IFMDEBUG(fprintf(stderr,"not in shadowHeap\n"));
+		IFMDEBUG(fprintf(stderr,"not in shadowHeap\n"));
 		return ;
 	}	
 	itup--;
@@ -445,9 +457,8 @@ void SymbolicInterpreter::DyVerifyLiveMemory(id_t id, addr_t memAddr){
 	if(isInRange){
 		mem->liveFlag='L';
 		//IFMDEBUG(fprintf(stderr,"truly use!"));
-		//IFMDEBUG(DyVerifyDumpShadowHeap());
+		IFMDEBUG(DyVerifyDumpShadowHeap());
 	}
-
 }
 void SymbolicInterpreter::DyVerifyDumpShadowHeap(){
 	fprintf(stderr,"SHeap: \n");
@@ -461,30 +472,46 @@ void SymbolicInterpreter::DyVerifyDumpShadowHeap(){
 
 }
 void SymbolicInterpreter::DyVerifyStaticPathEnd(id_t id){
-	fprintf(stderr,"Path End!\n");
+	//fprintf(stderr,"Path End!\n");
 	get_pathend_ = true;
 	ConstShadowHeapIt it;
 	for(it=shadowHeap_.begin();it!=shadowHeap_.end();it++){
 		if(it->second->isWarningMem)	//have this when we got the isWarningMem down
 			it->second->liveFlag='S';
 	}
-	IFMDEBUG(DyVerifyDumpShadowHeap());
+	//IFMDEBUG(DyVerifyDumpShadowHeap());
 }
 void SymbolicInterpreter::DyVerifyPathMark(id_t pathId,id_t pathStmtId){
 	currentPathMarkNum_=pathStmtId;
 
-	IFMDEBUG(fprintf(stderr,"StaticPathMark_%d_%d \n",pathId,pathStmtId));
+	//IFMDEBUG(fprintf(stderr,"StaticPathMark_%d_%d \n",pathId,pathStmtId));
 }
 void SymbolicInterpreter::DyVerifyCheckShadowHeap(){
-	fprintf(stderr,"size:%d\n",shadowHeap_.size());
+	//fprintf(stderr,"size:%d\n",shadowHeap_.size());
 	if(get_pathend_){		//along path fragment
-		fprintf(stderr,"Check\n");
-		DyVerifyDumpShadowHeap();
+		fprintf(stderr,"cover path!\n");
+		//fprintf(stderr,"Check\n");
+		//DyVerifyDumpShadowHeap();
 		//check all the isWarningMem 's Status
-		
+		//int leak=shadowHeap_.size();
+		ConstShadowHeapIt it;
+		for(it=shadowHeap_.begin();it!=shadowHeap_.end();++it){
+			ShadowHeap* mem=it->second;
+			if(mem!=NULL && (mem->isWarningMem))
+				wLeak_ ++;
+		}
+		fprintf(stderr,"wl:%d,sf:%d,lf:%d\n",wLeak_,sFreed_,lFreed_);
+		if(wLeak_>0)
+			fprintf(stderr,"Leak\n");
+		else{
+			if(sFreed_ ==0 )
+				fprintf(stderr,"L-NOT-Leak\n");
+			else 
+				fprintf(stderr,"Bloat\n");
+		}
 	}
 	//release our ShadowHeap
-	IFMDEBUG(fprintf(stderr,"Release  ShadowHeap\n"));
+	//IFMDEBUG(fprintf(stderr,"Release  ShadowHeap\n"));
 	ConstShadowHeapIt it;
 	for(it=shadowHeap_.begin();it!=shadowHeap_.end();++it){
 		delete it->second;	
@@ -495,13 +522,13 @@ void SymbolicInterpreter::DyVerifyCheckShadowHeap(){
 }
 
 void SymbolicInterpreter::DyVerifyIsWarningMem(id_t id, addr_t memAddr){
-	IFMDEBUG(fprintf(stderr,"IsWarningMemory: %lu \n", memAddr));
+	//IFMDEBUG(fprintf(stderr,"IsWarningMemory: %lu \n", memAddr));
 	ConstShadowHeapIt it=shadowHeap_.find(memAddr);
 	if(it==shadowHeap_.end()){
 		fprintf(stderr, "Err: in DyVerifyIsWarningMem id:%d\n\t Try mark %lu isWaringMem ,where couldn't find in ShadowHeap\n",id,memAddr);
 		exit(-1);	
 	}else
 		it->second->isWarningMem=true;
-	IFMDEBUG(DyVerifyDumpShadowHeap());
+	//IFMDEBUG(DyVerifyDumpShadowHeap());
 }
 }  // namespace crest

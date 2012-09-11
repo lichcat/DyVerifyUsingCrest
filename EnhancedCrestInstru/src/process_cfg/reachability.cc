@@ -122,7 +122,14 @@ void readCfg(graph_t* graph) {
 			} else {
 				string func;
 				line_in >> func;
-				if (isPathMark(func)){
+				map<int,string>::iterator it;
+				for(it=funcNodeMap.begin();it!=funcNodeMap.end();++it){
+					if(0==func.compare(it->second))
+						break;
+				}
+				if(it!=funcNodeMap.end()){
+					nbhrs.push_back(it->first);	
+				}else if (isPathMark(func)){
 					//pathLen++;  can have more than 1 PathMarks who have same stmtId so ,can not just count to decide pathLen
 					string pNsN,stmtStr;
 					pNsN=func.substr(16);

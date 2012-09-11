@@ -15,7 +15,7 @@
 #include <string.h>
 #include "base/symbolic_interpreter.h"
 #include "libcrest/crest.h"
-#define STRING_L 100
+#define STRING_L 20
 using std::vector;
 using namespace crest;
 
@@ -190,13 +190,10 @@ void __CrestString(char* x) {
 	pre_symbolic = 0;
 	if(x==(char*)NULL)
 		return ;
-	int len= strlen((char*)x);
-	int max=(len>STRING_L)?STRING_L:len;
-	for(int i=0;i<max-1;i++){
-		*(x+i)=(char)SI->NewInput(types::CHAR,(addr_t)(x+i));	
-	}
-	for(unsigned int i=max-1;i<len;i++){
-		*(x+i)='\0';
+	static int count=0;
+	if(count<20){
+		*x=(char)SI->NewInput(types::CHAR,(addr_t)x);
+		count++;
 	}
 	
 }
@@ -212,19 +209,19 @@ void __CrestString(char* x) {
  */
 
 void __DyVerifyMalloc(__CREST_ID id, __CREST_ADDR memAddr, __CREST_SIZE size) {
-	if(memAddr==(__CREST_ADDR)NULL)
+	if(memAddr==(__CREST_ADDR)((void*)NULL))
 		return;
 	SI->DyVerifyMalloc(id,memAddr,size);
 }
 void __DyVerifyCalloc(__CREST_ID id, __CREST_ADDR memAddr, __CREST_SIZE num, __CREST_SIZE size){
-	if(memAddr==(__CREST_ADDR)NULL)
+	if(memAddr==(__CREST_ADDR)((void*)NULL))
 		return;
 	SI->DyVerifyMalloc(id,memAddr,num*size);
 }
 
 void __DyVerifyRealloc(__CREST_ID id, __CREST_ADDR newAddr, __CREST_ADDR oldAddr, __CREST_SIZE size) {
-	bool oNULL=(oldAddr==(__CREST_ADDR)NULL); 
-	bool nNULL=(newAddr==(__CREST_ADDR)NULL);
+	bool oNULL=(oldAddr==(__CREST_ADDR)((void*)NULL)); 
+	bool nNULL=(newAddr==(__CREST_ADDR)((void*)NULL));
 	bool zsize=(size==(__CREST_SIZE)0);
 	if(size<0)
 		return;

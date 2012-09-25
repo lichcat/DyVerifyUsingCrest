@@ -1,19 +1,14 @@
 /*  -*- Last-Edit:  Mon Dec  7 10:31:51 1992 by Tarak S. Goradia; -*- */
 
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#ifdef CREST
-#include <crest.h>
-#endif
+extern void	exit();
+# include <stdio.h>
+
 void	Caseerror();
 
 typedef char	bool;
 # define false 0
 # define true  1
-
-# define MYMAX 10
-# define MYLINEMAX 20
+# define NULL 0
 
 # define MAXSTR 100
 # define MAXPAT MAXSTR
@@ -41,24 +36,14 @@ typedef char	character;
 typedef char string[MAXSTR];
 
 bool
-getline2(s, maxsize)
+getline(s, maxsize)
 char	*s;
 int	maxsize;
 {
-#ifdef CREST
-    int i;
-    for (i = 0; i < MYLINEMAX-1; i++) {
-	CREST_char(s[i]);
-    }
-    s[i] = '\0';
-    return true;
-#else
-	char *result;
-	result = fgets(s,maxsize,stdin);
-	return (result != NULL);
-#endif
+    char *result;
+    result = fgets(s, maxsize, stdin);
+    return (result != NULL);
 }
-
 int
 addstr(c, outset, j, maxset)
 char	c;
@@ -88,7 +73,7 @@ int	*i;
     else
 	if (s[*i + 1] == ENDSTR)
 	    result = ESCAPE;
-	else
+	else 
 	{
 	    *i = *i + 1;
 	    if (s[*i] == 'n')
@@ -104,7 +89,7 @@ int	*i;
 
 void change();
 
-void
+ void
 dodash(delim, src, i, dest, j, maxset)
 char	delim;
 char	*src;
@@ -117,26 +102,26 @@ int	maxset;
     bool	junk;
     char	escjunk;
 
-    while ((src[*i] != delim) && (src[*i] != ENDSTR))
+    while ((src[*i] != delim) && (src[*i] != ENDSTR)) 
     {
 	if (src[*i - 1] == ESCAPE) {
 	    escjunk = esc(src, i);
 	    junk = addstr(escjunk, dest, j, maxset);
-	} else
+	} else	
 	    if (src[*i] != DASH)
 		junk = addstr(src[*i], dest, j, maxset);
 	    else if (*j <= 1 || src[*i + 1] == ENDSTR)
 		junk = addstr(DASH, dest, j, maxset);
-	    else if ((isalnum(src[*i - 1])) && (isalnum(src[*i + 1]))
+	    else if ((isalnum(src[*i - 1])) && (isalnum(src[*i + 1])) 
 		&& (src[*i - 1] <= src[*i + 1]))
 		{
-		    for (k = src[*i-1]+1; k<=src[*i+1]; k++)
+		    for (k = src[*i-1]+1; k<=src[*i+1]; k++) 
 		    {
 			junk = addstr(k, dest, j, maxset);
-		    }
-		    *i = *i + 1;
-		}
-	    else
+		    }	
+		    *i = *i + 1;	
+		} 
+	    else	
 		junk = addstr(DASH, dest, j, maxset);
 	(*i) = (*i) + 1;
     }
@@ -165,7 +150,7 @@ int	*j;
     return (arg[*i] == CCLEND);
 }
 
-void
+ void
 stclose(pat, j, lastj)
 char	*pat;
 int	*j;
@@ -176,7 +161,7 @@ int	lastj;
     bool	junk;
 
 
-    for (jp = *j - 1; jp >= lastj ; jp--)
+    for (jp = *j - 1; jp >= lastj ; jp--) 
     {
 	jt = jp + CLOSIZE;
 	junk = addstr(pat[jp], pat, &jt, MAXPAT);
@@ -189,14 +174,14 @@ bool in_set_2(c)
 char c;
 {
   return (c == BOL || c == EOL || c == CLOSURE);
-}
+}      
 
 bool in_pat_set(c)
 char c;
 {
-  return (   c == LITCHAR || c == BOL  || c == EOL || c == ANY
+  return (   c == LITCHAR || c == BOL  || c == EOL || c == ANY 
           || c == CCL     || c == NCCL || c == CLOSURE);
-}
+}      
 
 int
 makepat(arg, start, delim, pat)
@@ -223,20 +208,20 @@ char	*pat;
 	    junk = addstr(BOL, pat, &j, MAXPAT);
 	else if ((arg[i] == EOL) && (arg[i+1] == delim))
 	    junk = addstr(EOL, pat, &j, MAXPAT);
-	else if ((arg[i] == CCL))
+	else if ((arg[i] == CCL)) 
 	{
 	    getres = getccl(arg, &i, pat, &j);
 	    done = (bool)(getres == false);
-	}
-	else if ((arg[i] == CLOSURE) && (i > start))
+	} 
+	else if ((arg[i] == CLOSURE) && (i > start)) 
 	{
 	    lj = lastj;
 	    if (in_set_2(pat[lj]))
 		done = true;
 	    else
 		stclose(pat, &j, lastj);
-	}
-	else
+	} 
+	else 
 	{
 	    junk = addstr(LITCHAR, pat, &j, MAXPAT);
 	    escjunk = esc(arg, &i);
@@ -245,7 +230,7 @@ char	*pat;
 	lastj = lj;
 	if ((!done))
 	    i = i + 1;
-    }
+    }	
     junk = addstr(ENDSTR, pat, &j, MAXPAT);
     if ((done) || (arg[i] != delim))
 	result = 0;
@@ -299,7 +284,7 @@ makesub(arg, from, delim, sub)
 	    result = 0;
 	else
 	    result = i;
-    }
+    }	
     return result;
 }
 
@@ -316,7 +301,7 @@ getsub(arg, sub)
 
 void subline();
 
-bool
+ bool
 locate(c, pat, offset)
 	character	c;
 	char *	pat;
@@ -347,24 +332,24 @@ omatch(lin, i, pat, j)
 {
     char	advance;
     bool result;
-
+    
     advance = -1;
     if ((lin[*i] == ENDSTR))
 	result = false;
-    else
+    else 
     {
 	if (!in_pat_set(pat[j]))
 	{
 	    (void)fprintf(stdout, "in omatch: can't happen\n");
-	    abort();
+	    abort();	
 	} else
 	{
-	     switch (pat[j])
-	     {
+	     switch (pat[j]) 
+	     {			
 	     case LITCHAR:
 		 if (lin[*i] == pat[j + 1])
 		     advance = 1;
-		 break ;
+		 break ;	
 	     case BOL:
 		 if (*i == 0)
 		     advance = 0;
@@ -379,18 +364,18 @@ omatch(lin, i, pat, j)
 		 break ;
 	     case CCL:
 		 if (locate(lin[*i], pat, j + 1))
-		     advance = 1;
+		     advance = 1;	
 		 break ;
 	     case NCCL:
 		 if ((lin[*i] != NEWLINE) && (!locate(lin[*i], pat, j+1)))
-		     advance = 1;
+		     advance = 1;	
 		 break ;
 	     default:
 		 Caseerror(pat[j]);
 	     };
-	 }
+	 }	
     }
-    if ((advance >= 0))
+    if ((advance >= 0)) 
     {
 	*i = *i + advance;
 	result = true;
@@ -399,7 +384,7 @@ omatch(lin, i, pat, j)
     return result;
 }
 
-int
+
 patsize(pat, n)
 	char*	pat;
 	int	n;
@@ -409,10 +394,10 @@ patsize(pat, n)
 	(void)fprintf(stdout, "in patsize: can't happen\n");
 	abort();
     } else
-	switch (pat[n])
+	switch (pat[n]) 
 	{
 	case LITCHAR: size = 2; break;
-
+	    
 	case BOL:  case EOL:  case ANY:
 	    size = 1;
 	    break;
@@ -445,7 +430,7 @@ amatch(lin, offset, pat, j)
 	    i = offset;
 	    while ((!done) && (lin[i] != ENDSTR)) {
 		result = omatch(lin, &i, pat, j);
-		if (!result)
+		if (!result)	
 		    done = true;
 	    }
 	    done = false;
@@ -460,7 +445,7 @@ amatch(lin, offset, pat, j)
 	    done = true;
 	} else {
 	    result = omatch(lin, &offset, pat, j);
-	    if ((!result)) {
+	    if ((!result)) {	
 		offset = -1;
 		done = true;
 	    } else
@@ -481,11 +466,11 @@ putsub(lin, s1, s2, sub)
     i = 0;
     while ((sub[i] != ENDSTR)) {
 	if ((sub[i] == DITTO))
-	    for (j = s1; j < s2; j++)
+	    for (j = s1; j < s2; j++) 
 	    {
 		fputc(lin[j],stdout);
-	    }
-	else
+	    }	
+	else	
 	{
 	    fputc(sub[i],stdout);
 	}
@@ -498,12 +483,12 @@ subline(lin, pat, sub)
  char	*lin;
  char   *pat;
  char   *sub;
-{
+{	
 	int	i, lastm, m;
 
 	lastm = -1;
 	i = 0;
-	while ((lin[i] != ENDSTR))
+	while ((lin[i] != ENDSTR)) 
 	{
 	    m = amatch(lin, i, pat, 0);
 	    if ((m >= 0) && (lastm != m)) {
@@ -518,77 +503,53 @@ subline(lin, pat, sub)
 	}
 }
 
-void
+ void
 change(pat, sub)
 char *pat, *sub;
 {
     string  line;
     bool result;
-
-    result = getline2(line, MAXSTR);
-    if (result) {
-      subline(line, pat, sub);
+    
+    result = getline(line, MAXSTR);
+    while ((result)) {
+	subline(line, pat, sub);
+	result = getline(line, MAXSTR);
     }
 }
 
-int
-#ifndef CREST
-main(argc,argv)
-int argc;
+main(argc, argv)
+int	argc;
 char	*argv[];
-#else
-main()
-#endif
 {
    string pat, sub;
    bool result;
-#ifdef CREST
-   string input1;
-   string input2;
 
-   int i;
-   for (i = 0; i < MYMAX-1; i++) {
-     CREST_char(input1[i]);
-   }
-   input1[i] = 0;
-
-   result = getpat(input1, pat);
-#else
-   if (argc <2)
+   if (argc < 2) 
    {
-	   (void)fprintf(stdout,"usage: change from [to]\n");
-	   exit(1);
+       (void)fprintf(stdout, "usage: change from [to]\n");
+       exit(1);
    };
+
    result = getpat(argv[1], pat);
-#endif
    if (!result)
    {
        (void)fprintf(stdout, "change: illegal \"from\" pattern\n");
        exit(2);
    }
-#ifdef CREST
-   for (i = 0; i < MYMAX-1; i++) {
-       CREST_char(input2[i]);
-   }
-   input2[i] = 0;
 
-   result = getsub(input2, sub);
-#else
    if (argc >= 3)
    {
-	   result = getsub(argv[2], sub);
-#endif
-   if (!result)
+       result = getsub(argv[2], sub);
+       if (!result)
+       {	
+	   (void)fprintf(stdout, "change: illegal \"to\" string\n");
+	   exit(3);
+       }
+   } else
    {
-       (void)fprintf(stdout, "change: illegal \"to\" string\n");
-       exit(3);
+       sub[0] = '\0';
    }
-#ifndef CREST
-   }else
-	{
-		sub[0] ='\0';
-	}
-#endif
+   
    change(pat, sub);
    return 0;
 }

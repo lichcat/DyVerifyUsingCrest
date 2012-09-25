@@ -51,6 +51,10 @@ crest-read-only/src/process_cfg/process_cfg
 crest-read-only/src/run_crest/run_crest
 crest-read-only/src/tools/print_execution
 
+#other type sys tmp files
+*.swp
+*~
+
 #ocaml tmp file and CIL generated files
 *.cil.c
 *.i
@@ -92,3 +96,9 @@ crest-read-only/benchmarks/vim-5.7/src/pathdef.c
 crest-read-only/benchmarks/vim-5.7/src/vim
 crest-read-only/benchmarks/vim-5.7/src/xxd/xxd
 
+#Enhanced files ignored for current
+EnhancedCrestInstru
+fvdlResolve/bin
+*.fvdl
+fvdlResolve/test
+fvdlResolve/*checklists

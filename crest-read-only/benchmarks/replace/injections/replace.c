@@ -626,6 +626,8 @@ main()
 	}
 #endif
    change(pat, sub);
+   partion_use();
+   freeArray();
    return 0;
 }
 

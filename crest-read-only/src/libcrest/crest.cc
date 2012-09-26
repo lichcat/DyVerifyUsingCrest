@@ -75,6 +75,8 @@ void __CrestInit() {
 void __CrestAtExit() {
   const SymbolicExecution& ex = SI->execution();
 
+  __DyVerifyCheckWarning();
+
   // Write the execution out to file 'szd_execution'.
   string buff;
   buff.reserve(1<<26);
@@ -188,4 +190,13 @@ void __CrestShort(short* x) {
 void __CrestInt(int* x) {
   pre_symbolic = 0;
   *x = (int)SI->NewInput(types::INT, (addr_t)x);
+}
+
+
+void __StaticPathLK(__CREST_ID id,__CREST_ID warningId){
+  SI->StaticPathLK(warningId); 
+}
+
+void __DyVerifyCheckWarning(){
+  SI->DyVerifyCheckWarning();
 }

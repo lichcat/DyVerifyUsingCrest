@@ -201,4 +201,7 @@ EXTERN void __CrestChar(char* x) __SKIP;
 EXTERN void __CrestShort(short* x) __SKIP;
 EXTERN void __CrestInt(int* x) __SKIP;
 
+EXTERN void __StaticPathLK(__CREST_ID,__CREST_ID) __SKIP;
+EXTERN void __DyVerifyCheckWarning() __SKIP;
+
 #endif  /* LIBCREST_CREST_H__ */

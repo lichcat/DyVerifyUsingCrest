@@ -48,6 +48,10 @@ class SymbolicInterpreter {
 
   void Branch(id_t id, branch_id_t bid, bool pred_value);
 
+  void StaticPathLK(id_t warningId);
+  void DyVerifyCheckWarning();
+
+
   value_t NewInput(type_t type, addr_t addr);
 
   // Accessor for symbolic execution so far.
@@ -74,6 +78,8 @@ class SymbolicInterpreter {
 
   // Memory map.
   map<addr_t,SymbolicExpr*> mem_;
+
+  map<id_t,bool> reachWarning_;
 
   // The symbolic execution (program path and inputs).
   SymbolicExecution ex_;

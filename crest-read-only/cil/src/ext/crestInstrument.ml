@@ -65,6 +65,7 @@ let stmtCount = Cfg.start_id
 let funCount = ref 0
 let branches = ref []
 let curBranches = ref []
+let warningPath = ref []
 (* Control-flow graph is stored inside the CIL AST. *)
 
 let getNewId () = ((idCount := !idCount + 1); !idCount)
@@ -90,6 +91,29 @@ let writeCounter fname (cnt : int) =
 let readIdCount () = (idCount := readCounter "idcount")
 let readStmtCount () = (stmtCount := readCounter "stmtcount")
 let readFunCount () = (funCount := readCounter "funcount")
+let readChecklists () =
+  let f = open_in "checklists" in
+	let rec iter_lines chan =
+	try 
+		let words = Str.split (Str.regexp "[ \t]+") (input_line chan) in
+		if (List.length words)>1 then
+		(let isLK =
+			let st =List.nth words 2 in
+			if st="LK" then true
+			else false
+		 in
+		 if isLK then warningPath:= words::!warningPath
+		);
+		iter_lines chan
+	with End_of_file ->() in
+	iter_lines f;
+	close_in f;
+  warningPath:=List.rev !warningPath(*;
+  let printPathLK word =
+    List.iter (fun x->Printf.printf "%s " x) word;
+  in
+  List.iter printPathLK !warningPath*)
+
 
 let writeIdCount () = writeCounter "idcount" !idCount
 let writeStmtCount () = writeCounter "stmtcount" !stmtCount
@@ -195,6 +219,86 @@ let valType  = TInt (ILongLong, [])
 let addrType = TInt (IULong, [])
 let boolType = TInt (IUChar, [])
 let opType   = intType  (* enum *)
+
+
+class instruPathLK f =
+	let idArg = ("id", idType, []) in
+	let pathIdArg = ("pathIdArg", idType, []) in
+	let countLKList = ref [] in
+	let mkPathLKInstFunc name args =
+	  let ty = TFun (voidType, Some (idArg::args),false,[]) in
+	  let func = findOrCreateFunc f ("__Static" ^ name) ty in
+	  func.vstorage <- Extern ;
+	  func.vattr <- [Attr ("crest_skip", [])] ;
+	  func
+	in
+	let mkInstCall func args =
+	  let args' = integer (getNewId ()) ::args in
+	    Call (None, Lval (var func), args', locUnknown)
+	in
+	let mkPathLK pathId =
+	  let csvPathLK = mkPathLKInstFunc ("PathLK") [pathIdArg] in
+	    mkInstCall csvPathLK [integer pathId]
+	in
+	let shouldInstLK self location =
+	    let countLK = ref 0 in
+		let sameLoc warning= 
+		  let tmp_file = List.nth warning 0 in
+		  let tmp_line = List.nth warning 1 in
+		  tmp_file=location.file && (int_of_string tmp_line)=location.line
+		in
+		let instLK warning =
+		  if (sameLoc warning) then
+		    self#queueInstr [mkPathLK !countLK];
+		  countLK:= 1+ !countLK
+		in
+		List.iter instLK !warningPath
+	in
+object (self)
+	inherit nopCilVisitor
+
+	method vstmt(s) =
+	  match s.skind with
+	  | If(e,b1,b2,location) ->
+			shouldInstLK self location;
+		DoChildren
+	  | Return (_,location) ->
+			shouldInstLK self location;
+	    SkipChildren
+	  | Goto (_,location) ->
+			shouldInstLK self location;
+	    DoChildren
+	  | Break location ->
+			shouldInstLK self location;
+	    DoChildren
+	  | Continue location ->
+			shouldInstLK self location;
+	    DoChildren
+	  | Switch (_,_,_,location) ->
+			shouldInstLK self location;
+	    DoChildren(*
+	  | Loop (_,location,_,_) ->
+			shouldInstLK self location;
+	    DoChildren
+	  | TryFinally (_,_,location) ->
+			shouldInstLK self location;
+	    DoChildren
+	  | TryExcept (_,_,_,location) ->
+			shouldInstLK self location;
+	    DoChildren*)
+	  | _ -> DoChildren
+
+	method vinst(i) =
+	  match i with
+	  | Call (_,_,_,location) ->
+			shouldInstLK self location;
+	    DoChildren
+	  | Set (_,_,location) ->
+			shouldInstLK self location;
+	    DoChildren
+	  | _ -> DoChildren
+	 
+end
 
 
 (*
@@ -507,6 +611,7 @@ let feature : featureDescr =
              visitCilFileSameGlobals (ncVisitor :> cilVisitor) f) ;
           (* Clear out any existing CFG information. *)
           Cfg.clearFileCFG f ;
+		  readChecklists ();
           (* Read the ID and statement counts from files.  (This must
            * occur after clearFileCFG, because clearFileCfg clobbers
            * the statement counter.) *)
@@ -514,6 +619,9 @@ let feature : featureDescr =
           readStmtCount () ;
           readFunCount () ;
           (* Compute the control-flow graph. *)
+		  (let iplk = new instruPathLK f in
+			visitCilFileSameGlobals (iplk :>cilVisitor) f);
+
           Cfg.computeFileCFG f ;
           (* Adds function calls to the CFG, by building a map from
            * function names to the first statements in those functions

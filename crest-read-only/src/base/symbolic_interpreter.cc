@@ -349,4 +349,16 @@ void SymbolicInterpreter::ClearPredicateRegister() {
 }
 
 
+void SymbolicInterpreter::StaticPathLK(id_t warningId) {
+  reachWarning_[warningId]=true;  
+}
+
+void SymbolicInterpreter::DyVerifyCheckWarning() {
+  map<id_t,bool>::iterator it;
+  for(it=reachWarning_.begin();it!=reachWarning_.end();++it){
+	if(it->second)
+		fprintf(stderr,"StaticPathLK_%d\n",it->first);
+  }
+}
+
 }  // namespace crest

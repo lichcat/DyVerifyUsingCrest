@@ -5,13 +5,13 @@ CREST_LDFLAGS = -L../../../lib
 CREST_LIBS = -lcrest -lstdc++
 CREST_CC = ../../../cil/bin/cilly --save-temps --doCrestInstrument
 
-ANALYZER = sourceanalyzer -b injec_replace gcc
+ANALYZER = sourceanalyzer -b injec_replace
 
 origin:	clean
 	gcc replace.c global_array.c -o replace
 
 analysis:	clean
-	$(ANALYZER) -c global_array.c replace.c -o replace
+	$(ANALYZER) gcc global_array.c replace.c -o replace
 	$(ANALYZER) -scan -f injec_replace.fpr
 	
 
@@ -20,7 +20,15 @@ crest:	clean
 	$(CREST_CC) $(CREST_CFLAGS) -c replace.c -o replace.o
 	$(CREST_CC) $(CREST_CFLAGS) replace.o global_array.o -o replace $(CREST_LDFLAGS) $(CREST_LIBS)
 
+run:
+	../../../bin/process_cfg
+	../../../bin/run_crest "./replace" 1000 -dfs 2>replace_dfs_1000.log
+	../../../bin/run_crest "./replace" 1000 -cfg 2>replace_cfg_1000.log
+
+log-clean:
+	rm -f *.log
+
 clean:
 	rm -f *.o *.i *.cil.c
 	rm -f branches cfg cfg_func_map funcount idcount stmtcount
-	rm -f replace
+	rm -f replace input cfg_branches coverage szd_execution

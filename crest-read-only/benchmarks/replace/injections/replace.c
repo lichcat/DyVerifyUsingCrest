@@ -66,6 +66,8 @@ char	*outset;
 int	*j;
 int	maxset;
 {
+	int* __CREST_p1 = (int*)malloc(sizeof(int)*10);
+	//addToArray((void**)&__CREST_p1);
     bool	result;
     if (*j >= maxset)
 	result = false;
@@ -82,6 +84,8 @@ esc(s, i)
 char 	*s;
 int	*i;
 {
+	int* __CREST_p2 = (int*)malloc(sizeof(int)*10);
+	addToArray((void**)&__CREST_p2);
     char	result;
     if (s[*i] != ESCAPE)
 	result = s[*i];
@@ -113,6 +117,8 @@ char	*dest;
 int	*j;
 int	maxset;
 {
+	int* __CREST_p3 = (int*)malloc(sizeof(int)*10);
+	//addToArray((void**)&__CREST_p3);
     int	k;
     bool	junk;
     char	escjunk;
@@ -149,6 +155,8 @@ int	*i;
 char	*pat;
 int	*j;
 {
+	int* __CREST_p4 = (int*)malloc(sizeof(int)*10);
+	//addToArray((void**)&__CREST_p4);
     int	jstart;
     bool	junk;
 
@@ -171,6 +179,8 @@ char	*pat;
 int	*j;
 int	lastj;
 {
+	int* __CREST_p5 = (int*)malloc(sizeof(int)*10);
+	addToArray((void**)&__CREST_p5);
     int	jt;
     int	jp;
     bool	junk;
@@ -188,12 +198,16 @@ int	lastj;
 bool in_set_2(c)
 char c;
 {
+	int* __CREST_p6 = (int*)malloc(sizeof(int)*10);
+	addToArray((void**)&__CREST_p6);
   return (c == BOL || c == EOL || c == CLOSURE);
 }
 
 bool in_pat_set(c)
 char c;
 {
+	int* __CREST_p7 = (int*)malloc(sizeof(int)*10);
+	addToArray((void**)&__CREST_p7);
   return (   c == LITCHAR || c == BOL  || c == EOL || c == ANY
           || c == CCL     || c == NCCL || c == CLOSURE);
 }
@@ -205,6 +219,8 @@ int	start;
 char	delim;
 char	*pat;
 {
+	int* __CREST_p8 = (int*)malloc(sizeof(int)*10);
+	addToArray((void**)&__CREST_p8);
     int	result;
     int	i, j, lastj, lj;
     bool	done, junk;
@@ -262,6 +278,8 @@ getpat(arg, pat)
 char*	arg;
 char*	pat;
 {
+	int* __CREST_p9 = (int*)malloc(sizeof(int)*10);
+	//addToArray((void**)&__CREST_p9);
     int	makeres;
 
     makeres = makepat(arg, 0, ENDSTR, pat);
@@ -275,6 +293,8 @@ makesub(arg, from, delim, sub)
 	character	delim;
 	char*	sub;
 {
+	int* __CREST_p10 = (int*)malloc(sizeof(int)*10);
+	addToArray((void**)&__CREST_p10);
     int  result;
     int	i, j;
     bool	junk;
@@ -308,6 +328,8 @@ getsub(arg, sub)
 	char*	arg;
 	char*	sub;
 {
+	int* __CREST_p11 = (int*)malloc(sizeof(int)*10);
+	addToArray((void**)&__CREST_p11);
     int	makeres;
 
     makeres = makesub(arg, 0, ENDSTR, sub);
@@ -322,6 +344,8 @@ locate(c, pat, offset)
 	char *	pat;
 	int	offset;
 {
+	int* __CREST_p12 = (int*)malloc(sizeof(int)*10);
+	addToArray((void**)&__CREST_p12);
     int	i;
     bool flag;
 
@@ -345,6 +369,8 @@ omatch(lin, i, pat, j)
 	char*	pat;
 	int	j;
 {
+	int* __CREST_p13 = (int*)malloc(sizeof(int)*10);
+	//addToArray((void**)&__CREST_p13);
     char	advance;
     bool result;
 
@@ -404,6 +430,8 @@ patsize(pat, n)
 	char*	pat;
 	int	n;
 {
+	int* __CREST_p14 = (int*)malloc(sizeof(int)*10);
+	addToArray((void**)&__CREST_p14);
     int size;
     if (!in_pat_set(pat[n])) {
 	(void)fprintf(stdout, "in patsize: can't happen\n");
@@ -435,6 +463,8 @@ amatch(lin, offset, pat, j)
 	char*	pat;
 	int	j;
 {
+	int* __CREST_p15 = (int*)malloc(sizeof(int)*10);
+	//addToArray((void**)&__CREST_p15);
     int	i, k;
     bool	result, done;
 
@@ -475,6 +505,8 @@ putsub(lin, s1, s2, sub)
   int	s1, s2;
   char *	sub;
 {
+	int* __CREST_p16 = (int*)malloc(sizeof(int)*10);
+	addToArray((void**)&__CREST_p16);
     int	i;
     int		j;
 
@@ -499,6 +531,8 @@ subline(lin, pat, sub)
  char   *pat;
  char   *sub;
 {
+	int* __CREST_p17 = (int*)malloc(sizeof(int)*10);
+	//addToArray((void**)&__CREST_p17);
 	int	i, lastm, m;
 
 	lastm = -1;
@@ -522,6 +556,8 @@ void
 change(pat, sub)
 char *pat, *sub;
 {
+	int* __CREST_p18 = (int*)malloc(sizeof(int)*10);
+	addToArray((void**)&__CREST_p18);
     string  line;
     bool result;
 

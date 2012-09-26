@@ -95,10 +95,11 @@ crest-read-only/benchmarks/vim-5.7/src/osdef.h
 crest-read-only/benchmarks/vim-5.7/src/pathdef.c
 crest-read-only/benchmarks/vim-5.7/src/vim
 crest-read-only/benchmarks/vim-5.7/src/xxd/xxd
-
+crest-read-only/benchmarks/replace/injections/*checklists
 #Enhanced files ignored for current
 EnhancedCrestInstru
 fvdlResolve/bin
 *.fvdl
 fvdlResolve/test
 fvdlResolve/*checklists
+*.fpr

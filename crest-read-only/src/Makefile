@@ -1,5 +1,5 @@
 
-YICES_DIR=/home/lmc/support/yices-1.0.35
+YICES_DIR=/home/lichcat/lichcat/support/yices-1.0.35
 
 CC=$(CXX)
 CFLAGS = -I. -I$(YICES_DIR)/include -Wall -O2

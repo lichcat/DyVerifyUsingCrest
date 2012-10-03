@@ -505,7 +505,7 @@ void SymbolicInterpreter::DyVerifyCheckShadowHeap(){
 			fprintf(stderr,"Leak\n");
 		else{
 			if(sFreed_ ==0 )
-				fprintf(stderr,"L-NOT-Leak\n");
+				fprintf(stderr,"L_NOT_Leak\n");
 			else 
 				fprintf(stderr,"Bloat\n");
 		}

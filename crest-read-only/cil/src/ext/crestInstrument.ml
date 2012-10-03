@@ -602,7 +602,7 @@ let feature : featureDescr =
           *  - transforming functions to have exactly one return *)
           Simplemem.feature.fd_doit f ;
           iterGlobals f prepareGlobalForCFG ;
-          Oneret.feature.fd_doit f ;
+          (*Oneret.feature.fd_doit f ;*)
           (* To simplify later processing:
            *  - ensure that every 'if' has a non-empty else block
            *  - try to transform conditional expressions into predicates

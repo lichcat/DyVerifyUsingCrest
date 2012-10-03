@@ -34,7 +34,7 @@ int freeArray()
     //free(*PArray[i]);
 	if(_crest_arr[i]){
 	  free(_crest_arr[i]);
-	  printf("free:%dth\n",i);
+	  //printf("free:%dth\n",i);
 	}
   }
   Num=0;

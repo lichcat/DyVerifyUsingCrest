@@ -303,6 +303,7 @@ void SymbolicInterpreter::Branch(id_t id, branch_id_t bid, bool pred_value) {
 
   IFDEBUG(DumpMemory());
 
+  /*
   //for unpassed pathMark branch should reach all of them
   //if current branch can not reach all pathMark
   //Note: currentPathMark equal to Pa_Sb 's b ,so smaller than b needn't to check
@@ -317,7 +318,7 @@ void SymbolicInterpreter::Branch(id_t id, branch_id_t bid, bool pred_value) {
 	fprintf(stderr,"branch %d cannot reach path!\n",bid);
 	exit(101);
   }
-  
+  */
 
 }
 
@@ -329,7 +330,7 @@ value_t SymbolicInterpreter::NewInput(type_t type, addr_t addr) {
   value_t ret = 0;
   if (num_inputs_ < ex_.inputs().size()) {
     ret = ex_.inputs()[num_inputs_];
-  } else {
+  } else /*{
     // New inputs are initially randomly instead.)
 	unsigned long long val =0;
 	for(size_t j=0;j<8;j++)
@@ -352,6 +353,12 @@ value_t SymbolicInterpreter::NewInput(type_t type, addr_t addr) {
 		case types::LONG_LONG:	ex_.mutable_inputs()->push_back((long long)val); break;
 
 	}
+  }*/
+  {
+    // Generate a new random input.
+    //
+    ret = CastTo(rand(), type);
+    ex_.mutable_inputs()->push_back(ret);
   }
 
   num_inputs_ ++;

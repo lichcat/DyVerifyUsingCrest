@@ -972,7 +972,8 @@ object (self)
 		  (*instruINPUTs := i::!instruINPUTs;*)
 		  ChangeTo !instruINPUTs
 *)
-      | Call (ret, _, args, _) ->
+      | Call (ret, Lval(Var f,NoOffset), args, _)
+        when f.vname <> "exit" ->
           let isSymbolicExp e = isSymbolicType (typeOf e) in
 		  let liveMemArg e =
 			let isPointerExp e = isPointerType (typeOf e) in

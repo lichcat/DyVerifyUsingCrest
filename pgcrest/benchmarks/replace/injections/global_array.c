@@ -2,75 +2,83 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <time.h>
-#define Size 500
-#define ARR_SIZE 500
+#include "global_array.h"
+#define SIZE 5000
+
+#define MAX_INJ_NUM	18
+typedef struct inj_tag{
+	int* crest_ptr;
+	unsigned int inj_id;
+}inj_info;
+
 int Num=0;
-void** PArray[Size]={NULL};
-int* _crest_arr[ARR_SIZE]={NULL};
+int inj_histgram[MAX_INJ_NUM]={0};
+inj_info* _crest_arr[SIZE]={NULL};
 //add a pointer(element) into the array
-void addToArray(void** p)
+void addToArray(void** p,unsigned int id)
 {	
 	int i;
-    if(Num>=Size){
-		for(i=0;i<Size;i++){
+	assert(id<=MAX_INJ_NUM);
+
+    if(Num>=SIZE){
+		for(i=0;i<SIZE;i++){
+			free(_crest_arr[i]->crest_ptr);
 			free(_crest_arr[i]);
 			_crest_arr[i]=NULL;
-			PArray[i]=NULL;
 		}
 		Num=0;
 	}
-    PArray[Num]=p;
-	_crest_arr[Num]=*p;
+	_crest_arr[Num]=(inj_info*)malloc(sizeof(inj_info));
+	_crest_arr[Num]->crest_ptr=*p;
+	_crest_arr[Num]->inj_id=id;
     Num++;
-	//printf("----num:%d-----\n",Num);
 }
 
 //free all elements in the array
-int freeArray()
+void freeArray()
 {
   int i;
   for(i=0;i<Num;i++)
   {
-    //free(*PArray[i]);
-	if(_crest_arr[i]){
+	if(_crest_arr[i] && _crest_arr[i]->crest_ptr){
+	  free(_crest_arr[i]->crest_ptr);
 	  free(_crest_arr[i]);
-	  //printf("free:%dth\n",i);
 	}
   }
   Num=0;
-  return 0;
 }
 
-//all elements used
-/*
-void all_use()
+int is_all_use_id(unsigned int id){
+	if(id==2 || id ==16 || id== 6 || id==8 || id==12)
+		return 1;
+	else 
+		return 0;
+}
+extern void testFunction(void* p);
+
+void crest_use()
 {
   int i;
+  int* ptr;
+  unsigned int id;
+  
   for(i=0;i<Num;i++)
   {
-    testFunction(_crest_ptr[i]);
-  }
-}
-*/
-extern void testFunction(void* p);
-//partion use
-void partion_use()
-{
-  int i;
-  /*FILE* p=fopen("randomNUM","r");
-  srand(time(NULL));
-  int UP=random()%(Num-2);
-  fprintf(p,"-----------------------------\n");
-  fprintf(p,"Num of random UP BOUND IS %d \n",UP);
-  for(i=0;i<UP;i++)*/
-  for(i=0;i<(Num+1)/2;i++)
-  {
-    if(_crest_arr[i])
-	  testFunction(_crest_arr[i]);
+    if(_crest_arr[i]){
+		id = _crest_arr[i]->inj_id;
+		ptr = _crest_arr[i]->crest_ptr;
+	  if(is_all_use_id(id))
+		  testFunction(ptr);
+	  else if(inj_histgram[id]%2==1){
+		  testFunction(ptr);
+	  }
+	  inj_histgram[id]++;
+	  
+	}
   }
 }
 
 void testFunction(void* p)
 {
-  //todo
+  //
 }

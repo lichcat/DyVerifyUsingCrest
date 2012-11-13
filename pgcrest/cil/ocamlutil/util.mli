@@ -3,15 +3,15 @@
 exception GotSignal of int
 
 val withTimeout : float -> (* Seconds for timeout *)
-                (int -> 'b) -> (* What to do if we have a timeout. The
-                                        * argument passed is the signal number
+                (int -> 'b) -> (* What to do if we have a timeout. The 
+                                        * argument passed is the signal number 
                                         * received. *)
                 ('a -> 'b) -> (* The function to run *)
                 'a -> (* And its argument *)
    'b
 
-val docHash : ?sep:Pretty.doc -> ('a -> 'b -> Pretty.doc) -> unit ->
-  (('a, 'b) Hashtbl.t) -> Pretty.doc
+val docHash : ?sep:Pretty.doc -> ('a -> 'b -> Pretty.doc) -> unit -> 
+  (('a, 'b) Hashtbl.t) -> Pretty.doc 
 
 
 val hash_to_list: ('a, 'b) Hashtbl.t -> ('a * 'b) list
@@ -36,6 +36,8 @@ val list_iter3 : ('a -> 'b -> 'c -> unit) ->
 val get_some_option_list : 'a option list -> 'a list
 val list_append: ('a list) -> ('a list) -> ('a list) (* tail-recursive append*)
 
+val list_map : ('a -> 'b) -> 'a list -> 'b list
+
 (** Iterate over a list passing the index as you go *)
 val list_iteri: (int -> 'a -> unit) -> 'a list -> unit
 val list_mapi: (int -> 'a -> 'b) -> 'a list -> 'b list
@@ -50,9 +52,9 @@ val int_range_list : int -> int -> int list
 val list_init : int -> (int -> 'a) -> 'a list
 
 (** Find the first element in a list that returns Some *)
-val list_find_first: 'a list -> ('a -> 'b option) -> 'b option
+val list_find_first: 'a list -> ('a -> 'b option) -> 'b option 
 
-(** mapNoCopy is like map but avoid copying the list if the function does not
+(** mapNoCopy is like map but avoid copying the list if the function does not 
  * change the elements *)
 
 val mapNoCopy: ('a -> 'a) -> 'a list -> 'a list
@@ -78,11 +80,11 @@ type 'a growArray = {
             (** Stuff to use to fill in the array as it grows *)
 
     mutable gaMaxInitIndex: int;
-            (** Maximum index that was written to. -1 if no writes have
+            (** Maximum index that was written to. -1 if no writes have 
              * been made.  *)
 
     mutable gaData: 'a array;
-  }
+  } 
 
 val newGrowArray: int -> 'a growArrayFill -> 'a growArray
 (** [newGrowArray initsz fillhow] *)
@@ -111,7 +113,7 @@ val restoreRef: ?deepCopy:('a -> 'a) -> 'a ref -> unit -> unit
 (** Given a hash table, produce a thunk that later restores it to its current value *)
 val restoreHash: ?deepCopy:('b -> 'b) -> ('a, 'b) Hashtbl.t -> unit -> unit
 
-(** Given an integer hash table, produce a thunk that later restores it to
+(** Given an integer hash table, produce a thunk that later restores it to 
  * its current value *)
 val restoreIntHash: ?deepCopy:('b -> 'b) -> 'b Inthash.t -> unit -> unit
 
@@ -132,9 +134,9 @@ val findOrAdd: ('a, 'b) Hashtbl.t ->
             'a ->
             ('a -> 'b) -> 'b
 
-val tryFinally:
+val tryFinally: 
     ('a -> 'b) -> (* The function to run *)
-    ('b option -> unit) -> (* Something to run at the end. The None case is
+    ('b option -> unit) -> (* Something to run at the end. The None case is 
                           * used when an exception is thrown *)
     'a -> 'b
 
@@ -159,7 +161,7 @@ module type STACK = sig
   (** The type of stacks containing elements of type ['a]. *)
 
   exception Empty
-  (** Raised when {!Util.Stack.pop} or {!Util.Stack.top} is applied to an
+  (** Raised when {!Util.Stack.pop} or {!Util.Stack.top} is applied to an 
    * empty stack. *)
 
   val create : unit -> 'a t
@@ -175,19 +177,19 @@ module type STACK = sig
   val top : 'a t -> 'a
   (** [top s] returns the topmost element in stack [s],
      or raises [Empty] if the stack is empty. *)
-
+  
   val clear : 'a t -> unit
   (** Discard all elements from a stack. *)
-
+  
   val copy : 'a t -> 'a t
   (** Return a copy of the given stack. *)
-
+  
   val is_empty : 'a t -> bool
   (** Return [true] if the given stack is empty, [false] otherwise. *)
-
+  
   val length : 'a t -> int
   (** Return the number of elements in a stack. *)
-
+  
   val iter : ('a -> unit) -> 'a t -> unit
   (** [iter f s] applies [f] in turn to all elements of [s],
      from the element at the top of the stack to the element at the
@@ -197,10 +199,10 @@ end
 module Stack : STACK
 
 (************************************************************************
-   Configuration
+   Configuration 
 ************************************************************************)
 (** The configuration data can be of several types **)
-type configData =
+type configData = 
     ConfInt of int
   | ConfBool of bool
   | ConfFloat of float
@@ -221,14 +223,14 @@ val clearConfiguration: unit -> unit
 (** Set a configuration element, with a key. Overwrites the previous values *)
 val setConfiguration: string -> configData -> unit
 
-(** Find a configuration elements, given a key. Raises Not_found if it canont
+(** Find a configuration elements, given a key. Raises Not_found if it canont 
  * find it *)
 val findConfiguration: string -> configData
 
 (** Like findConfiguration but extracts the integer *)
 val findConfigurationInt: string -> int
 
-(** Looks for an integer configuration element, and if it is found, it uses
+(** Looks for an integer configuration element, and if it is found, it uses 
  * the given function. Otherwise, does nothing *)
 val useConfigurationInt: string -> (int -> unit) -> unit
 
@@ -254,22 +256,22 @@ val symbolName: symbol -> string
 (** Register a symbol name and get the symbol for it *)
 val registerSymbolName: string -> symbol
 
-(** Register a number of consecutive symbol ids. The naming function will be
- * invoked with indices from 0 to the counter - 1. Returns the id of the
- * first symbol created. The naming function is invoked lazily, only when the
+(** Register a number of consecutive symbol ids. The naming function will be 
+ * invoked with indices from 0 to the counter - 1. Returns the id of the 
+ * first symbol created. The naming function is invoked lazily, only when the 
  * name of the symbol is required. *)
 val registerSymbolRange: int -> (int -> string) -> symbol
 
 
-(** Make a fresh symbol. Give the name also, which ought to be distinct from
- * existing symbols. This is different from registerSymbolName in that it
+(** Make a fresh symbol. Give the name also, which ought to be distinct from 
+ * existing symbols. This is different from registerSymbolName in that it 
  * always creates a new symbol. *)
 val newSymbol: string -> symbol
 
 (** Reset the state of the symbols to the program startup state *)
 val resetSymbols: unit -> unit
 
-(** Take a snapshot of the symbol state. Returns a thunk that restores the
+(** Take a snapshot of the symbol state. Returns a thunk that restores the 
  * state. *)
 val snapshotSymbols: unit -> unit -> unit
 
@@ -287,7 +289,7 @@ module Int32Op : sig
    val (>%) : int32 -> int32 -> bool
    val (>=%) : int32 -> int32 -> bool
    val (<>%) : int32 -> int32 -> bool
-
+   
    val (+%) : int32 -> int32 -> int32
    val (-%) : int32 -> int32 -> int32
    val ( *% ) : int32 -> int32 -> int32

@@ -15,8 +15,10 @@ int foo(int (*bar)(int), int n) {
   pfun1 = * * * pfun2;
 
   pfun1 = arrfun[4];
-
+  
   pfun2(* * testf, 5);
 
   return 1;
 }
+
+

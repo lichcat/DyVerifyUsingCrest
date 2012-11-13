@@ -772,8 +772,8 @@ object (self)
         SkipChildren
        
       | Call (ret, Lval (Var f, NoOffset),args,location)
-          (*when ((f.vname = "malloc") or (f.vname="xmalloc"))->*)
-          when (f.vname = "malloc") ->
+          when ((f.vname = "malloc") or (f.vname="xmalloc"))->
+         (*when (f.vname = "malloc") ->*)
         	let sizeArg = List.hd args in
           let isSymbolicExp e = isSymbolicType (typeOf e) in
 			let isSymbolicLval lv = isSymbolicType (typeOfLval lv) in

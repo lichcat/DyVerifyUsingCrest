@@ -13,12 +13,12 @@ int main() {
 
   for (i=0; i < 10; i++) {
     if (w[i * sizeof(wchar_t)] != (little_endian ? s[i] : 0)) {
-      E(1);
-    }
+      E(1); 
+    } 
     if (w[i * sizeof(wchar_t) + (sizeof(wchar_t)-1)]
         != (little_endian ? 0 : s[i])) {
       E(2);
-    }
+    } 
   }
   SUCCESS;
 }

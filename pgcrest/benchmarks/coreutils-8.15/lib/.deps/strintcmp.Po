@@ -1,0 +1,10 @@
+strintcmp.o strintcmp.o: strintcmp.c ./config.h strnumcmp-in.h \
+  strnumcmp.h /usr/lib/gcc/x86_64-linux-gnu/3.4.6/include/stddef.h
+
+./config.h:
+
+strnumcmp-in.h:
+
+strnumcmp.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/3.4.6/include/stddef.h:

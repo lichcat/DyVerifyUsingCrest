@@ -1,0 +1,14 @@
+factor: warning 0 's results:
+MAY-LEAK
+factor: warning 1 's results:
+LEAK
+factor: warning 2 's results:
+MAY-LEAK
+factor: warning 3 's results:
+BLOAT
+factor: warning 4 's results:
+L_NOT_LEAK
+factor: warning 5 's results:
+MAY-LEAK
+
+NOTE: input unsigned int n @ factor.c line  450~452

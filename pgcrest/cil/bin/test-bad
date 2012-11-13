@@ -8,22 +8,22 @@
 #    // NUMERRORS n
 #   where n is the number of errors to be tested by this file
 #
-#   This file is processed n+1 times. The first time, it should succeed (main returns or
-#   exits with code 0) and the other n times it should fail.
+#   This file is processed n+1 times. The first time, it should succeed (main returns or 
+#   exits with code 0) and the other n times it should fail. 
 #   For each run the preprocessor variable ERROR is defined to be
-#   be k (0 <= k <= n).
-#   You can mark certain lines in your program so that they are used ONLY in a certain run: put the
+#   be k (0 <= k <= n). 
+#   You can mark certain lines in your program so that they are used ONLY in a certain run: put the 
 #   following comment after a line to make it appear only in the run with ERROR == 3
-#
+#   
 #    some_code; // ERROR(3)
 #
 #
-#   Furthermore, for each run that is intended to fail you can specify a string that
+#   Furthermore, for each run that is intended to fail you can specify a string that 
 #   must appear in the output.
 #
 #    some_code; // ERROR(3):this string must appear in output
 #
-#   Do not put any spaces around the :
+#   Do not put any spaces around the : 
 #
 #   Simple example:
 #
@@ -68,7 +68,7 @@ srcfilenoext=`echo $srcfile | sed s/.c\$//`
 tmpname="$srcfilenoext-tmp"
 
 # for GCC, use "# xx foo.c".  For MSVC, use "#line xx foo.c"
-if [ "$_MSVC" != "" ]; then
+if [ "$_MSVC" != "" ]; then 
   LINEOPT="line"
   OUTFLAG="/Fe"
   OUTEXT=".exe"
@@ -106,8 +106,8 @@ while [ $i -le $numcases ]; do
   # the current test, then remove all remaining ERROR lines
   # (syntax for errors has parentheses so if I have >=10 cases I don't
   # run into problems where e.g. ERROR1 is a substring of ERROR10)
-  # use the little perl script to put line number directives where we remove
-  # lines
+  # use the little perl script to put line number directives where we remove 
+  # lines 
   echo "generating test $i"
   rm -f $tmpname.c 2>/dev/null
   ( echo "#define ERROR $i"; echo "#$LINEOPT 1 \"$srcfile\"";cat "$srcfile") |\
@@ -118,7 +118,7 @@ while [ $i -le $numcases ]; do
 
   # Grab the errorline for this test case
   themsg=`cat "$srcfile" | grep "ERROR($i).*:" | sed "s/^.*ERROR.*://" `
-  if [ "x$themsg" != "x" ] ;then
+  if [ "x$themsg" != "x" ] ;then 
      echo "Expecting error message:$themsg"
   fi
 
@@ -151,7 +151,7 @@ while [ $i -le $numcases ]; do
   fi
 
   # run it
-  if [ $runit != 0 ]; then
+  if [ $runit != 0 ]; then 
     echo "./$tmpname$OUTEXT"
     rm -f test-bad.out test-bad.err
     if $CILHOME/bin/teetwo test-bad.out test-bad.err ./$tmpname$OUTEXT ; then
@@ -199,3 +199,4 @@ while [ $i -le $numcases ]; do
 done
 
 echo "all $numcases cases in $srcfile failed as expected"
+

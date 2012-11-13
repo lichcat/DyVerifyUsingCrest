@@ -1,0 +1,4 @@
+Iteration 0 (0s): covered 0 branches [0 reach funs, 0 reach branches].
+sh: 1: ./base64: not found
+exit with 127
+run_crest: run_crest/concolic_search.cc:262: void crest::Search::RunProgram(const std::vector<crest::value_t, std::allocator<crest::value_t> >&, crest::SymbolicExecution*): Assertion `in && ex->Parse(in)' failed.

@@ -1,0 +1,6 @@
+base64: warning 0 's results:
+LEAK
+base64: warning 1 's results:
+BLOAT
+base64: warning 2 's results:
+MAY-LEAK

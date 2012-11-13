@@ -1,10 +1,10 @@
 # -*- Mode: makefile -*-
-# Copyright (c) 2001-2002,
+# Copyright (c) 2001-2002, 
 #  George C. Necula    <necula@cs.berkeley.edu>
 #  Scott McPeak        <smcpeak@cs.berkeley.edu>
 #  Wes Weimer          <weimer@cs.berkeley.edu>
 # All rights reserved.
-#
+# 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
 # met:
@@ -34,27 +34,27 @@
 
   # Generic Makefile for Ocaml projects
   # Written by necula@cs.berkeley.edu
-  #
-  # Features:
+  # 
+  # Features: 
   #   - keeps byproducts of building in a separate directory
   #   - handles dependencies automatically
-  #   - user specifies just what modules go into a project and
+  #   - user specifies just what modules go into a project and 
   #     everything else is done automatically
   #   - you can use one Makefile for several Ocaml projects
-  #
-  # You must include this file in your Makefile. Before the include point
-  # you must defined the following variables (which are glob al for all Ocaml
+  #   
+  # You must include this file in your Makefile. Before the include point 
+  # you must defined the following variables (which are global for all Ocaml
   # projects specified in one Makefile):
-  #
-  # CAMLDIR    - the directory where to get the ocaml executables from.
+  # 
+  # CAMLDIR    - the directory where to get the ocaml executables from. 
   #              Must be empty (defaul) or end with a /
-  # OBJDIR     - the directory where to put all object files. This directory
+  # OBJDIR     - the directory where to put all object files. This directory 
   #              must exist (default obj)
-  # DEPENDDIR  - the directory where to put dependency files. This directory
+  # DEPENDDIR  - the directory where to put dependency files. This directory 
   #              must exist.  (default obj/.depend)
   # NATIVECAML - if set then will use the native compiler
   # UNSAFE     - if set then will turn off safety checks (only with NATIVECAML)
-  # CAML_NOOPT - if set then it will not optimizer (default is to optimize when
+  # CAML_NOOPT - if set then it will not optimizer (default is to optimize when 
   #              NATIVECAML is used, and not optimize in bytecode mode)
   # PROFILE    - if set then it will compile and link with "gprof" profiling
   #              support (NATIVECAML mode only)
@@ -62,59 +62,60 @@
   # STATIC     - if set then it will compile and link statically
   #              (NATIVECAML mode only)
   # PREPROC    - the preprocessor command
+  # CAMLNATTL  - if set then will use native versions of the OCaml tools
 
   # WIN32      - means that we are using the Windows native tools
 
-  # MODULES    - a list of all modules for all projects defined in the
-  #              Makefile. Give only the basenames (no directory,
+  # MODULES    - a list of all modules for all projects defined in the 
+  #              Makefile. Give only the basenames (no directory, 
   #              no extension).  This is used to create the dependencies.
-  # SOURCEDIRS - a list of all directories containing sources for all
+  # SOURCEDIRS - a list of all directories containing sources for all 
   #              projects defined in a Makefile. This is used to set vpath.
-  # MLLS       - a list of all .mll (ocamllex input) files for all
-  #              projects defined in the Makefile.
-  # MLYS       - a list of all .mly (ocamlyacc input) files for all
-  #              projects defined in the Makefile.
-  # CP4S       - a list of all .p4 (ocamlp4 input) files for all
-  #              projects defined in the Makefile.
-  # ECHO       - if specifically set to nothing then it will print
+  # MLLS       - a list of all .mll (ocamllex input) files for all 
+  #              projects defined in the Makefile. 
+  # MLYS       - a list of all .mly (ocamlyacc input) files for all 
+  #              projects defined in the Makefile. 
+  # CP4S       - a list of all .p4 (ocamlp4 input) files for all 
+  #              projects defined in the Makefile. 
+  # ECHO       - if specifically set to nothing then it will print 
   #              all of the commands issued. Set this in the command line
   #              if you want to see what is going on.
   #
   # COMPILEFLAGS      - if defined, then it is passed as argument to ocamlc
   #                     and ocamlopt
-  # LINKFLAGS         - if defined, then it is passed as argument to
-  #                     ocamlc and ocamlopt, when linking (at start of
+  # LINKFLAGS         - if defined, then it is passed as argument to 
+  #                     ocamlc and ocamlopt, when linking (at start of 
   #                     command line)
   #
   # CAML_CFLAGS   - flags used only for the compilation of C files.
   #                 e.g. '-ccopt <gcc flag>'
   #
-  # BEFOREDEPS  - must list the ML files that must be created before computing
+  # BEFOREDEPS  - must list the ML files that must be created before computing 
   #               dependencies. If you do not do this, then ocamldep will not
-  #               record a dependency on the missing ML files.
-  #               The files obtained from MLYS and MLLS are
+  #               record a dependency on the missing ML files. 
+  #               The files obtained from MLYS and MLLS are 
   #               handled automatically. This must be set before including this
   #               Makefile.ocaml
-  #
-  # After you set all of the above you must do the following for EACH separate
+  # 
+  # After you set all of the above you must do the following for EACH separate 
   # executable that you want to build.
   #
   # Define the following:
-  # PROJECT_EXECUTABLE - the name of the executable you want to build. To take
-  #                      advantage of the naming scheme that separates the
-  #                      bytecode version and the native version, use the
-  #                      $(EXE) variable which is defined to either .byte.exe
-  #                      or .asm.exe. I typically put the executable in
+  # PROJECT_EXECUTABLE - the name of the executable you want to build. To take 
+  #                      advantage of the naming scheme that separates the 
+  #                      bytecode version and the native version, use the 
+  #                      $(EXE) variable which is defined to either .byte.exe 
+  #                      or .asm.exe. I typically put the executable in 
   #                      $(OBJDIR) as well.
-  # PROJECT_MODULES    - the base names of the modules that make this
+  # PROJECT_MODULES    - the base names of the modules that make this 
   #                      executable in the order in which they must be
   #                      passed to the linker. Make sure that all of
-  #                      the names mentioned here are also mentioned in
+  #                      the names mentioned here are also mentioned in 
   #                      MODULES.
   # PROJECT_CMODULES   - same as modules but for the C modules. These
   #                      do not need to be mentioned in MODULES. There must be
   #                      no name clashes with MODULES
-  # PROJECT_LIBS       - the base names of the libraries that you
+  # PROJECT_LIBS       - the base names of the libraries that you 
   #                      want to link in the executable.
   #
   #
@@ -126,16 +127,15 @@
   #	@$(NARRATIVE) "Linking $(COMPILETOWHAT) $@ $(LINKMSG)"
   #	$(AT)$(CAMLLINK) -verbose -o $@ \
   #                    $(PROJECT_LIBS:%=%.$(CMXA)) \
-  #                    $(PROJECT_LIBS:%=-cclib -l%) \
   #                    $^
   #
   #
   # Example:
-  #
+  # 
   # OBJDIR     = obj
   # DEPENDDIR  = obj/.depend
   # SOURCEDIRS = src src/special
-  # MLLS       = mylex
+  # MLLS       = mylex 
   # MLYS       = myparse
   #
   # MODULES    = mod11 mod12 mod21 modcommon
@@ -143,7 +143,7 @@
   #  # Rules for project 1
   # PROJECT_EXECUTABLE = $(OBJDIR)/proj1$(EXE)
   # PROJECT_MODULES    = mod11 mod12 modcommon
-  # PROJECT_CMODULES   =
+  # PROJECT_CMODULES   =  
   # PROJEC_LIBS        = unix
   #  #Standard boilerplate for the executable
   # $(PROJECT_EXECUTABLE) : $(PROJECT_MODULES:%=$(OBJDIR)/%.$(CMO)) \
@@ -151,14 +151,13 @@
   #	@$(NARRATIVE) "Linking $(COMPILETOWHAT) $@ $(LINKMSG)"
   #	$(AT)$(CAMLLINK) -verbose -o $@ \
   #                    $(PROJECT_LIBS:%=%.$(CMXA)) \
-  #                    $(PROJECT_LIBS:%=-cclib -l%) \
   #                    $^
   #
   #
-  #  # Rules for project 2
+  #  # Rules for project 2 
   # PROJECT_EXECUTABLE = $(OBJDIR)/proj2$(EXE)
   # PROJECT_MODULES    = mod21 modcommon
-  # PROJECT_CMODULES   =
+  # PROJECT_CMODULES   =  
   # PROJEC_LIBS        = unix str
   #  #Standard boilerplate for the executable
   # $(PROJECT_EXECUTABLE) : $(PROJECT_MODULES:%=$(OBJDIR)/%.$(CMO)) \
@@ -166,14 +165,22 @@
   #	@$(NARRATIVE) "Linking $(COMPILETOWHAT) $@ $(LINKMSG)"
   #	$(AT)$(CAMLLINK) -verbose -o $@ \
   #                    $(PROJECT_LIBS:%=%.$(CMXA)) \
-  #                    $(PROJECT_LIBS:%=-cclib -l%) \
   #                    $^
   #
 
+ifdef CAMLNATTL
+  CAMLLEX = ocamllex.opt
+  CAMLDEP = ocamldep.opt
+  CAMLCMPLR = ocamlc.opt
+  CAMLCMPLR_OPT = ocamlopt.opt
+else
+  CAMLLEX = ocamllex
+  CAMLDEP = ocamldep
+  CAMLCMPLR = ocamlc
+  CAMLCMPLR_OPT = ocamlopt
+endif
 
-CAMLLEX = ocamllex
-CAMLYACC= ocamlyacc -v
-CAMLDEP = ocamldep
+CAMLYACC = ocamlyacc -v
 CAMLP4 = camlp4 pa_o.cmo pa_op.cmo pr_o.cmo
 
 # Internal versions of COMPILEFLAGS and LINKFLAGS.  We'll add additional flags
@@ -202,9 +209,9 @@ COMPILE_FLAGS += -I $(OBJDIR)
 #   $(ECHO)        - use in place of '@' for things not printed in either style
 ifdef ECHOSTYLE_SCOTT
   # 'true' silently consumes its arguments, whereas 'echo' prints them
-  NARRATIVE   := true
+  NARRATIVE   := true           
   COMMAND     := echo
-  AT          :=
+  AT          := 
   ECHO        := @
 else
   NARRATIVE   := echo
@@ -246,12 +253,17 @@ ifdef NATIVECAML
    COMPILE_FLAGS  += -S
  endif
  ifdef STATIC
-   COMPILE_FLAGS  += -ccopt -static
-   LINK_FLAGS     += -ccopt -static
+   ifdef FLEXLINK
+     COMPILE_FLAGS  += -ccopt "-link -static"
+     LINK_FLAGS     += -ccopt "-link -static"
+   else
+     COMPILE_FLAGS  += -ccopt -static
+     LINK_FLAGS     += -ccopt -static
+   endif
  endif
  #foo := $(shell echo "I am in NATIVECAML mode" >&2; echo whatever)
- CAMLC          = $(CAMLDIR)ocamlopt  $(COMPILE_FLAGS)
- CAMLLINK       = $(CAMLDIR)ocamlopt  $(LINK_FLAGS)
+ CAMLC          = $(CAMLDIR)$(CAMLCMPLR_OPT)  $(COMPILE_FLAGS)
+ CAMLLINK       = $(CAMLDIR)$(CAMLCMPLR_OPT)  $(LINK_FLAGS)
  CMO            = cmx
  CMC            = opt.$(OBJ)  # compiled (and optimized) C
  CMXA           = cmxa
@@ -261,9 +273,9 @@ ifdef NATIVECAML
  # sm: by adding -native in native mode, we prevent spurious
  # dependencies on .cmo files which were causing lots of
  # extra recompilation
- CAMLDEP        = $(CAMLDIR)ocamldep -native
+ CAMLDEP        = $(CAMLDIR)$(CAMLDEP) -native
  # CAML_NOOPT maintains its value on entry (default, missing)
-else
+else 
  # Bytecode mode
  CMO            = cmo
  CMXA           = cma
@@ -271,13 +283,18 @@ else
  EXEEXT         = .byte
  MOVEAFTERCAMLC = cmi cmo
  COMPILETOWHAT  = bytecode
- CAMLC          = $(CAMLDIR)ocamlc $(COMPILE_FLAGS)
- CAMLLINK       = $(CAMLDIR)ocamlc -custom  $(LINK_FLAGS)
+ ifdef PROFILE
+   CAMLC          = $(CAMLDIR)ocamlcp -p a $(COMPILE_FLAGS)
+   CAMLLINK       = $(CAMLDIR)ocamlcp -p a -custom  $(LINK_FLAGS)
+ else
+   CAMLC          = $(CAMLDIR)$(CAMLCMPLR) $(COMPILE_FLAGS)
+   CAMLLINK       = $(CAMLDIR)$(CAMLCMPLR) -custom  $(LINK_FLAGS)
+ endif
  CAML_NOOPT     = 1
 endif
 
 
-ifdef UNSAFE
+ifdef UNSAFE 
  CAMLC          := $(CAMLC) -unsafe -noassert
 endif
 
@@ -286,11 +303,19 @@ ifdef CAML_NOOPT
    COMPILE_FLAGS    += -ccopt /Zi -ccopt /Od
    LINK_FLAGS       += -ccopt /Zi -ccopt /Od
  else
-   COMPILE_FLAGS    += -g -ccopt -g
+   ifdef FLEXLINK
+     COMPILE_FLAGS    += -g -ccopt "-link -g"
+   else
+     COMPILE_FLAGS    += -g -ccopt -g
+   endif
    ifdef MINGW
      LINK_FLAGS       += -g
    else
-     LINK_FLAGS       += -g -ccopt -g
+     ifdef FLEXLINK
+       LINK_FLAGS    += -g -ccopt "-link -g"
+     else
+       LINK_FLAGS    += -g -ccopt -g
+     endif
    endif
  endif
 else
@@ -357,7 +382,7 @@ $(OBJDIR)/%.cmi: %.mli
                    mv -f $(basename $<).cmi $(OBJDIR)/ \
         ;fi
 
-         # Compile an ML file. After compilation we
+         # Compile an ML file. After compilation we 
          # copy to $(OBJDIR) the .cmi and the result of compilation.
 $(OBJDIR)/%.$(CMO): %.ml
 	@$(NARRATIVE) "Compiling           $< to $(COMPILETOWHAT) $(COMPILEMSG)"
@@ -417,8 +442,8 @@ cleancaml:
 
 
 
-# Before we generate the dependencies, we must make sure to create all the
-# ML files that we need. Otherwise, the ocamldep will not point out a
+# Before we generate the dependencies, we must make sure to create all the 
+# ML files that we need. Otherwise, the ocamldep will not point out a 
 # dependency to a missing file
 BEFOREDEPS += $(MLLS:%.mll=$(OBJDIR)/%.ml) $(MLYS:%.mly=$(OBJDIR)/%.ml)
 
@@ -431,7 +456,7 @@ BEFOREDEPS += $(MLLS:%.mll=$(OBJDIR)/%.ml) $(MLYS:%.mly=$(OBJDIR)/%.ml)
 # Dependencies for .mli files reside in corresponding .di files.
 #
 
-# Replace the directories in the dependency rules with $(OBJDIR)/, since
+# Replace the directories in the dependency rules with $(OBJDIR)/, since 
 # we'll move .cmo/.cmx files there.
 # 1. Strip any text followed by / or \.  The / case even strips slashes that
 #    are preceded by whitespace, to account for unix absolute paths.
@@ -467,5 +492,5 @@ ifndef CLEANING
 -include $(MODULES:%=$(DEPENDDIR)/%.di)
 endif
 
-listmodules:
+listmodules: 
 	@echo $(MODULES)

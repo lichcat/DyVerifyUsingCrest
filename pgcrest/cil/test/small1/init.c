@@ -6,7 +6,7 @@
 
 extern int strcmp(const char*, const char*);
 
-/* run this with COMPATMODE=1 if compiling directly, since neither GCC nor
+/* run this with COMPATMODE=1 if compiling directly, since neither GCC nor 
  * MSVCC fully support the C standard */
 static char *usageplocal = "Usage";
 static char usageescape = 'C';
@@ -60,7 +60,7 @@ int afunc(int a) {
   char   indexbuff[10] __SIZED;
 
   loc1.f1.a2 = glob1.f1.a2;
-
+  
   return * loc1.f2[3].i1 + (locbuff[0] - indexbuff[0]);
 }
 
@@ -124,13 +124,13 @@ int main() {
   char localarrayinit = (("init with " "parens"));
 
   struct str1 astr = w[0];
-
+    
   if(strcmp(a[0].name, "first")) {
     ERROR(0);
   }
   if(sizeof(uarray) / sizeof(uarray[0]) != 3) {
     ERROR(1);
-  }
+  } 
   if(uarray[2].u1.a != 3) {
     ERROR(2);
   }
@@ -170,7 +170,10 @@ int main() {
 
 #endif
 
-
+  
   printf("Initialization test succeeded\n");
   return 0;
 }
+
+
+

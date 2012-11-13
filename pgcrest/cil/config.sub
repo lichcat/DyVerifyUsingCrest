@@ -162,10 +162,10 @@ case $os in
 		os=-chorusos
 		basic_machine=$1
 		;;
-	-chorusrdb)
-		os=-chorusrdb
+ 	-chorusrdb)
+ 		os=-chorusrdb
 		basic_machine=$1
-		;;
+ 		;;
 	-hiux*)
 		os=-hiuxwe2
 		;;

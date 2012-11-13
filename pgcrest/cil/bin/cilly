@@ -3,12 +3,12 @@
 #
 #
 #
-# Copyright (c) 2001-2002,
+# Copyright (c) 2001-2002, 
 #  George C. Necula    <necula@cs.berkeley.edu>
 #  Scott McPeak        <smcpeak@cs.berkeley.edu>
 #  Wes Weimer          <weimer@cs.berkeley.edu>
 # All rights reserved.
-#
+# 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
 # met:
@@ -65,16 +65,16 @@ BEGIN {
     # Use the most recent version of cilly
     $CilCompiler::mtime_asm = int((stat("$CilCompiler::base.asm.exe"))[9]);
     $CilCompiler::mtime_byte = int((stat("$CilCompiler::base.byte.exe"))[9]);
-    $CilCompiler::use_debug =
+    $CilCompiler::use_debug = 
          grep(/--bytecode/, @ARGV) ||
          grep(/--ocamldebug/, @ARGV) ||
         ($CilCompiler::mtime_asm < $CilCompiler::mtime_byte);
-    $CilCompiler::compiler =
-        $CilCompiler::base .
+    $CilCompiler::compiler = 
+        $CilCompiler::base . 
             ($CilCompiler::use_debug ? ".byte" : ".asm") . ".exe";
-    if($CilCompiler::use_debug) {
+    if($CilCompiler::use_debug) { 
         $ENV{"OCAMLRUNPARAM"} = "b" . $ENV{"OCAMLRUNPARAM"};
-    }
+    } 
 }
 
 # We need to customize the collection of arguments
@@ -108,7 +108,7 @@ sub helpMessage {
 The following are the arguments of the Cilly process
 EOF
    my @cmd = ($CilCompiler::compiler, '-help');
-   $self->runShell(@cmd);
+   $self->runShell(@cmd); 
 }
 
 
@@ -120,8 +120,8 @@ sub CillyCommand {
 
     if(defined $ENV{OCAMLDEBUG} || $self->{OCAMLDEBUG}) {
         print "OCAMLDEBUG is on\n";
-        my @idirs = ("src", "src/frontc", "src/ccured", "src/ext",
-                     "ocamlutil",
+        my @idirs = (".", "src", "src/frontc", "src/ext",
+                     "ocamlutil", 
                      "obj/$::archos");
 	my @iflags = map { ('-I', "$::cilhome/$_") } @idirs;
         unshift @cmd, 'ocamldebug', '-emacs', @iflags;

@@ -1,6 +1,6 @@
 
 (* wrapped version of the lexer that remembers all its tokens *)
-val wraplexer : (Lexing.lexbuf -> (string * string * 'a * Cabs.cabsloc))
+val wraplexer : (Lexing.lexbuf -> (string * string * 'a * Cabs.cabsloc)) 
                     -> Lexing.lexbuf -> 'a
 val setFinalWhite : string -> unit
 

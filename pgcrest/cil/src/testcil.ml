@@ -1,11 +1,11 @@
 (*
  *
- * Copyright (c) 2001-2002,
+ * Copyright (c) 2001-2002, 
  *  George C. Necula    <necula@cs.berkeley.edu>
  *  Scott McPeak        <smcpeak@cs.berkeley.edu>
  *  Wes Weimer          <weimer@cs.berkeley.edu>
  * All rights reserved.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
@@ -42,15 +42,15 @@ module E = Errormsg
 
 let lu = locUnknown
 
-(* If you have trouble try to reproduce the problem on a smaller type. Try
+(* If you have trouble try to reproduce the problem on a smaller type. Try 
  * limiting the maxNesting and integerKinds *)
 let integerKinds = [ IChar; ISChar; IUChar; IInt; IUInt; IShort; IUShort;
-                     ILong; IULong; ILongLong; IULongLong ]
-let floatKinds = [ FFloat; FDouble ]
-
-let baseTypes =
-       (List.map (fun ik -> (1, fun _ -> TInt(ik, []))) integerKinds)
-     @ (List.map (fun fk -> (1, fun _ -> TFloat(fk, []))) floatKinds)
+                     ILong; IULong; ILongLong; IULongLong ] 
+let floatKinds = [ FFloat; FDouble ] 
+    
+let baseTypes = 
+       (Util.list_map (fun ik -> (1, fun _ -> TInt(ik, []))) integerKinds)
+     @ (Util.list_map (fun fk -> (1, fun _ -> TFloat(fk, []))) floatKinds)
 
 
 (* Make a random struct *)
@@ -65,7 +65,7 @@ let useZeroBitfields = ref true
 let globals: global list ref = ref []
 let addGlobal (g:global) = globals := g :: !globals
 let getGlobals () = List.rev !globals
-
+ 
 (* Collect here the statements for main *)
 let statements: stmt list ref = ref []
 let addStatement (s: stmt) = statements := s :: !statements
@@ -75,41 +75,41 @@ let getStatements () = List.rev !statements
 let main: fundec ref = ref dummyFunDec
 let mainRetVal: varinfo ref = ref dummyFunDec.svar
 
-let assertId = ref 0
-let addAssert (b: exp) (extra: stmt list) : unit =
+let assertId = ref 0 
+let addAssert (b: exp) (extra: stmt list) : unit = 
   incr assertId;
   addStatement (mkStmt (If(UnOp(LNot, b, intType),
-                           mkBlock (extra @
+                           mkBlock (extra @ 
                                     [mkStmt (Return (Some (integer !assertId),
                                                      lu))]),
                            mkBlock [], lu)))
 
-let addSetRetVal (b: exp) (extra: stmt list) : unit =
-  addStatement
+let addSetRetVal (b: exp) (extra: stmt list) : unit = 
+  addStatement 
     (mkStmt (If(UnOp(LNot, b, intType),
-                mkBlock (extra @
+                mkBlock (extra @ 
                          [mkStmtOneInstr (Set(var !mainRetVal, one, lu))]),
                 mkBlock [], lu)))
 
 
-let printfFun: fundec =
+let printfFun: fundec = 
   let fdec = emptyFunction "printf" in
-  fdec.svar.vtype <-
+  fdec.svar.vtype <- 
      TFun(intType, Some [ ("format", charPtrType, [])], true, []);
   fdec
 
 
-let memsetFun: fundec =
+let memsetFun: fundec = 
   let fdec = emptyFunction "memset" in
-  fdec.svar.vtype <-
+  fdec.svar.vtype <- 
      TFun(voidPtrType, Some [ ("start", voidPtrType, []);
                               ("v", intType, []);
                               ("len", uintType, [])], false, []);
   fdec
 
-let checkOffsetFun: fundec =
+let checkOffsetFun: fundec = 
   let fdec = emptyFunction "checkOffset" in
-  fdec.svar.vtype <-
+  fdec.svar.vtype <- 
      TFun(voidType, Some [ ("start", voidPtrType, []);
                            ("len", uintType, []);
                            ("expected_start", intType, []);
@@ -117,23 +117,23 @@ let checkOffsetFun: fundec =
                            ("name", charPtrType, []) ], false, []);
   fdec
 
-let checkSizeOfFun: fundec =
+let checkSizeOfFun: fundec = 
   let fdec = emptyFunction "checkSizeOf" in
-  fdec.svar.vtype <-
+  fdec.svar.vtype <- 
      TFun(voidType, Some [ ("len", uintType, []);
                            ("expected", intType, []);
                            ("name", charPtrType, []) ], false, []);
   fdec
 
 
-let doPrintf format args =
+let doPrintf format args = 
   mkStmtOneInstr (Call(None, Lval(var printfFun.svar),
                        (Const(CStr format)) :: args, lu))
 
 
 (* Select among the choices, each with a given weight *)
 type 'a selection = int * (unit -> 'a)
-let select (choices: 'a selection list) : 'a =
+let select (choices: 'a selection list) : 'a = 
   (* Find the total weight *)
   let total = List.fold_left (fun sum (w, _) -> sum + w) 0 choices in
   if total = 0 then E.s (E.bug "Total for choices = 0\n");
@@ -142,7 +142,7 @@ let select (choices: 'a selection list) : 'a =
   (* Now get the choice *)
   let rec loop thechoice = function
       [] -> E.s (E.bug "Ran out of choices\n")
-    | (w, c) :: rest ->
+    | (w, c) :: rest -> 
         if thechoice < w then c () else loop (thechoice - w) rest
   in
   loop thechoice choices
@@ -150,7 +150,7 @@ let select (choices: 'a selection list) : 'a =
 
 (* Generate a new name *)
 let nameId = ref 0
-let newName (base: string) =
+let newName (base: string) = 
   incr nameId;
   base ^ (string_of_int !nameId)
 
@@ -158,37 +158,37 @@ let newName (base: string) =
 (********** Testing of SIZEOF ***********)
 
 (* The current selection of types *)
-let typeChoices : typ selection list ref = ref []
+let typeChoices : typ selection list ref = ref [] 
 
 let baseTypeChoices : typ selection list ref = ref []
 
 
 let currentNesting = ref 0
-let mkCompType (iss: bool) =
+let mkCompType (iss: bool) =  
   if !currentNesting >= !maxNesting then (* Replace it with an int *)
     select !baseTypeChoices
   else begin
     incr currentNesting;
-    let ci =
-      mkCompInfo iss (newName "comp")
-        (fun _ ->
+    let ci = 
+      mkCompInfo iss (newName "comp") 
+        (fun _ -> 
           let nrFields = 1 + (Random.int !maxFields) in
           let rec mkFields (i: int) =
             if i = nrFields then [] else begin
               let ft = select !typeChoices in
               let fname = "f" ^ string_of_int i in
-              let fname', width =
-                if not !useBitfields || not (isIntegralType ft)
-                                     || (Random.int 8 >= 6) then
-                  fname, None
+              let fname', width = 
+                if not !useBitfields || not (isIntegralType ft) 
+                                     || (Random.int 8 >= 6) then 
+                  fname, None 
                 else begin
                   let tw = bitsSizeOf ft in (* Assume this works for TInt *)
-                  let w = (if !useZeroBitfields then 0 else 1) +
+                  let w = (if !useZeroBitfields then 0 else 1) + 
                           Random.int (3 * tw / 4) in
                   (if w = 0 then "___missing_field_name" else fname), Some w
                 end
               in
-              (fname', ft, width, [], lu) :: mkFields (i + 1)
+              (fname', ft, width, [], lu) :: mkFields (i + 1) 
             end
           in
           mkFields 0)
@@ -204,8 +204,8 @@ let mkCompType (iss: bool) =
 let mkPtrType () = TPtr(TVoid([]), [])
 
 (* Make an array type. *)
-let mkArrayType () =
-  if !currentNesting >= !maxNesting then
+let mkArrayType () = 
+  if !currentNesting >= !maxNesting then 
     select !baseTypeChoices
   else begin
     incr currentNesting;
@@ -214,10 +214,10 @@ let mkArrayType () =
     decr currentNesting;
     at
   end
+  
 
-
-let testSizeOf () =
-  let doOne (i: int) =
+let testSizeOf () = 
+  let doOne (i: int) = 
 (*    ignore (E.log "doOne %d\n" i); *)
     (* Make a random type *)
     let t = select !typeChoices in
@@ -229,7 +229,7 @@ let testSizeOf () =
                                         SizeOfE(Lval(var g))], lu)));
     try
 (*      if i = 0 then ignore (E.log "0: %a\n" d_plaintype t); *)
-      let bsz =
+      let bsz = 
         try bitsSizeOf t  (* This is what we are testing *)
         with e -> begin
           ignore (E.log "Exception %s caught while computing bitsSizeOf(%a)\n"
@@ -244,16 +244,16 @@ let testSizeOf () =
       end;
 (*      ignore (E.log "2 "); *)
       (* Check the offset of all fields in there *)
-      let rec checkOffsets (lv: lval) (lvt: typ) =
+      let rec checkOffsets (lv: lval) (lvt: typ) = 
         match lvt with
-          TComp(c, _) ->
-            List.iter
-              (fun f ->
-                if f.fname <> "___missing_field_name" then
+          TComp(c, _) -> 
+            List.iter 
+              (fun f -> 
+                if f.fname <> "___missing_field_name" then 
                   checkOffsets (addOffsetLval (Field(f, NoOffset)) lv) f.ftype)
               c.cfields
-        | TArray (bt, Some len, _) ->
-            let leni =
+        | TArray (bt, Some len, _) -> 
+            let leni = 
               match isInteger len with
                 Some i64 -> i64_to_int i64
               | None -> E.s (E.bug "Array length is not a constant")
@@ -262,32 +262,32 @@ let testSizeOf () =
             checkOffsets (addOffsetLval (Index(integer i, NoOffset)) lv) bt
 
         | _ -> (* Now a base type *)
-            let _, off = lv in
+            let _, off = lv in 
             let start, width = bitsOffset t off in
-            let setLv (v: exp) =
+            let setLv (v: exp) = 
               match lvt with
-                TFloat (FFloat, _) ->
+                TFloat (FFloat, _) -> 
                   Set((Mem (mkCast (AddrOf lv) intPtrType), NoOffset),
                       v, lu)
-              | TFloat (FDouble, _) ->
-                  Set((Mem (mkCast (AddrOf lv)
+              | TFloat (FDouble, _) -> 
+                  Set((Mem (mkCast (AddrOf lv) 
                               (TPtr(TInt(IULongLong, []), []))), NoOffset),
                       mkCast v (TInt(IULongLong, [])), lu)
 
-              | (TPtr _ | TInt((IULongLong|ILongLong), _)) ->
+              | (TPtr _ | TInt((IULongLong|ILongLong), _)) -> 
                   Set(lv, mkCast v lvt, lu)
               | _ -> Set(lv, v, lu)
             in
             let ucharPtrType = TPtr(TInt(IUChar, []), []) in
-            let s =
+            let s = 
               mkStmt (Instr ([ setLv mone;
                                Call(None, Lval(var checkOffsetFun.svar),
                                     [ mkCast (mkAddrOrStartOf (var g))
                                              ucharPtrType;
                                       SizeOfE (Lval(var g));
-                                      integer start;
+                                      integer start; 
                                       integer width;
-                                      (Const(CStr(sprint 80
+                                      (Const(CStr(sprint 80 
                                                     (d_lval () lv))))],lu);
                                setLv zero])) in
             addStatement s
@@ -305,8 +305,8 @@ let testSizeOf () =
   in
 
   (* Make the composite choices more likely *)
-  typeChoices :=
-     [ (1, mkPtrType);
+  typeChoices := 
+     [ (1, mkPtrType); 
        (5, mkArrayType);
        (5, fun _ -> mkCompType true);
        (5, fun _ -> mkCompType false); ]
@@ -314,10 +314,10 @@ let testSizeOf () =
   baseTypeChoices := baseTypes;
   useBitfields := false;
   maxFields := 4;
-  for i = 0 to 100 do
+  for i = 0 to 100 do 
     doOne i
   done;
-
+                   
   (* Now test the bitfields. *)
   typeChoices :=  [ (1, fun _ -> mkCompType true) ];
   baseTypeChoices := [(1, fun _ -> TInt(IInt, []))];
@@ -328,8 +328,8 @@ let testSizeOf () =
   done;
 
   (* Now make it a bit more complicated *)
-  baseTypeChoices :=
-     List.map (fun ik -> (1, fun _ -> TInt(ik, [])))
+  baseTypeChoices := 
+     Util.list_map (fun ik -> (1, fun _ -> TInt(ik, []))) 
        [IInt; ILong; IUInt; IULong ];
   useBitfields := true;
   for i = 0 to 100 do
@@ -339,16 +339,16 @@ let testSizeOf () =
   (* An really complicated now *)
   baseTypeChoices := baseTypes;
   useBitfields := true;
-  for i = 0 to 100 do
+  for i = 0 to 100 do 
     doOne i
   done;
 
   ()
 
 
-(* Now the main tester. Pass to it the name of a command "cmd" that when
+(* Now the main tester. Pass to it the name of a command "cmd" that when 
  * invoked will compile "testingcil.c" and run the result *)
-let createFile () =
+let createFile () = 
 
   assertId := 0;
   nameId := 0;
@@ -370,7 +370,7 @@ let createFile () =
   addGlobal (GVar(printfFun.svar, {init=None}, lu));
   addGlobal (GVar(memsetFun.svar, {init=None}, lu));
 
-  (* now fill in the composites and the code of main. For simplicity we add
+  (* now fill in the composites and the code of main. For simplicity we add 
    * the statements of main in reverse order *)
 
   testSizeOf ();
@@ -378,34 +378,34 @@ let createFile () =
 
   (* Now add a return 0 at the end *)
   addStatement (mkStmt (Return(Some (Lval(var !mainRetVal)), lu)));
-
-
+  
+  
   (* Add main at the end *)
   addGlobal (GFun(!main, lu));
   !main.sbody.bstmts <- getStatements ();
 
   (* Now build the CIL.file *)
-  let file =
+  let file = 
     { fileName = "testingcil.c";
       globals  = getGlobals ();
       globinit = None;
       globinitcalled = false;
-    }
+    } 
   in
   (* Print the file *)
   let oc = open_out "testingcil.c" in
   dumpFile defaultCilPrinter oc "testingcil.c" file;
   close_out oc
 
-
+  
 
 
 
 (* initialization code for the tester *)
-let randomStateFile = "testcil.random"  (* The name of a file where we store
-                                         * the state of the random number
+let randomStateFile = "testcil.random"  (* The name of a file where we store 
+                                         * the state of the random number 
                                          * generator last time *)
-let doit (command: string) =
+let doit (command: string) = 
   while true do
     (* Initialize the random no generator *)
     begin
@@ -437,3 +437,4 @@ let doit (command: string) =
       Sys.remove randomStateFile
     end
   done
+

@@ -81,6 +81,7 @@ pgcrest/cil/ocamlutil/perfcount.c
 pgcrest/cil/src/formatparse.output
 pgcrest/cil/src/frontc/cparser.output
 pgcrest/cil/src/machdep-ml.c
+pgcrest/cil/test
 
 #benchmarks' tmp files
 pgcrest/benchmarks/vim-5.7/src/config.cache

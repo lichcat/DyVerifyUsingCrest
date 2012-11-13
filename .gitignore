@@ -82,6 +82,7 @@ pgcrest/cil/src/formatparse.output
 pgcrest/cil/src/frontc/cparser.output
 pgcrest/cil/src/machdep-ml.c
 pgcrest/cil/test
+pgcrest/cil/doc
 
 #benchmarks' tmp files
 pgcrest/benchmarks/vim-5.7/src/config.cache

@@ -31,11 +31,6 @@
 # include <stropts.h>
 #endif
 #include <sys/ioctl.h>
-/* for CREST */
-#ifdef  CREST
-#include <crest.h>
-#define MYMAX 100
-#endif
 /* for injection */
 #include "global_array.h"
 /* end */
@@ -86,8 +81,11 @@ static char *line_num_end = line_buf + LINE_COUNTER_BUF_LEN - 3;
 static int newlines2 = 0;
 
 #ifdef  CREST
-size_t fuzzsafe_read(int fd,char* buf,size_t num){
-    int i,limit,tmp;
+#include <crest.h>
+#define MYMAX 100
+#define safe_read fuzz_crestread
+static size_t fuzz_crestread(int fd,char* buf,size_t num){
+    int i,limit;
     static _crest_count=0;
     if(_crest_count >= MYMAX)
         return 0;
@@ -95,8 +93,7 @@ size_t fuzzsafe_read(int fd,char* buf,size_t num){
         limit = num;
     else
         limit = MYMAX - _crest_count;
-    tmp=_crest_count;
-    for( i =tmp; i < tmp+limit; i++){
+    for( i =0; i < limit; i++){
         CREST_char(buf[i]);
         _crest_count++;
     }
@@ -194,11 +191,7 @@ simple_cat (
   while (true)
     {
       /* Read a block of input.  */
-#ifdef  CREST
-      n_read = fuzzsafe_read (input_desc, buf, bufsize);
-#else
       n_read = safe_read (input_desc, buf, bufsize);
-#endif
       if (n_read == SAFE_READ_ERROR)
         {
           error (0, errno, "%s", infile);
@@ -374,11 +367,7 @@ cat (
                 write_pending (outbuf, &bpout);
 
               /* Read more input into INBUF.  */
-#ifdef  CREST
-              n_read = fuzzsafe_read (input_desc, inbuf, insize);
-#else
               n_read = safe_read (input_desc, inbuf, insize);
-#endif
               if (n_read == SAFE_READ_ERROR)
                 {
                   error (0, errno, "%s", infile);
@@ -613,12 +602,8 @@ main (int argc, char **argv)
   atexit(crest_use);
 
   /* Parse command line options.  */
-#ifdef  CREST
-  CREST_int(c);
-#else
   while ((c = getopt_long (argc, argv, "benstuvAET", long_options, NULL))
          != -1)
-#endif
     {
       switch (c)
         {

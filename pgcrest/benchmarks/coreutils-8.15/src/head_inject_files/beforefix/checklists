@@ -1,0 +1,268 @@
+0
+head.c	206	MA
+head.c	212	BF
+head.c	228	PP
+head.c	228	PP
+head.c	228	LK
+END_PATH
+1
+head.c	206	MA
+head.c	212	BT
+head.c	216	BT
+head.c	217	PP
+head.c	217	PP
+head.c	217	LK
+END_PATH
+2
+head.c	206	MA
+head.c	212	BT
+head.c	216	BF
+head.c	222	PP
+head.c	222	PP
+head.c	222	LK
+END_PATH
+3
+head.c	206	MA
+head.c	212	BT
+head.c	216	BF
+head.c	221	BF
+head.c	224	BT
+head.c	225	PP
+head.c	225	PP
+head.c	225	LK
+END_PATH
+4
+head.c	875	MA
+head.c	881	BF
+head.c	892	BT
+head.c	895	PP
+head.c	895	PP
+head.c	895	LK
+END_PATH
+5
+head.c	875	MA
+head.c	881	BT
+head.c	900	BF
+head.c	905	PP
+head.c	905	PP
+head.c	905	LK
+END_PATH
+6
+head.c	875	MA
+head.c	881	BT
+head.c	900	BT
+head.c	900	BT
+head.c	903	PP
+head.c	903	PP
+head.c	903	LK
+END_PATH
+7
+head.c	917	MA
+head.c	939	PP
+head.c	939	PP
+head.c	939	LK
+END_PATH
+8
+head.c	806	MA
+head.c	810	BF
+head.c	842	PP
+head.c	842	PP
+head.c	842	LK
+END_PATH
+9
+head.c	806	MA
+head.c	810	BT
+head.c	815	BT
+head.c	818	PP
+head.c	818	PP
+head.c	818	LK
+END_PATH
+10
+head.c	516	XMA
+head.c	516	PP
+head.c	524	BF
+head.c	524	BF
+head.c	534	BF
+head.c	545	BF
+head.c	558	PP
+head.c	558	PP
+head.c	559	BT
+head.c	562	PP
+head.c	562	LK
+END_PATH
+11
+head.c	516	XMA
+head.c	516	PP
+head.c	524	BF
+head.c	524	BF
+head.c	534	BF
+head.c	545	BF
+head.c	558	PP
+head.c	558	PP
+head.c	559	BF
+head.c	567	PP
+head.c	567	LK
+END_PATH
+12
+head.c	443	MA
+head.c	447	BT
+head.c	449	PP
+head.c	449	PP
+head.c	449	LK
+END_PATH
+13
+head.c	443	MA
+head.c	447	BF
+head.c	447	BF
+head.c	447	BF
+head.c	458	BT
+head.c	462	PP
+head.c	462	PP
+head.c	462	LK
+END_PATH
+14
+head.c	443	MA
+head.c	447	BF
+head.c	447	BF
+head.c	447	BF
+head.c	458	BF
+head.c	459	BF
+head.c	469	BT
+head.c	470	PP
+head.c	470	PP
+head.c	470	LK
+END_PATH
+15
+head.c	443	MA
+head.c	447	BF
+head.c	447	BF
+head.c	447	BF
+head.c	458	BF
+head.c	459	BF
+head.c	469	BF
+head.c	474	BT
+head.c	478	PP
+head.c	478	PP
+head.c	478	LK
+END_PATH
+16
+head.c	443	MA
+head.c	447	BF
+head.c	447	BF
+head.c	447	BF
+head.c	458	BF
+head.c	459	BF
+head.c	469	BF
+head.c	474	BF
+head.c	482	BT
+head.c	483	PP
+head.c	483	PP
+head.c	483	LK
+END_PATH
+17
+head.c	443	MA
+head.c	447	BF
+head.c	447	BF
+head.c	447	BF
+head.c	458	BF
+head.c	459	BF
+head.c	469	BF
+head.c	474	BF
+head.c	482	BF
+head.c	486	PP
+head.c	486	PP
+head.c	486	LK
+END_PATH
+18
+head.c	747	MA
+head.c	749	BF
+head.c	772	PP
+head.c	772	PP
+head.c	772	LK
+END_PATH
+19
+head.c	747	MA
+head.c	749	BT
+head.c	758	BT
+head.c	758	BT
+head.c	761	BF
+head.c	764	PP
+head.c	764	PP
+head.c	764	LK
+END_PATH
+20
+head.c	192	MA
+head.c	198	PP
+head.c	198	LK
+END_PATH
+21
+head.c	237	MA
+head.c	276	BT
+head.c	338	PP
+head.c	338	PP
+head.c	338	LK
+END_PATH
+22
+head.c	237	MA
+head.c	276	BF
+head.c	425	BF
+head.c	429	PP
+head.c	429	PP
+head.c	429	LK
+END_PATH
+23
+head.c	498	MA
+head.c	525	PP
+head.c	577	PP
+head.c	610	BF
+head.c	616	PP
+head.c	616	PP
+head.c	616	LK
+END_PATH
+24
+head.c	849	MA
+head.c	854	BT
+head.c	856	BT
+head.c	858	PP
+head.c	858	PP
+head.c	858	LK
+END_PATH
+25
+head.c	849	MA
+head.c	854	BT
+head.c	856	BF
+head.c	862	PP
+head.c	862	PP
+head.c	862	LK
+END_PATH
+26
+head.c	849	MA
+head.c	854	BF
+head.c	865	BT
+head.c	866	PP
+head.c	866	PP
+head.c	866	LK
+END_PATH
+27
+head.c	849	MA
+head.c	854	BF
+head.c	865	BF
+head.c	868	PP
+head.c	868	PP
+head.c	868	LK
+END_PATH
+28
+head.c	778	MA
+head.c	783	BF
+head.c	800	PP
+head.c	800	PP
+head.c	800	LK
+END_PATH
+29
+head.c	778	MA
+head.c	783	BT
+head.c	789	BT
+head.c	792	PP
+head.c	792	PP
+head.c	792	LK
+END_PATH

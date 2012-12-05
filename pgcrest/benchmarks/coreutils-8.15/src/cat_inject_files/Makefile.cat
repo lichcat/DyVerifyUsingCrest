@@ -19,8 +19,8 @@ CREST_LIBS = -lcrest -lstdc++
 CREST_CC = ../../../cil/bin/cilly --save-temps --doCrestInstrument
 CREST_PROGRAM = cat
 FPRFILE = inject_$(CREST_PROGRAM).fpr
-ANALYZERC = sourceanalyzer -b inject_s2_$(CREST_PROGRAM) gcc
-ANALYZER = sourceanalyzer -b inject_s2_$(CREST_PROGRAM)
+ANALYZERC = sourceanalyzer -b inject_$(CREST_PROGRAM) gcc
+ANALYZER = sourceanalyzer -b inject_$(CREST_PROGRAM)
 
 
 pkgdatadir = $(datadir)/coreutils
@@ -2355,17 +2355,15 @@ base64$(EXEEXT): $(base64_OBJECTS) $(base64_DEPENDENCIES) $(EXTRA_base64_DEPENDE
 basename$(EXEEXT): $(basename_OBJECTS) $(basename_DEPENDENCIES) $(EXTRA_basename_DEPENDENCIES) 
 	@rm -f basename$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(basename_OBJECTS) $(basename_LDADD) $(LIBS)
-crest:	clean	mycp	$(CREST_PROGRAM)$(EXEEXT)
-mycp:
-	@if test -f "../lib/cfg"; then cp "../lib/cfg" "cfg"; fi
-	@if test -f "../lib/cfg_func_map"; then cp "../lib/cfg_func_map" "cfg_func_map"; fi
-	@if test -f "../lib/branches"; then cp "../lib/branches" "branches"; fi
-	@if test -f "../lib/idcount"; then cp "../lib/idcount" "idcount"; fi
-	@if test -f "../lib/funcount"; then cp "../lib/funcount" "funcount"; fi
-	@if test -f "../lib/stmtcount"; then cp "../lib/stmtcount" "stmtcount"; fi
+crest:	clean	$(CREST_PROGRAM)$(EXEEXT)
 run:	
 	../../../bin/reachability
 	../../../bin/run_crest "./$(CREST_PROGRAM) -" 1000 -path 2>$(CREST_PROGRAM)_path
+	../../../bin/run_crest "./$(CREST_PROGRAM) -A -" 1000 -path 2>>$(CREST_PROGRAM)_path
+	../../../bin/run_crest "./$(CREST_PROGRAM) -b -" 1000 -path 2>>$(CREST_PROGRAM)_path
+	../../../bin/run_crest "./$(CREST_PROGRAM) -n -" 1000 -path 2>>$(CREST_PROGRAM)_path
+	../../../bin/run_crest "./$(CREST_PROGRAM) -s -" 1000 -path 2>>$(CREST_PROGRAM)_path
+	../../../bin/run_crest "./$(CREST_PROGRAM) -u -" 1000 -path 2>>$(CREST_PROGRAM)_path
 analysis:	clean	$(CREST_PROGRAM)$(EXEEXT)
 	rm -f -r inject_fortify
 	rm -f *.fpr
@@ -2439,9 +2437,9 @@ expand$(EXEEXT): $(expand_OBJECTS) $(expand_DEPENDENCIES) $(EXTRA_expand_DEPENDE
 expr$(EXEEXT): $(expr_OBJECTS) $(expr_DEPENDENCIES) $(EXTRA_expr_DEPENDENCIES) 
 	@rm -f expr$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(expr_OBJECTS) $(expr_LDADD) $(LIBS)
-factor$(EXEEXT): $(factor_OBJECTS) $(global_array_OBJECTS) $(factor_DEPENDENCIES) $(EXTRA_factor_DEPENDENCIES) 
+factor$(EXEEXT): $(factor_OBJECTS) $(factor_DEPENDENCIES) $(EXTRA_factor_DEPENDENCIES) 
 	@rm -f factor$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(factor_OBJECTS) $(global_array_OBJECTS) $(factor_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(factor_OBJECTS) $(factor_LDADD) $(LIBS)
 false$(EXEEXT): $(false_OBJECTS) $(false_DEPENDENCIES) $(EXTRA_false_DEPENDENCIES) 
 	@rm -f false$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(false_OBJECTS) $(false_LDADD) $(LIBS)
@@ -2595,9 +2593,9 @@ shuf$(EXEEXT): $(shuf_OBJECTS) $(shuf_DEPENDENCIES) $(EXTRA_shuf_DEPENDENCIES)
 sleep$(EXEEXT): $(sleep_OBJECTS) $(sleep_DEPENDENCIES) $(EXTRA_sleep_DEPENDENCIES) 
 	@rm -f sleep$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(sleep_OBJECTS) $(sleep_LDADD) $(LIBS)
-sort$(EXEEXT): $(sort_OBJECTS) $(global_array_OBJECTS) $(sort_DEPENDENCIES) $(EXTRA_sort_DEPENDENCIES) 
+sort$(EXEEXT): $(sort_OBJECTS) $(sort_DEPENDENCIES) $(EXTRA_sort_DEPENDENCIES) 
 	@rm -f sort$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(sort_OBJECTS) $(global_array_OBJECTS) $(sort_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(sort_OBJECTS) $(sort_LDADD) $(LIBS)
 split$(EXEEXT): $(split_OBJECTS) $(split_DEPENDENCIES) $(EXTRA_split_DEPENDENCIES) 
 	@rm -f split$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(split_OBJECTS) $(split_LDADD) $(LIBS)

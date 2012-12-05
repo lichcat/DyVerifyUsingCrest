@@ -31,14 +31,7 @@
 # include <stropts.h>
 #endif
 #include <sys/ioctl.h>
-/* for CREST */
-#ifdef  CREST
-#include <crest.h>
-#define MYMAX 100
-#endif
-/* for injection */
-#include "global_array.h"
-/* end */
+
 #include "system.h"
 #include "ioblksize.h"
 #include "error.h"
@@ -85,24 +78,6 @@ static char *line_num_end = line_buf + LINE_COUNTER_BUF_LEN - 3;
 /* Preserves the `cat' function's local `newlines' between invocations.  */
 static int newlines2 = 0;
 
-#ifdef  CREST
-size_t fuzzsafe_read(int fd,char* buf,size_t num){
-    int i,limit,tmp;
-    static _crest_count=0;
-    if(_crest_count >= MYMAX)
-        return 0;
-    if(_crest_count + num < MYMAX)
-        limit = num;
-    else
-        limit = MYMAX - _crest_count;
-    tmp=_crest_count;
-    for( i =tmp; i < tmp+limit; i++){
-        CREST_char(buf[i]);
-        _crest_count++;
-    }
-    return limit;
-}
-#endif
 void
 usage (int status)
 {
@@ -154,8 +129,6 @@ Examples:\n\
 static void
 next_line_num (void)
 {
-    int* __CREST_p1 = (int*)malloc(sizeof(int)*10);
-    addToArray((void**)&__CREST_p1,1);
   char *endp = line_num_end;
   do
     {
@@ -184,8 +157,6 @@ simple_cat (
         call.  */
      size_t bufsize)
 {
-    int* __CREST_p2 = (int*)malloc(sizeof(int)*10);
-    //addToArray((void**)&__CREST_p2,2);
   /* Actual number of characters read, and therefore written.  */
   size_t n_read;
 
@@ -194,11 +165,8 @@ simple_cat (
   while (true)
     {
       /* Read a block of input.  */
-#ifdef  CREST
-      n_read = fuzzsafe_read (input_desc, buf, bufsize);
-#else
+
       n_read = safe_read (input_desc, buf, bufsize);
-#endif
       if (n_read == SAFE_READ_ERROR)
         {
           error (0, errno, "%s", infile);
@@ -228,8 +196,6 @@ simple_cat (
 static inline void
 write_pending (char *outbuf, char **bpout)
 {
-    int* __CREST_p3 = (int*)malloc(sizeof(int)*10);
-    //addToArray((void**)&__CREST_p3,3);
   size_t n_write = *bpout - outbuf;
   if (0 < n_write)
     {
@@ -268,8 +234,6 @@ cat (
      bool show_ends,
      bool squeeze_blank)
 {
-    int* __CREST_p4 = (int*)malloc(sizeof(int)*10);
-    addToArray((void**)&__CREST_p4,4);
   /* Last character read from the input buffer.  */
   unsigned char ch;
 
@@ -374,11 +338,8 @@ cat (
                 write_pending (outbuf, &bpout);
 
               /* Read more input into INBUF.  */
-#ifdef  CREST
-              n_read = fuzzsafe_read (input_desc, inbuf, insize);
-#else
+
               n_read = safe_read (input_desc, inbuf, insize);
-#endif
               if (n_read == SAFE_READ_ERROR)
                 {
                   error (0, errno, "%s", infile);
@@ -608,17 +569,12 @@ main (int argc, char **argv)
      case_GETOPT_HELP_CHAR or case_GETOPT_VERSION_CHAR code.
      Normally STDOUT_FILENO is used rather than stdout, so
      close_stdout does nothing.  */
-  //atexit (close_stdout);
-  atexit(freeArray);
-  atexit(crest_use);
+  atexit (close_stdout);
 
   /* Parse command line options.  */
-#ifdef  CREST
-  CREST_int(c);
-#else
+
   while ((c = getopt_long (argc, argv, "benstuvAET", long_options, NULL))
          != -1)
-#endif
     {
       switch (c)
         {

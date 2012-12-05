@@ -1,4 +1,4 @@
-head.o head.o: head.c ../lib/config.h ../lib/stdio.h /usr/include/stdio.h \
+head.o: head.c ../lib/config.h ../lib/stdio.h /usr/include/stdio.h \
   /usr/include/features.h /usr/include/x86_64-linux-gnu/bits/predefs.h \
   /usr/include/x86_64-linux-gnu/sys/cdefs.h \
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
@@ -63,8 +63,9 @@ head.o head.o: head.c ../lib/config.h ../lib/stdio.h /usr/include/stdio.h \
   ../lib/same-inode.h ../lib/dirname.h ../lib/dosname.h ../lib/openat.h \
   ../lib/closein.h ../lib/closeout.h ../lib/version-etc.h \
   ../lib/propername.h ../lib/progname.h ../lib/intprops.h \
-  ../lib/inttostr.h ../lib/intprops.h ../lib/error.h ../lib/full-read.h \
-  ../lib/quote.h ../lib/safe-read.h ../lib/xfreopen.h ../lib/xstrtol.h
+  ../lib/inttostr.h ../lib/intprops.h global_array.h ../lib/error.h \
+  ../lib/full-read.h ../lib/quote.h ../lib/safe-read.h ../lib/xfreopen.h \
+  ../lib/xstrtol.h ../../../include/crest.h
 
 ../lib/config.h:
 
@@ -296,6 +297,8 @@ version.h:
 
 ../lib/intprops.h:
 
+global_array.h:
+
 ../lib/error.h:
 
 ../lib/full-read.h:
@@ -307,3 +310,5 @@ version.h:
 ../lib/xfreopen.h:
 
 ../lib/xstrtol.h:
+
+../../../include/crest.h:

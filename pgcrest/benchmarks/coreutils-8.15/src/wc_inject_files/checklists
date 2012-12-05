@@ -1,59 +1,59 @@
 0
-wc.c	551	MA
-wc.c	553	BT
-wc.c	558	PP
-wc.c	558	PP
-wc.c	558	LK
-END_PATH
-1
-wc.c	551	MA
-wc.c	553	BF
-wc.c	553	BF
-wc.c	563	BT
-wc.c	566	PP
-wc.c	566	PP
-wc.c	566	LK
-END_PATH
-2
-wc.c	551	MA
-wc.c	553	BF
-wc.c	553	BF
-wc.c	563	BF
-wc.c	571	BT
-wc.c	574	PP
-wc.c	574	PP
-wc.c	574	LK
-END_PATH
-3
-wc.c	551	MA
-wc.c	553	BF
-wc.c	553	BF
-wc.c	563	BF
-wc.c	571	BF
-wc.c	576	PP
-wc.c	576	PP
-wc.c	576	LK
-END_PATH
-4
-wc.c	621	MA
-wc.c	647	PP
-wc.c	647	PP
-wc.c	647	LK
-END_PATH
-5
-wc.c	216	MA
+wc.c	538	MA
+wc.c	540	BT
 wc.c	545	PP
 wc.c	545	PP
 wc.c	545	LK
 END_PATH
+1
+wc.c	538	MA
+wc.c	540	BF
+wc.c	540	BF
+wc.c	550	BT
+wc.c	553	PP
+wc.c	553	PP
+wc.c	553	LK
+END_PATH
+2
+wc.c	538	MA
+wc.c	540	BF
+wc.c	540	BF
+wc.c	550	BF
+wc.c	558	BT
+wc.c	561	PP
+wc.c	561	PP
+wc.c	561	LK
+END_PATH
+3
+wc.c	538	MA
+wc.c	540	BF
+wc.c	540	BF
+wc.c	550	BF
+wc.c	558	BF
+wc.c	563	PP
+wc.c	563	PP
+wc.c	563	LK
+END_PATH
+4
+wc.c	608	MA
+wc.c	634	PP
+wc.c	634	PP
+wc.c	634	LK
+END_PATH
+5
+wc.c	219	MA
+wc.c	532	PP
+wc.c	532	PP
+wc.c	532	LK
+END_PATH
 6
-wc.c	590	MA
-wc.c	611	PP
-wc.c	611	PP
-wc.c	611	LK
+wc.c	577	MA
+wc.c	598	PP
+wc.c	598	PP
+wc.c	598	LK
 END_PATH
 7
-wc.c	175	MA
-wc.c	208	PP
-wc.c	208	LK
+wc.c	178	MA
+wc.c	211	PP
+wc.c	211	LK
 END_PATH

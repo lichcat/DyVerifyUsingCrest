@@ -1,0 +1,16 @@
+cat: warning 0 's results:
+LEAK
+cat: warning 1 's results:
+MAY-LEAK
+cat: warning 2 's results:
+MAY-LEAK
+cat: warning 3 's results:
+L_NOT_LEAK
+cat: warning 4 's results:
+MAY-LEAK
+cat: warning 5 's results:
+LEAK
+cat: warning 6 's results:
+BLOAT
+cat: warning 7 's results:
+BLOAT

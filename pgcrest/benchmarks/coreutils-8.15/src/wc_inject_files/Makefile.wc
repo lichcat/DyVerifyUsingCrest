@@ -19,8 +19,8 @@ CREST_LIBS = -lcrest -lstdc++
 CREST_CC = ../../../cil/bin/cilly --save-temps --doCrestInstrument
 CREST_PROGRAM = wc
 FPRFILE = inject_$(CREST_PROGRAM).fpr
-ANALYZERC = sourceanalyzer -b inject_s1_$(CREST_PROGRAM) gcc
-ANALYZER = sourceanalyzer -b inject_s1_$(CREST_PROGRAM)
+ANALYZERC = sourceanalyzer -b inject_$(CREST_PROGRAM) gcc
+ANALYZER = sourceanalyzer -b inject_$(CREST_PROGRAM)
 
 
 pkgdatadir = $(datadir)/coreutils
@@ -2655,18 +2655,11 @@ users$(EXEEXT): $(users_OBJECTS) $(users_DEPENDENCIES) $(EXTRA_users_DEPENDENCIE
 vdir$(EXEEXT): $(vdir_OBJECTS) $(vdir_DEPENDENCIES) $(EXTRA_vdir_DEPENDENCIES) 
 	@rm -f vdir$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(vdir_OBJECTS) $(vdir_LDADD) $(LIBS)
-crest:	clean	mycp	$(CREST_PROGRAM)$(EXEEXT)
-
-mycp:
-	cp -f ../lib/cfg cfg
-	cp -f ../lib/cfg_func_map cfg_func_map
-	cp -f ../lib/branches branches
-	cp -f ../lib/idcount idcount
-	cp -f ../lib/funcount funcount
-	cp -f ../lib/stmtcount stmtcount
+crest:	clean	$(CREST_PROGRAM)$(EXEEXT)
 run:	
 	../../../bin/reachability
-	../../../bin/run_crest "./$(CREST_PROGRAM) /dev/null" 1000 -path 2>$(CREST_PROGRAM)_path
+	../../../bin/run_crest "./$(CREST_PROGRAM)" 1000 -path 2>$(CREST_PROGRAM)_path
+	../../../bin/run_crest "./$(CREST_PROGRAM) /dev/null" 1000 -path 2>>$(CREST_PROGRAM)_path
 analysis:	wc$(EXEEXT)
 	rm -f -r inject_fortify
 	rm -f *.fpr
@@ -3146,6 +3139,7 @@ clean: clean-am
 	-rm -f *.i *.cil.c
 	-rm -f branches cfg cfg_func_map funcount idcount stmtcount
 	-rm -f input cfg_branches coverage szd_execution
+	-rm -f reachability
 
 clean-am: clean-binPROGRAMS clean-generic clean-noinstLIBRARIES \
 	clean-noinstPROGRAMS clean-pkglibexecPROGRAMS mostlyclean-am

@@ -99,14 +99,18 @@ pgcrest/benchmarks/vim-5.7/src/pathdef.c
 pgcrest/benchmarks/vim-5.7/src/vim
 pgcrest/benchmarks/vim-5.7/src/xxd/xxd
 pgcrest/benchmarks/replace/injections/*checklists
-
-#benchmarks temp
+pgcrest/benchmarks/coreutils-8.15/src/inject_fortify
 pgcrest/benchmarks/replace/injections/cutWarnings
 pgcrest/benchmarks/replace/injections/reachability
 pgcrest/benchmarks/replace/injections/replace
 pgcrest/benchmarks/replace/injections/replace_path
 pgcrest/bin/reachability
 pgcrest/src/process_cfg/reachability
+pgcrest/benchmarks/schedule
+pgcrest/benchmarks/schedule2
+pgcrest/benchmarks/tot_info
+pgcrest/benchmarks/testLIB
+
 
 #Enhanced files ignored for current
 #EnhancedCrestInstru

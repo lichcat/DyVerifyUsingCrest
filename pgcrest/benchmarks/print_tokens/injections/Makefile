@@ -31,8 +31,9 @@ run:
 log-clean:
 	rm -f *.log
 
-clean:	log-clean
+clean:
 	rm -f *.o *.i *.cil.c *.fpr
 	rm -f -r inject_fortify
 	rm -f branches cfg cfg_func_map funcount idcount stmtcount
 	rm -f print_tokens input cfg_branches coverage szd_execution
+	rm -f reachability

@@ -1,0 +1,12 @@
+forget to reserve Makefile and cat_inject.c
+difference is in old Makefile we just runcrest "./cat -" without any opt
+but in cat_inject.c symbolicate the opt by CREST_int(c)
+
+but that doesn't work because when iteration equals to 1000 ,only the
+first opt be used.
+
+so in the new Makefile we put manually other options 
+and in cat_inject.c remove the symbolication of opt (just delete CREST_int(c)
+
+NOTE: if we want to know how many test cases that really cover path ,we will counting in the future,but the different option can have almost same test cases
+ , so if needed just roll back to old Makefile and count how many cover, should this right?

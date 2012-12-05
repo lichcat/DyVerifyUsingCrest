@@ -1,0 +1,12 @@
+unexpand: warning 0 's results:
+LEAK
+unexpand: warning 1 's results:
+MAY-LEAK
+unexpand: warning 2 's results:
+BLOAT
+unexpand: warning 3 's results:
+BLOAT
+unexpand: warning 4 's results:
+L_NOT_LEAK
+unexpand: warning 5 's results:
+MAY-LEAK

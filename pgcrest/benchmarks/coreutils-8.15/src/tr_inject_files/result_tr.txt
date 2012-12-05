@@ -1,0 +1,64 @@
+tr: warning 0 's results:
+L_NOT_LEAK
+tr: warning 1 's results:
+MAY-LEAK
+tr: warning 2 's results:
+BLOAT
+tr: warning 3 's results:
+L_NOT_LEAK
+tr: warning 4 's results:
+BLOAT
+tr: warning 5 's results:
+L_NOT_LEAK
+tr: warning 6 's results:
+BLOAT
+tr: warning 7 's results:
+LEAK
+tr: warning 8 's results:
+MAY-LEAK
+tr: warning 9 's results:
+BLOAT
+tr: warning 10 's results:
+BLOAT
+tr: warning 11 's results:
+MAY-LEAK
+tr: warning 12 's results:
+MAY-LEAK
+tr: warning 13 's results:
+LEAK
+tr: warning 14 's results:
+BLOAT
+tr: warning 15 's results:
+BLOAT
+tr: warning 16 's results:
+L_NOT_LEAK
+tr: warning 17 's results:
+L_NOT_LEAK
+tr: warning 18 's results:
+LEAK
+tr: warning 19 's results:
+LEAK
+tr: warning 20 's results:
+LEAK
+tr: warning 21 's results:
+LEAK
+tr: warning 22 's results:
+LEAK
+tr: warning 23 's results:
+L_NOT_LEAK
+tr: warning 24 's results:
+BLOAT
+tr: warning 25 's results:
+L_NOT_LEAK
+tr: warning 26 's results:
+L_NOT_LEAK
+tr: warning 27 's results:
+MAY-LEAK
+tr: warning 28 's results:
+LEAK
+tr: warning 29 's results:
+LEAK
+tr: warning 30 's results:
+LEAK
+tr: warning 31 's results:
+LEAK

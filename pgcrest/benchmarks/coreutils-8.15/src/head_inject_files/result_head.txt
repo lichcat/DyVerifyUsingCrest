@@ -1,0 +1,40 @@
+head: warning 0 's results:
+LEAK
+head: warning 1 's results:
+MAY-LEAK
+head: warning 2 's results:
+MAY-LEAK
+head: warning 3 's results:
+BLOAT
+head: warning 4 's results:
+MAY-LEAK
+head: warning 5 's results:
+MAY-LEAK
+head: warning 6 's results:
+LEAK
+head: warning 7 's results:
+MAY-LEAK
+head: warning 8 's results:
+L_NOT_LEAK
+head: warning 9 's results:
+MAY-LEAK
+head: warning 10 's results:
+LEAK
+head: warning 11 's results:
+BLOAT
+head: warning 12 's results:
+MAY-LEAK
+head: warning 13 's results:
+LEAK
+head: warning 14 's results:
+MAY-LEAK
+head: warning 15 's results:
+L_NOT_LEAK
+head: warning 16 's results:
+L_NOT_LEAK
+head: warning 17 's results:
+L_NOT_LEAK
+head: warning 18 's results:
+L_NOT_LEAK
+head: warning 19 's results:
+L_NOT_LEAK

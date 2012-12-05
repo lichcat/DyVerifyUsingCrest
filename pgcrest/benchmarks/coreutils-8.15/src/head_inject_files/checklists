@@ -1,0 +1,165 @@
+0
+head.c	191	MA
+head.c	197	PP
+head.c	197	LK
+END_PATH
+1
+head.c	511	XMA
+head.c	511	PP
+head.c	519	BF
+head.c	519	BF
+head.c	529	BF
+head.c	540	BF
+head.c	553	PP
+head.c	553	PP
+head.c	554	BT
+head.c	557	PP
+head.c	557	LK
+END_PATH
+2
+head.c	511	XMA
+head.c	511	PP
+head.c	519	BF
+head.c	519	BF
+head.c	529	BF
+head.c	540	BF
+head.c	553	PP
+head.c	553	PP
+head.c	554	BF
+head.c	562	PP
+head.c	562	LK
+END_PATH
+3
+head.c	234	MA
+head.c	273	BT
+head.c	335	PP
+head.c	335	PP
+head.c	335	LK
+END_PATH
+4
+head.c	234	MA
+head.c	273	BF
+head.c	422	BF
+head.c	426	PP
+head.c	426	PP
+head.c	426	LK
+END_PATH
+5
+head.c	870	MA
+head.c	876	BF
+head.c	887	BT
+head.c	890	PP
+head.c	890	PP
+head.c	890	LK
+END_PATH
+6
+head.c	870	MA
+head.c	876	BT
+head.c	895	BF
+head.c	900	PP
+head.c	900	PP
+head.c	900	LK
+END_PATH
+7
+head.c	870	MA
+head.c	876	BT
+head.c	895	BT
+head.c	895	BT
+head.c	898	PP
+head.c	898	PP
+head.c	898	LK
+END_PATH
+8
+head.c	801	MA
+head.c	805	BF
+head.c	837	PP
+head.c	837	PP
+head.c	837	LK
+END_PATH
+9
+head.c	801	MA
+head.c	805	BT
+head.c	810	BT
+head.c	813	PP
+head.c	813	PP
+head.c	813	LK
+END_PATH
+10
+head.c	912	MA
+head.c	934	PP
+head.c	934	PP
+head.c	934	LK
+END_PATH
+11
+head.c	742	MA
+head.c	744	BF
+head.c	767	PP
+head.c	767	PP
+head.c	767	LK
+END_PATH
+12
+head.c	742	MA
+head.c	744	BT
+head.c	753	BT
+head.c	753	BT
+head.c	756	BF
+head.c	759	PP
+head.c	759	PP
+head.c	759	LK
+END_PATH
+13
+head.c	773	MA
+head.c	778	BF
+head.c	795	PP
+head.c	795	PP
+head.c	795	LK
+END_PATH
+14
+head.c	773	MA
+head.c	778	BT
+head.c	784	BT
+head.c	787	PP
+head.c	787	PP
+head.c	787	LK
+END_PATH
+15
+head.c	493	MA
+head.c	520	PP
+head.c	572	PP
+head.c	605	BF
+head.c	611	PP
+head.c	611	PP
+head.c	611	LK
+END_PATH
+16
+head.c	844	MA
+head.c	849	BT
+head.c	851	BT
+head.c	853	PP
+head.c	853	PP
+head.c	853	LK
+END_PATH
+17
+head.c	844	MA
+head.c	849	BT
+head.c	851	BF
+head.c	857	PP
+head.c	857	PP
+head.c	857	LK
+END_PATH
+18
+head.c	844	MA
+head.c	849	BF
+head.c	860	BT
+head.c	861	PP
+head.c	861	PP
+head.c	861	LK
+END_PATH
+19
+head.c	844	MA
+head.c	849	BF
+head.c	860	BF
+head.c	863	PP
+head.c	863	PP
+head.c	863	LK
+END_PATH

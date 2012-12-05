@@ -37,11 +37,9 @@
 #include "readtokens0.h"
 #include "safe-read.h"
 #include "xfreopen.h"
-#ifdef CREST
-#define MYMAX   40
-#include <crest.h>
-#endif
+/* injection head */
 #include "global_array.h"
+/* end */
 
 #if !defined iswspace && !HAVE_ISWSPACE
 # define iswspace(wc) \
@@ -107,20 +105,24 @@ static struct option const longopts[] =
   {NULL, 0, NULL, 0}
 };
 #ifdef CREST
-size_t fuzzsafe_read(int fd,void* buf,size_t count){
-    //similar to ../../grep2.2/src/grep.c ->fuzzread
-    //? read one byte or MYSTRMAX bytes ?
-    char tmp;
+#include <crest.h>
+#define MYMAX 100  
+#define safe_read fuzz_crestread
+static size_t fuzz_crestread(int fd,char* buf,size_t num){
+    int i,limit;
     static int _crest_count=0;
-    _crest_count++;
-
-    if(_crest_count<=MYMAX){
-        CREST_char(tmp); 
-        *(char*)buf = tmp;
-        return 1;
-    }else{
+    if(_crest_count >= MYMAX)
         return 0;
+    if(_crest_count + num < MYMAX)
+        limit = num;
+    else 
+        limit = MYMAX - _crest_count;
+    for( i = 0; i< limit; i++){
+        CREST_char(buf[i]);
+        _crest_count++;
     }
+
+    return limit; 
 }
 #endif
 
@@ -272,11 +274,7 @@ wc (int fd, char const *file_x, struct fstatus *fstatus)
       else
         {
           fdadvise (fd, 0, 0, FADVISE_SEQUENTIAL);
-#ifdef  CREST
-          while ((bytes_read = fuzzsafe_read (fd, buf, BUFFER_SIZE)) > 0)
-#else
           while ((bytes_read = safe_read (fd, buf, BUFFER_SIZE)) > 0)
-#endif
             {
               if (bytes_read == SAFE_READ_ERROR)
                 {
@@ -292,11 +290,7 @@ wc (int fd, char const *file_x, struct fstatus *fstatus)
     {
       /* Use a separate loop when counting only lines or lines and bytes --
          but not chars or words.  */
-#ifdef  CREST
-      while ((bytes_read = fuzzsafe_read (fd, buf, BUFFER_SIZE)) > 0)
-#else
       while ((bytes_read = safe_read (fd, buf, BUFFER_SIZE)) > 0)
-#endif
         {
           char *p = buf;
 
@@ -335,11 +329,7 @@ wc (int fd, char const *file_x, struct fstatus *fstatus)
 # else
       const size_t prev = 0;
 # endif
-#ifdef  CREST
-      while ((bytes_read = fuzzsafe_read (fd, buf + prev, BUFFER_SIZE - prev)) > 0)
-#else
       while ((bytes_read = safe_read (fd, buf + prev, BUFFER_SIZE - prev)) > 0)
-#endif
         {
           const char *p;
 # if SUPPORT_OLD_MBRTOWC
@@ -474,11 +464,7 @@ wc (int fd, char const *file_x, struct fstatus *fstatus)
     {
       bool in_word = false;
       uintmax_t linepos = 0;
-#ifdef  CREST
-      while ((bytes_read = fuzzsafe_read (fd, buf, BUFFER_SIZE)) > 0)
-#else
       while ((bytes_read = safe_read (fd, buf, BUFFER_SIZE)) > 0)
-#endif
         {
           const char *p = buf;
           if (bytes_read == SAFE_READ_ERROR)
@@ -665,7 +651,7 @@ main (int argc, char **argv)
   bindtextdomain (PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
 
-  atexit (close_stdout);
+  //atexit (close_stdout);
   atexit (freeArray);
   atexit (crest_use);
 
@@ -702,6 +688,16 @@ main (int argc, char **argv)
 
       case FILES0_FROM_OPTION:
         files_from = optarg;
+#ifdef  CREST
+        int len,j;
+        if(!STREQ (files_from, "/dev/null")){
+            len=strlen(files_from); 
+            for(j=0;j<len;j++){
+                CREST_char(files_from[j]);
+            }
+            files_from[j]=0;
+        }
+#endif
         break;
 
       case_GETOPT_HELP_CHAR;

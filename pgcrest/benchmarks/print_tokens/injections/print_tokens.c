@@ -1,13 +1,9 @@
 
 
 # include <ctype.h>
-#ifdef  CREST
-#include <crest.h>
-#endif
 # define START  5
 # define TRUE  1
 # define FALSE 0
-# define MYMAX  100
 typedef int BOOLEAN;
 typedef char *string;
 
@@ -15,7 +11,9 @@ typedef char *string;
 # include <stdlib.h>
 # include <string.h>
 # include "tokens.h"
+/* injection */
 # include "global_array.h"
+/* end */
 
 static token numeric_case(token_stream tstream_ptr,token token_ptr,
                           char ch,char token_str[], int token_ind);
@@ -30,7 +28,10 @@ static int next_state(int state,char ch);
 static void get_actual_token(char token_str[],int token_ind);
 
 #ifdef  CREST
-char* fuzzfgets(char* str,int num,FILE* stream){
+#include <crest.h>
+#define MYMAX  100
+#define fgets fuzz_crestfgets
+char* fuzz_crestfgets(char* str,int num,FILE* stream){
     int i,limit;
     static count=0;
     if(count >= MYMAX)
@@ -59,8 +60,6 @@ char *argv[];
       if(argc>2)
       {
           fprintf(stdout, "The format is print_tokens filename(optional)\n");
-		  //crest_use();
-		  //freeArray();
           exit(1);
       }
       stream_ptr=open_token_stream(argv[1]);
@@ -68,8 +67,6 @@ char *argv[];
       while(!is_eof_token((token_ptr=get_token(stream_ptr))))
                 print_token(token_ptr);
       print_token(token_ptr);
-	//crest_use();
-	//freeArray();
   exit(0);
 }
 
@@ -102,8 +99,6 @@ string FILENAME;
       else if((stream_ptr->fp=fopen(FILENAME,"r"))==NULL)
            {
                fprintf(stdout, "The file %s doesn't exists\n",FILENAME);
-			   //crest_use();
-			   //freeArray();
                exit(0);
            }
       return(stream_ptr);
@@ -127,11 +122,7 @@ character_stream stream_ptr;
 	  addToArray((void**)&__CREST_p2,2);
       if(stream_ptr->stream[stream_ptr->stream_ind] == '\0')
       {
-#ifdef  CREST
-              if(fuzzfgets(stream_ptr->stream+START,80-START,stream_ptr->fp) == NULL)/* Fix bug: add -START - hf*/
-#else
               if(fgets(stream_ptr->stream+START,80-START,stream_ptr->fp) == NULL)/* Fix bug: add -START - hf*/
-#endif
                     stream_ptr->stream[START]=EOF;
               stream_ptr->stream_ind=START;
       }
@@ -319,8 +310,6 @@ token token_ptr;
 char ch,token_str[];
 int token_ind;
 {
-	  int* __CREST_p7 = (int*)malloc(sizeof(int)*10);
-	  addToArray((void**)&__CREST_p7,7);
         if(check_delimiter(ch)!=TRUE)
         {   /* Error case */
             token_ptr->token_id=ERROR;
@@ -359,8 +348,8 @@ token token_ptr;
 int cu_state,token_ind;
 char token_str[],ch;
 {
-	  int* __CREST_p8 = (int*)malloc(sizeof(int)*10);
-	  addToArray((void**)&__CREST_p8,8);
+	  int* __CREST_p7 = (int*)malloc(sizeof(int)*10);
+	  addToArray((void**)&__CREST_p7,7);
       if(is_end_of_character_stream(tstream_ptr->ch_stream)) 
       {
             token_ptr->token_id = EOTSTREAM;
@@ -391,8 +380,6 @@ char token_str[],ch;
 static int check_delimiter(ch)
 char ch;
 {
-	  int* __CREST_p9 = (int*)malloc(sizeof(int)*10);
-	  addToArray((void**)&__CREST_p9,9);
       if(!isalpha(ch) && !isdigit(ch)) /* Check for digit and alpha */
           return(TRUE);
       return(FALSE);
@@ -410,8 +397,6 @@ char ch;
 static int keyword(state)
 int state;
 {
-	  int* __CREST_p10 = (int*)malloc(sizeof(int)*10);
-	  addToArray((void**)&__CREST_p10,10);
       switch(state)
       {   /* Return the respective macro for the Keyword. */
           case 6 : return(LAMBDA);
@@ -421,8 +406,6 @@ int state;
           case 16: return(XOR);
           default: fprintf(stdout, "error\n");break;
       }
-	  //crest_use();
-	  //freeArray();
       exit(0);
 }
 
@@ -439,8 +422,6 @@ int state;
 static int special(state)
 int state;
 {
-	  int* __CREST_p11 = (int*)malloc(sizeof(int)*10);
-	  //addToArray((void**)&__CREST_p11,11);
      switch(state)
      {   /* return the respective macro for the special character. */
          case 19: return(LPAREN);
@@ -453,8 +434,6 @@ int state;
          case 32: return(EQUALGREATER);
          default: fprintf(stdout, "error\n");break;
      }
-	 //crest_use();
-	 //freeArray();
      exit(0);
 }
 
@@ -472,8 +451,6 @@ int state;
 static void skip(stream_ptr)
 character_stream stream_ptr;
 {
-	  int* __CREST_p12 = (int*)malloc(sizeof(int)*10);
-	  addToArray((void**)&__CREST_p12,12);
         char c;
   
         while((c=get_char(stream_ptr))!='\n' && 
@@ -496,8 +473,6 @@ static int constant(state,token_str,token_ind)
 int state,token_ind;
 char token_str[];
 {
-	  int* __CREST_p13 = (int*)malloc(sizeof(int)*10);
-	  //addToArray((void**)&__CREST_p13,13);
      switch(state)
      {   /* Return the respective CONSTANT macro. */
          case 27 : return(STRING_CONSTANT);
@@ -521,8 +496,8 @@ static int next_state(state,ch)
 int state;
 char ch;
 {
-	  int* __CREST_p14 = (int*)malloc(sizeof(int)*10);
-	  //addToArray((void**)&__CREST_p14,14);
+	  int* __CREST_p9 = (int*)malloc(sizeof(int)*10);
+	  //addToArray((void**)&__CREST_p9,9);
     if(state < 0)
       return(state);
     if(base[state]+ch >= 0)
@@ -549,8 +524,8 @@ char ch;
 BOOLEAN is_eof_token(t)
 token t;
 {
-	  int* __CREST_p15 = (int*)malloc(sizeof(int)*10);
-	  //addToArray((void**)&__CREST_p15,15);
+	  int* __CREST_p10 = (int*)malloc(sizeof(int)*10);
+	  //addToArray((void**)&__CREST_p10,10);
     if(t->token_id==EOTSTREAM)
         return(TRUE);
     return(FALSE);
@@ -573,8 +548,6 @@ token t;
 BOOLEAN print_token(token_ptr)
 token token_ptr;
 {
-	  int* __CREST_p16 = (int*)malloc(sizeof(int)*10);
-	  addToArray((void**)&__CREST_p16,16);
      switch(token_ptr->token_id)
      {    /* Print the respective tokens. */
           case ERROR : fprintf(stdout, "error,\t\"");fprintf(stdout, "%s",token_ptr->token_string);
@@ -620,8 +593,8 @@ static void get_actual_token(token_str,token_ind)
 int token_ind;
 char token_str[];
 {
-	  int* __CREST_p17 = (int*)malloc(sizeof(int)*10);
-	  addToArray((void**)&__CREST_p17,17);
+	  int* __CREST_p11 = (int*)malloc(sizeof(int)*10);
+	  addToArray((void**)&__CREST_p11,11);
           int ind,start;
 
           for(ind=token_ind;ind>0 && isspace(token_str[ind-1]);--ind); 

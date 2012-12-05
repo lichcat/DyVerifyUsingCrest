@@ -1,0 +1,16 @@
+wc: warning 0 's results:
+LEAK
+wc: warning 1 's results:
+MAY-LEAK
+wc: warning 2 's results:
+MAY-LEAK
+wc: warning 3 's results:
+LEAK
+wc: warning 4 's results:
+BLOAT
+wc: warning 5 's results:
+L_NOT_LEAK
+wc: warning 6 's results:
+BLOAT
+wc: warning 7 's results:
+L_NOT_LEAK

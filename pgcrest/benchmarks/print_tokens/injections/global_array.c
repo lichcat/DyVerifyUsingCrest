@@ -49,7 +49,7 @@ void freeArray()
 }
 
 int is_all_use_id(unsigned int id){
-	if(id==2 || id ==16)
+	if(id==2 || id==7 || id==9 || id==11)   //print_tokens p2,7,9,11 L-N-LEAK
 		return 1;
 	else 
 		return 0;

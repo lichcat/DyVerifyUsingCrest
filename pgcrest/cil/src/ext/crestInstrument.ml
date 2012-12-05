@@ -792,8 +792,8 @@ object (self)
             )
               
       | Call (ret, Lval (Var f, NoOffset),args,location)
-          (*when ((f.vname = "calloc") or (f.vname="xcalloc")) ->*)
-          when (f.vname = "calloc")  ->
+          when ((f.vname = "calloc") or (f.vname="xcalloc")) ->
+          (*when (f.vname = "calloc")  ->*)
         	let numArg = List.nth args 0 in
 			let sizeArg = List.nth args 1 in
           let isSymbolicExp e = isSymbolicType (typeOf e) in

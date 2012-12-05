@@ -1,4 +1,4 @@
-unexpand.o unexpand.o: unexpand.c ../lib/config.h ../lib/stdio.h \
+unexpand.o: unexpand.c ../lib/config.h ../lib/stdio.h \
   /usr/include/stdio.h /usr/include/features.h \
   /usr/include/x86_64-linux-gnu/bits/predefs.h \
   /usr/include/x86_64-linux-gnu/sys/cdefs.h \
@@ -65,7 +65,8 @@ unexpand.o unexpand.o: unexpand.c ../lib/config.h ../lib/stdio.h \
   ../lib/closein.h ../lib/closeout.h ../lib/version-etc.h \
   ../lib/propername.h ../lib/progname.h ../lib/intprops.h \
   ../lib/inttostr.h ../lib/intprops.h ../lib/error.h ../lib/fadvise.h \
-  ../lib/quote.h ../lib/xstrndup.h
+  ../lib/quote.h ../lib/xstrndup.h global_array.h \
+  ../../../include/crest.h
 
 ../lib/config.h:
 
@@ -304,3 +305,7 @@ version.h:
 ../lib/quote.h:
 
 ../lib/xstrndup.h:
+
+global_array.h:
+
+../../../include/crest.h:

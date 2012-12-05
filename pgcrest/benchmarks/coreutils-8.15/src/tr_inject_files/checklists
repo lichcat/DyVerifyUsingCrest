@@ -1,0 +1,248 @@
+0
+tr.c	808	MA
+tr.c	812	BF
+tr.c	819	PP
+tr.c	819	PP
+tr.c	819	LK
+END_PATH
+1
+tr.c	808	MA
+tr.c	812	BT
+tr.c	817	PP
+tr.c	817	PP
+tr.c	817	LK
+END_PATH
+2
+tr.c	1454	MA
+tr.c	1459	BT
+tr.c	1460	BT
+tr.c	1461	BT
+tr.c	1466	BT
+tr.c	1500	PP
+tr.c	1500	LK
+END_PATH
+3
+tr.c	1212	MA
+tr.c	1219	BF
+tr.c	1224	PP
+tr.c	1224	PP
+tr.c	1224	LK
+END_PATH
+4
+tr.c	1317	MA
+tr.c	1392	PP
+tr.c	1392	LK
+END_PATH
+5
+tr.c	616	MA
+tr.c	624	BF
+tr.c	669	PP
+tr.c	669	PP
+tr.c	669	LK
+END_PATH
+6
+tr.c	461	MA
+tr.c	470	BF
+tr.c	566	PP
+tr.c	566	PP
+tr.c	566	LK
+END_PATH
+7
+tr.c	1702	MA
+tr.c	1707	PP
+tr.c	1707	PP
+tr.c	1707	LK
+END_PATH
+8
+tr.c	917	MA
+tr.c	931	BT
+tr.c	958	PP
+tr.c	958	PP
+tr.c	958	LK
+END_PATH
+9
+tr.c	917	MA
+tr.c	1051	BF
+tr.c	1054	PP
+tr.c	1054	PP
+tr.c	1054	LK
+END_PATH
+10
+tr.c	917	MA
+tr.c	931	BT
+tr.c	933	BF
+tr.c	1037	BT
+tr.c	1039	BT
+tr.c	1040	PP
+tr.c	1040	PP
+tr.c	1040	LK
+END_PATH
+11
+tr.c	917	MA
+tr.c	931	BT
+tr.c	933	BT
+tr.c	942	BT
+tr.c	946	BT
+tr.c	951	BF
+tr.c	961	BT
+tr.c	964	BT
+tr.c	966	BF
+tr.c	975	PP
+tr.c	975	PP
+tr.c	975	LK
+END_PATH
+12
+tr.c	917	MA
+tr.c	931	BT
+tr.c	933	BT
+tr.c	942	BT
+tr.c	946	BT
+tr.c	951	BF
+tr.c	961	BF
+tr.c	982	BT
+tr.c	984	BF
+tr.c	994	PP
+tr.c	994	PP
+tr.c	994	LK
+END_PATH
+13
+tr.c	1534	MA
+tr.c	1602	PP
+tr.c	1602	LK
+END_PATH
+14
+tr.c	590	MA
+tr.c	603	PP
+tr.c	603	PP
+tr.c	603	LK
+END_PATH
+15
+tr.c	678	MA
+tr.c	686	BT
+tr.c	689	PP
+tr.c	689	LK
+END_PATH
+16
+tr.c	699	MA
+tr.c	703	BT
+tr.c	713	PP
+tr.c	713	PP
+tr.c	713	LK
+END_PATH
+17
+tr.c	699	MA
+tr.c	703	BF
+tr.c	720	BT
+tr.c	723	PP
+tr.c	723	PP
+tr.c	723	LK
+END_PATH
+18
+tr.c	1433	MA
+tr.c	1438	PP
+tr.c	1438	PP
+tr.c	1438	LK
+END_PATH
+19
+tr.c	837	MA
+tr.c	841	BT
+tr.c	842	BT
+tr.c	843	PP
+tr.c	843	PP
+tr.c	843	LK
+END_PATH
+20
+tr.c	837	MA
+tr.c	841	BT
+tr.c	842	BF
+tr.c	881	PP
+tr.c	881	PP
+tr.c	881	LK
+END_PATH
+21
+tr.c	837	MA
+tr.c	841	BT
+tr.c	842	BF
+tr.c	845	BT
+tr.c	845	BT
+tr.c	852	BT
+tr.c	878	PP
+tr.c	878	PP
+tr.c	878	LK
+END_PATH
+22
+tr.c	837	MA
+tr.c	841	BT
+tr.c	842	BF
+tr.c	845	BT
+tr.c	845	BT
+tr.c	852	BF
+tr.c	864	BT
+tr.c	874	PP
+tr.c	874	PP
+tr.c	874	LK
+END_PATH
+23
+tr.c	1417	MA
+tr.c	1422	PP
+tr.c	1422	LK
+END_PATH
+24
+tr.c	760	MA
+tr.c	769	BT
+tr.c	772	PP
+tr.c	772	LK
+END_PATH
+25
+tr.c	1759	MA
+tr.c	1764	BF
+tr.c	1767	PP
+tr.c	1767	PP
+tr.c	1767	LK
+END_PATH
+26
+tr.c	1239	MA
+tr.c	1253	BT
+tr.c	1254	PP
+tr.c	1254	PP
+tr.c	1254	LK
+END_PATH
+27
+tr.c	1239	MA
+tr.c	1253	BF
+tr.c	1295	BT
+tr.c	1295	BT
+tr.c	1299	PP
+tr.c	1299	LK
+END_PATH
+28
+tr.c	1719	MA
+tr.c	1731	BT
+tr.c	1732	PP
+tr.c	1732	PP
+tr.c	1732	LK
+END_PATH
+29
+tr.c	1719	MA
+tr.c	1731	BF
+tr.c	1743	BF
+tr.c	1747	BF
+tr.c	1749	PP
+tr.c	1749	PP
+tr.c	1749	LK
+END_PATH
+30
+tr.c	1083	MA
+tr.c	1099	BT
+tr.c	1100	PP
+tr.c	1100	PP
+tr.c	1100	LK
+END_PATH
+31
+tr.c	1083	MA
+tr.c	1099	BF
+tr.c	1104	BT
+tr.c	1201	PP
+tr.c	1201	PP
+tr.c	1201	LK
+END_PATH

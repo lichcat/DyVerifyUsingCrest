@@ -1,4 +1,4 @@
-tr.o tr.o: tr.c ../lib/config.h ../lib/stdio.h /usr/include/stdio.h \
+tr.o: tr.c ../lib/config.h ../lib/stdio.h /usr/include/stdio.h \
   /usr/include/features.h /usr/include/x86_64-linux-gnu/bits/predefs.h \
   /usr/include/x86_64-linux-gnu/sys/cdefs.h \
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
@@ -64,7 +64,8 @@ tr.o tr.o: tr.c ../lib/config.h ../lib/stdio.h /usr/include/stdio.h \
   ../lib/closein.h ../lib/closeout.h ../lib/version-etc.h \
   ../lib/propername.h ../lib/progname.h ../lib/intprops.h \
   ../lib/inttostr.h ../lib/intprops.h ../lib/error.h ../lib/fadvise.h \
-  ../lib/quote.h ../lib/safe-read.h ../lib/xfreopen.h ../lib/xstrtol.h
+  ../lib/quote.h ../lib/safe-read.h ../lib/xfreopen.h ../lib/xstrtol.h \
+  global_array.h ../../../include/crest.h
 
 ../lib/config.h:
 
@@ -309,3 +310,7 @@ version.h:
 ../lib/xfreopen.h:
 
 ../lib/xstrtol.h:
+
+global_array.h:
+
+../../../include/crest.h:

@@ -1,4 +1,4 @@
-wc.o wc.o: wc.c ../lib/config.h ../lib/stdio.h /usr/include/stdio.h \
+wc.o: wc.c ../lib/config.h ../lib/stdio.h /usr/include/stdio.h \
   /usr/include/features.h /usr/include/x86_64-linux-gnu/bits/predefs.h \
   /usr/include/x86_64-linux-gnu/sys/cdefs.h \
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
@@ -68,7 +68,7 @@ wc.o wc.o: wc.c ../lib/config.h ../lib/stdio.h /usr/include/stdio.h \
   ../lib/argv-iter.h ../lib/arg-nonnull.h ../lib/error.h ../lib/fadvise.h \
   ../lib/mbchar.h ../lib/physmem.h ../lib/quote.h ../lib/quotearg.h \
   ../lib/readtokens0.h ../lib/obstack.h ../lib/safe-read.h \
-  ../lib/xfreopen.h
+  ../lib/xfreopen.h global_array.h ../../../include/crest.h
 
 ../lib/config.h:
 
@@ -329,3 +329,7 @@ version.h:
 ../lib/safe-read.h:
 
 ../lib/xfreopen.h:
+
+global_array.h:
+
+../../../include/crest.h:

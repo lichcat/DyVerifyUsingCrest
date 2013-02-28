@@ -1,4 +1,4 @@
-cat.o: cat.c ../lib/config.h ../lib/stdio.h /usr/include/stdio.h \
+cat.o cat.o: cat.c ../lib/config.h ../lib/stdio.h /usr/include/stdio.h \
   /usr/include/features.h /usr/include/x86_64-linux-gnu/bits/predefs.h \
   /usr/include/x86_64-linux-gnu/sys/cdefs.h \
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
@@ -31,7 +31,7 @@ cat.o: cat.c ../lib/config.h ../lib/stdio.h /usr/include/stdio.h \
   /usr/include/x86_64-linux-gnu/asm/ioctl.h \
   /usr/include/asm-generic/ioctl.h \
   /usr/include/x86_64-linux-gnu/bits/ioctl-types.h \
-  /usr/include/x86_64-linux-gnu/sys/ttydefaults.h global_array.h system.h \
+  /usr/include/x86_64-linux-gnu/sys/ttydefaults.h system.h \
   ../lib/alloca.h ../lib/sys/stat.h \
   /usr/include/x86_64-linux-gnu/bits/timex.h /usr/include/xlocale.h \
   /usr/include/x86_64-linux-gnu/sys/stat.h \
@@ -75,7 +75,7 @@ cat.o: cat.c ../lib/config.h ../lib/stdio.h /usr/include/stdio.h \
   ../lib/propername.h ../lib/progname.h ../lib/intprops.h \
   ../lib/inttostr.h ../lib/intprops.h ioblksize.h ../lib/stat-size.h \
   ../lib/error.h ../lib/fadvise.h ../lib/full-write.h ../lib/quote.h \
-  ../lib/safe-read.h ../lib/xfreopen.h ../../../include/crest.h
+  ../lib/safe-read.h ../lib/xfreopen.h
 
 ../lib/config.h:
 
@@ -172,8 +172,6 @@ cat.o: cat.c ../lib/config.h ../lib/stdio.h /usr/include/stdio.h \
 /usr/include/x86_64-linux-gnu/bits/ioctl-types.h:
 
 /usr/include/x86_64-linux-gnu/sys/ttydefaults.h:
-
-global_array.h:
 
 system.h:
 
@@ -350,5 +348,3 @@ ioblksize.h:
 ../lib/safe-read.h:
 
 ../lib/xfreopen.h:
-
-../../../include/crest.h:

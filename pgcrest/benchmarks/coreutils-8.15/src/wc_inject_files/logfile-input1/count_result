@@ -1,0 +1,46 @@
+--------------------------
+warning 0 's results:
+LEAK
+1000
+Iteration 1000 (5s): covered 115 branches [13 reach funs, 382 reach branches].
+Iteration 1000 (4s): covered 125 branches [13 reach funs, 382 reach branches].
+--------------------------
+warning 1 's results:
+MAY-LEAK
+Iteration 1000 (4s): covered 115 branches [13 reach funs, 382 reach branches].
+Iteration 1000 (5s): covered 125 branches [13 reach funs, 382 reach branches].
+--------------------------
+warning 2 's results:
+MAY-LEAK
+Iteration 1000 (5s): covered 115 branches [13 reach funs, 382 reach branches].
+Iteration 1000 (4s): covered 125 branches [13 reach funs, 382 reach branches].
+--------------------------
+warning 3 's results:
+LEAK
+1000
+Iteration 1000 (5s): covered 115 branches [13 reach funs, 382 reach branches].
+Iteration 1000 (5s): covered 125 branches [13 reach funs, 382 reach branches].
+--------------------------
+warning 4 's results:
+BLOAT
+2000
+Iteration 1000 (4s): covered 115 branches [13 reach funs, 382 reach branches].
+Iteration 1000 (4s): covered 125 branches [13 reach funs, 382 reach branches].
+--------------------------
+warning 5 's results:
+L_NOT_LEAK
+2000
+Iteration 1000 (4s): covered 115 branches [13 reach funs, 382 reach branches].
+Iteration 1000 (4s): covered 125 branches [13 reach funs, 382 reach branches].
+--------------------------
+warning 6 's results:
+BLOAT
+2000
+Iteration 1000 (4s): covered 115 branches [13 reach funs, 382 reach branches].
+Iteration 1000 (4s): covered 125 branches [13 reach funs, 382 reach branches].
+--------------------------
+warning 7 's results:
+L_NOT_LEAK
+2000
+Iteration 1000 (4s): covered 115 branches [13 reach funs, 382 reach branches].
+Iteration 1000 (4s): covered 125 branches [13 reach funs, 382 reach branches].

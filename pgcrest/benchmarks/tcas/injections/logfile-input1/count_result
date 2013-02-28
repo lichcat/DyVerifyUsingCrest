@@ -1,0 +1,38 @@
+--------------------------
+warning 0 's results:
+LEAK
+6
+Iteration 15 (0s): covered 46 branches [8 reach funs, 92 reach branches].
+--------------------------
+warning 1 's results:
+MAY-LEAK
+Iteration 15 (0s): covered 46 branches [8 reach funs, 92 reach branches].
+--------------------------
+warning 2 's results:
+L_NOT_LEAK
+15
+Iteration 15 (0s): covered 46 branches [8 reach funs, 92 reach branches].
+--------------------------
+warning 3 's results:
+L_NOT_LEAK
+6
+Iteration 15 (0s): covered 46 branches [8 reach funs, 92 reach branches].
+--------------------------
+warning 4 's results:
+BLOAT
+15
+Iteration 15 (0s): covered 46 branches [8 reach funs, 92 reach branches].
+--------------------------
+warning 5 's results:
+L_NOT_LEAK
+6
+Iteration 15 (0s): covered 46 branches [8 reach funs, 92 reach branches].
+--------------------------
+warning 6 's results:
+MAY-LEAK
+Iteration 15 (0s): covered 46 branches [8 reach funs, 92 reach branches].
+--------------------------
+warning 7 's results:
+L_NOT_LEAK
+6
+Iteration 15 (0s): covered 46 branches [8 reach funs, 92 reach branches].

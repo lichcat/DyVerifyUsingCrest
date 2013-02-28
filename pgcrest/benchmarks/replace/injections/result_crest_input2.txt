@@ -1,0 +1,36 @@
+warning 0 's results:
+LEAK
+warning 1 's results:
+MAY-LEAK
+warning 2 's results:
+LEAK
+warning 3 's results:
+BLOAT
+warning 4 's results:
+MAY-LEAK
+warning 5 's results:
+LEAK
+warning 6 's results:
+LEAK
+warning 7 's results:
+MAY-LEAK
+warning 8 's results:
+LEAK
+warning 9 's results:
+MAY-LEAK
+warning 10 's results:
+L_NOT_LEAK
+warning 11 's results:
+MAY-LEAK
+warning 12 's results:
+L_NOT_LEAK
+warning 13 's results:
+BLOAT
+warning 14 's results:
+L_NOT_LEAK
+warning 15 's results:
+BLOAT
+warning 16 's results:
+MAY-LEAK
+warning 17 's results:
+BLOAT

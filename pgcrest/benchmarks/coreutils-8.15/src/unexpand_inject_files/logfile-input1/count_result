@@ -1,0 +1,40 @@
+--------------------------
+warning 0 's results:
+LEAK
+3566
+Iteration 1000 (5s): covered 53 branches [10 reach funs, 170 reach branches].
+Iteration 1000 (5s): covered 58 branches [10 reach funs, 170 reach branches].
+Iteration 1000 (6s): covered 69 branches [11 reach funs, 192 reach branches].
+--------------------------
+warning 1 's results:
+MAY-LEAK
+Iteration 1000 (6s): covered 53 branches [10 reach funs, 170 reach branches].
+Iteration 1000 (5s): covered 58 branches [10 reach funs, 170 reach branches].
+Iteration 1000 (6s): covered 69 branches [11 reach funs, 192 reach branches].
+--------------------------
+warning 2 's results:
+BLOAT
+3566
+Iteration 1000 (5s): covered 53 branches [10 reach funs, 170 reach branches].
+Iteration 1000 (5s): covered 58 branches [10 reach funs, 170 reach branches].
+Iteration 1000 (6s): covered 69 branches [11 reach funs, 192 reach branches].
+--------------------------
+warning 3 's results:
+BLOAT
+3566
+Iteration 1000 (6s): covered 53 branches [10 reach funs, 170 reach branches].
+Iteration 1000 (6s): covered 58 branches [10 reach funs, 170 reach branches].
+Iteration 1000 (6s): covered 69 branches [11 reach funs, 192 reach branches].
+--------------------------
+warning 4 's results:
+L_NOT_LEAK
+1544
+Iteration 1000 (5s): covered 53 branches [10 reach funs, 170 reach branches].
+Iteration 1000 (6s): covered 58 branches [10 reach funs, 170 reach branches].
+Iteration 1000 (6s): covered 69 branches [11 reach funs, 192 reach branches].
+--------------------------
+warning 5 's results:
+MAY-LEAK
+Iteration 1000 (5s): covered 53 branches [10 reach funs, 170 reach branches].
+Iteration 1000 (5s): covered 58 branches [10 reach funs, 170 reach branches].
+Iteration 1000 (6s): covered 69 branches [11 reach funs, 192 reach branches].

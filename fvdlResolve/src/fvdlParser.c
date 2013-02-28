@@ -126,22 +126,22 @@ void getTraceInfo(xmlDocPtr doc,xmlNodePtr cur,FILE* fp){
 					else if(!xmlStrcmp(actionType,(const xmlChar*)"BranchTaken"))
 						markWord=(unsigned char*)"BT";		//branch true
 					else if(isAssignOrReturn(actionType)
-						&& matchReg((char*)actionString,(char*)"^.* malloc.*$"))
+						&& (matchReg((char*)actionString,(char*)"^.* malloc.*$") || matchReg((char*)actionString,(char*)"^malloc.*$")))
 						markWord=(unsigned char*)"MA";
 					else if(isAssignOrReturn(actionType)
-						&& matchReg((char*)actionString,(char*)"^.* calloc.*$"))
+						&& (matchReg((char*)actionString,(char*)"^.* calloc.*$") || matchReg((char*)actionString,(char*)"^calloc.*$")))
 						markWord=(unsigned char*)"CA";
 					else if(isAssignOrReturn(actionType)
-						&& matchReg((char*)actionString,(char*)"^.* realloc.*$"))
+						&& (matchReg((char*)actionString,(char*)"^.* realloc.*$") || matchReg((char*)actionString,(char*)"^realloc.*$")))
 						markWord=(unsigned char*)"RA";
 					else if(isAssignOrReturn(actionType)
-						&& matchReg((char*)actionString,(char*)"^.* xmalloc.*$"))
+						&& (matchReg((char*)actionString,(char*)"^.* xmalloc.*$") || matchReg((char*)actionString,(char*)"^xmalloc.*$")))
 						markWord=(unsigned char*)"XMA";
 					else if(isAssignOrReturn(actionType)
-						&& matchReg((char*)actionString,(char*)"^.* xstrdup.*$"))
+						&& (matchReg((char*)actionString,(char*)"^.* xstrdup.*$") || matchReg((char*)actionString,(char*)"^xstrdup.*$")))
 						markWord=(unsigned char*)"XSD";
 					else if(isAssignOrReturn(actionType)
-						&& matchReg((char*)actionString,(char*)"^.* xcalloc.*$"))
+						&& (matchReg((char*)actionString,(char*)"^.* xcalloc.*$") || matchReg((char*)actionString,(char*)"^xcalloc.*$")))
 						markWord=(unsigned char*)"XCA";
 					else if((!xmlStrcmp(actionType,(const xmlChar*)"EndScope")) 
 								&& matchReg((char*)actionString,(char*)"^.*Memory leaked$"))

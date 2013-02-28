@@ -15,7 +15,16 @@
 #include <string.h>
 #include "base/symbolic_interpreter.h"
 #include "libcrest/crest.h"
-#define STRING_L 20
+
+#define CREST_READ_MAX CREST_INPUT_MAX 
+#define CREST_GETS_MAX CREST_INPUT_MAX
+#define CREST_CHARACTER_MAX CREST_INPUT_MAX
+#define CREST_PER_READ_MAX CREST_PER_INPUT_MAX
+#define CREST_PER_GETS_MAX CREST_PER_INPUT_MAX
+
+#define CREST_INPUT_MAX 150
+#define CREST_PER_INPUT_MAX 20
+
 using std::vector;
 using namespace crest;
 
@@ -186,27 +195,62 @@ void __CrestInt(int* x) {
   *x = (int)SI->NewInput(types::INT, (addr_t)x);
 }
 
-void __CrestString(char* x) {
+size_t __CrestReadString(char* x) {     //read and fread
+    int i,inputlen;
+	static int __crest_read_count = 0;
+    
 	pre_symbolic = 0;
-	if(x==(char*)NULL)
-		return ;
-	static int count=0;
-	if(count<20){
-		*x=(char)SI->NewInput(types::CHAR,(addr_t)x);
-		count++;
-	}
-	
+
+	if(__crest_read_count >= CREST_READ_MAX)
+        return 0;
+    if(__crest_read_count + CREST_PER_READ_MAX < CREST_READ_MAX){
+        inputlen = CREST_PER_READ_MAX;
+    }else{
+        inputlen = CREST_READ_MAX - __crest_read_count;
+    }
+    for( i = 0; i < inputlen; i++){
+        __CrestChar(x+i);
+        __crest_read_count++;
+    }
+
+    return inputlen;
 }
-/* modified by lichcat(mengchenli.nju@gmail.com)
- * Enhanced Functions for confirming Memory Leak
- * CSV: C_Static_result_Validate
- * malloc,realloc,calloc in <stdlib.h>
- * __csvMalloc		for	void* malloc( size_t size );
- * __csvRealloc	for void *realloc( void *ptr, size_t new_size );
- * __csvCalloc		for void* calloc( size_t num, size_t size );
- * __csvFree		for void free( void* ptr );
- *
- */
+char* __CrestGetsString(char* x) {      //gets and fgets
+    int i, strlen ;
+	static int __crest_gets_count=0;
+
+	pre_symbolic = 0;
+
+    if(__crest_gets_count >= CREST_GETS_MAX)
+        return NULL;
+    if(__crest_gets_count + CREST_PER_GETS_MAX < CREST_GETS_MAX){
+        strlen = CREST_PER_GETS_MAX;
+    }else{
+        strlen = CREST_GETS_MAX - __crest_gets_count;
+    }
+    for( i = 0; i < strlen-1; i++){
+        __CrestChar(x+i);
+        __crest_gets_count++;
+    }
+    x[strlen-1]=0;
+
+    return x;
+}
+int __CrestGetCharacter(char* x) {      //getchar getc fgetc
+	pre_symbolic = 0;
+	static int __crest_character_count=0;
+    if(__crest_character_count < CREST_CHARACTER_MAX){
+        if(__crest_character_count >0 && 
+                (__crest_character_count % CREST_PER_INPUT_MAX ==0)){
+            *x=0;
+        }else
+            __CrestChar(x);
+
+        __crest_character_count ++;
+        return *x;	
+    }else
+        return EOF;
+}
 
 void __DyVerifyMalloc(__CREST_ID id, __CREST_ADDR memAddr, __CREST_SIZE size) {
 	if(memAddr==(__CREST_ADDR)((void*)NULL))
@@ -249,7 +293,7 @@ void __DyVerifyRealloc(__CREST_ID id, __CREST_ADDR newAddr, __CREST_ADDR oldAddr
 }
 
 void __DyVerifyStrDup(__CREST_ID id, __CREST_ADDR newAddr, __CREST_ADDR oldAddr){
-	if(newAddr==(__CREST_ADDR)NULL)
+	if(newAddr==(__CREST_ADDR)(void*)NULL)
 		return ;
 	int len= strlen((char*)newAddr);
 	SI->DyVerifyMalloc(id,newAddr,len);

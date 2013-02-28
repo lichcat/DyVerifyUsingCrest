@@ -31,7 +31,7 @@ run:
 log-clean:
 	rm -f *.log
 
-clean:	log-clean
+clean:
 	rm -f *.o *.i *.cil.c *.fpr
 	rm -f -r inject_fortify
 	rm -f branches cfg cfg_func_map funcount idcount stmtcount

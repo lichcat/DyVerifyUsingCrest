@@ -205,31 +205,17 @@ EXTERN void __CrestUInt(unsigned int* x) __SKIP;
 EXTERN void __CrestChar(char* x) __SKIP;
 EXTERN void __CrestShort(short* x) __SKIP;
 EXTERN void __CrestInt(int* x) __SKIP;
-EXTERN void __CrestString(char* x) __SKIP;
-/* modified by lichcat(mengchenli.nju@gmail.com)
- * Enhanced Functions for confirming Memory Leak
- * CSV: C_Static_result_Validate
- * malloc,realloc,calloc in <stdlib.h>
- * __csvMalloc		for	void* malloc( size_t size );
- * __csvRealloc	for void *realloc( void *ptr, size_t new_size );
- * __csvCalloc		for void* calloc( size_t num, size_t size );
- * __csvFree		for void free( void* ptr );
- * __csvLoadPointer,__csvStorePointer for pointer assignment
- */
+EXTERN size_t  __CrestReadString(char* x) __SKIP;   /* read and fread */
+EXTERN char*  __CrestGetsString(char* x) __SKIP;   /* gets and fgets */
+EXTERN int __CrestGetCharacter(char* x) __SKIP;   /* getc getchar fgetc */
+
 EXTERN void __DyVerifyMalloc(__CREST_ID, __CREST_ADDR, __CREST_SIZE) __SKIP;
 EXTERN void __DyVerifyCalloc(__CREST_ID, __CREST_ADDR, __CREST_SIZE, __CREST_SIZE) __SKIP;
 EXTERN void __DyVerifyRealloc(__CREST_ID, __CREST_ADDR, __CREST_ADDR, __CREST_SIZE) __SKIP;
 EXTERN void __DyVerifyStrDup(__CREST_ID, __CREST_ADDR, __CREST_ADDR) __SKIP;
 
 EXTERN void __DyVerifyFree(__CREST_ID, __CREST_ADDR) __SKIP;
-/*
-EXTERN void __csvLoadPointer(__CREST_ID, __CREST_ADDR, __CREST_ADDR) __SKIP;
-EXTERN void __csvStorePointer(__CREST_ID, __CREST_ADDR, __CREST_ADDR) __SKIP;
-EXTERN void __csvPointerApply1(__CREST_ID, __CREST_OP, __CREST_VALUE) __SKIP;
-EXTERN void __csvPointerApply2(__CREST_ID, __CREST_OP, __CREST_VALUE) __SKIP;
-EXTERN void __csvHandleReturnPointer(__CREST_ID, __CREST_ADDR, __CREST_ADDR) __SKIP;
-EXTERN void __csvClearPointerStack(__CREST_ID) __SKIP;
-*/
+
 EXTERN void __DyVerifyLiveMemory(__CREST_ID, __CREST_ADDR) __SKIP;
 EXTERN void __DyVerifyStaticPathEnd(__CREST_ID) __SKIP;
 EXTERN void __StaticPathMark(__CREST_ID,__CREST_ID,__CREST_ID) __SKIP;

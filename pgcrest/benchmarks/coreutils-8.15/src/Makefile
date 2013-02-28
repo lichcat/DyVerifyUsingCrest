@@ -13,14 +13,9 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
-CREST_CFLAGS = -DCREST -I../../../include
-CREST_LDFLAGS = -L../../../lib
-CREST_LIBS = -lcrest -lstdc++
-CREST_CC = ../../../cil/bin/cilly --save-temps --doCrestInstrument
-CREST_PROGRAM = tr
-FPRFILE = inject_$(CREST_PROGRAM).fpr
-ANALYZERC = sourceanalyzer -b inject_$(CREST_PROGRAM) gcc
-ANALYZER = sourceanalyzer -b inject_$(CREST_PROGRAM)
+
+
+
 
 
 pkgdatadir = $(datadir)/coreutils
@@ -636,8 +631,6 @@ vdir_DEPENDENCIES = $(am__DEPENDENCIES_5)
 wc_SOURCES = wc.c
 wc_OBJECTS = wc.$(OBJEXT)
 wc_DEPENDENCIES = $(am__DEPENDENCIES_2)
-global_array_SOURCES = global_array.c
-global_array_OBJECTS = global_array.$(OBJEXT)
 who_SOURCES = who.c
 who_OBJECTS = who.$(OBJEXT)
 who_DEPENDENCIES = $(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1)
@@ -1722,7 +1715,7 @@ REPLACE_SELECT = 0
 REPLACE_SETENV = 0
 REPLACE_SETLOCALE = 0
 REPLACE_SIGNBIT = 0
-REPLACE_SIGNBIT_USING_GCC = 1
+REPLACE_SIGNBIT_USING_GCC = 0
 REPLACE_SLEEP = 0
 REPLACE_SNPRINTF = 0
 REPLACE_SPRINTF = 0
@@ -1863,20 +1856,6 @@ target_alias =
 top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
-
-ifeq ($(MAKECMDGOALS),analysis)
-
-CC = $(ANALYZERC)
-
-endif
-ifeq ($(MAKECMDGOALS),crest)
-
-CFLAGS += $(CREST_CFLAGS)
-LDFLAGS += $(CREST_LDFLAGS)
-LIBS += $(CREST_LIBS)
-CC = $(CREST_CC)
-
-endif
 
 # These are the names of programs that are not installed by default.
 # This list is *not* intended for programs like who, nice, chroot, etc.,
@@ -2355,9 +2334,9 @@ base64$(EXEEXT): $(base64_OBJECTS) $(base64_DEPENDENCIES) $(EXTRA_base64_DEPENDE
 basename$(EXEEXT): $(basename_OBJECTS) $(basename_DEPENDENCIES) $(EXTRA_basename_DEPENDENCIES) 
 	@rm -f basename$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(basename_OBJECTS) $(basename_LDADD) $(LIBS)
-cat$(EXEEXT): $(cat_OBJECTS) $(global_array_OBJECTS) $(cat_DEPENDENCIES) $(EXTRA_cat_DEPENDENCIES) 
+cat$(EXEEXT): $(cat_OBJECTS) $(cat_DEPENDENCIES) $(EXTRA_cat_DEPENDENCIES) 
 	@rm -f cat$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(cat_OBJECTS) $(global_array_OBJECTS) $(cat_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(cat_OBJECTS) $(cat_LDADD) $(LIBS)
 chcon$(EXEEXT): $(chcon_OBJECTS) $(chcon_DEPENDENCIES) $(EXTRA_chcon_DEPENDENCIES) 
 	@rm -f chcon$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(chcon_OBJECTS) $(chcon_LDADD) $(LIBS)
@@ -2421,9 +2400,9 @@ expand$(EXEEXT): $(expand_OBJECTS) $(expand_DEPENDENCIES) $(EXTRA_expand_DEPENDE
 expr$(EXEEXT): $(expr_OBJECTS) $(expr_DEPENDENCIES) $(EXTRA_expr_DEPENDENCIES) 
 	@rm -f expr$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(expr_OBJECTS) $(expr_LDADD) $(LIBS)
-factor$(EXEEXT): $(factor_OBJECTS) $(global_array_OBJECTS) $(factor_DEPENDENCIES) $(EXTRA_factor_DEPENDENCIES) 
+factor$(EXEEXT): $(factor_OBJECTS) $(factor_DEPENDENCIES) $(EXTRA_factor_DEPENDENCIES) 
 	@rm -f factor$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(factor_OBJECTS) $(global_array_OBJECTS) $(factor_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(factor_OBJECTS) $(factor_LDADD) $(LIBS)
 false$(EXEEXT): $(false_OBJECTS) $(false_DEPENDENCIES) $(EXTRA_false_DEPENDENCIES) 
 	@rm -f false$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(false_OBJECTS) $(false_LDADD) $(LIBS)
@@ -2442,9 +2421,9 @@ ginstall$(EXEEXT): $(ginstall_OBJECTS) $(ginstall_DEPENDENCIES) $(EXTRA_ginstall
 groups$(EXEEXT): $(groups_OBJECTS) $(groups_DEPENDENCIES) $(EXTRA_groups_DEPENDENCIES) 
 	@rm -f groups$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(groups_OBJECTS) $(groups_LDADD) $(LIBS)
-head$(EXEEXT): $(head_OBJECTS) $(global_array_OBJECTS) $(head_DEPENDENCIES) $(EXTRA_head_DEPENDENCIES) 
+head$(EXEEXT): $(head_OBJECTS) $(head_DEPENDENCIES) $(EXTRA_head_DEPENDENCIES) 
 	@rm -f head$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(head_OBJECTS) $(global_array_OBJECTS) $(head_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(head_OBJECTS) $(head_LDADD) $(LIBS)
 hostid$(EXEEXT): $(hostid_OBJECTS) $(hostid_DEPENDENCIES) $(EXTRA_hostid_DEPENDENCIES) 
 	@rm -f hostid$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(hostid_OBJECTS) $(hostid_LDADD) $(LIBS)
@@ -2577,9 +2556,9 @@ shuf$(EXEEXT): $(shuf_OBJECTS) $(shuf_DEPENDENCIES) $(EXTRA_shuf_DEPENDENCIES)
 sleep$(EXEEXT): $(sleep_OBJECTS) $(sleep_DEPENDENCIES) $(EXTRA_sleep_DEPENDENCIES) 
 	@rm -f sleep$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(sleep_OBJECTS) $(sleep_LDADD) $(LIBS)
-sort$(EXEEXT): $(sort_OBJECTS) $(global_array_OBJECTS) $(sort_DEPENDENCIES) $(EXTRA_sort_DEPENDENCIES) 
+sort$(EXEEXT): $(sort_OBJECTS) $(sort_DEPENDENCIES) $(EXTRA_sort_DEPENDENCIES) 
 	@rm -f sort$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(sort_OBJECTS) $(global_array_OBJECTS) $(sort_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(sort_OBJECTS) $(sort_LDADD) $(LIBS)
 split$(EXEEXT): $(split_OBJECTS) $(split_DEPENDENCIES) $(EXTRA_split_DEPENDENCIES) 
 	@rm -f split$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(split_OBJECTS) $(split_LDADD) $(LIBS)
@@ -2619,31 +2598,9 @@ timeout$(EXEEXT): $(timeout_OBJECTS) $(timeout_DEPENDENCIES) $(EXTRA_timeout_DEP
 touch$(EXEEXT): $(touch_OBJECTS) $(touch_DEPENDENCIES) $(EXTRA_touch_DEPENDENCIES) 
 	@rm -f touch$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(touch_OBJECTS) $(touch_LDADD) $(LIBS)
-crest:	clean	$(CREST_PROGRAM)$(EXEEXT)
-#mycp:
-#	@if test -f "../lib/cfg"; then cp "../lib/cfg" "cfg"; fi
-#	@if test -f "../lib/cfg_func_map"; then cp "../lib/cfg_func_map" #"cfg_func_map"; fi
-#	@if test -f "../lib/branches"; then cp "../lib/branches" "branches"; fi
-#	@if test -f "../lib/idcount"; then cp "../lib/idcount" "idcount"; fi
-#	@if test -f "../lib/funcount"; then cp "../lib/funcount" "funcount"; fi
-#	@if test -f "../lib/stmtcount"; then cp "../lib/stmtcount" "stmtcount"; fi
-run:	
-	../../../bin/reachability
-	../../../bin/run_crest "./$(CREST_PROGRAM) 'aaaaa' 'aaaaa'" 1000 -path 2>$(CREST_PROGRAM)_path
-	../../../bin/run_crest "./$(CREST_PROGRAM) -c 'aaaaa' 'aaaaa'" 1000 -path 2>>$(CREST_PROGRAM)_path
-	../../../bin/run_crest "./$(CREST_PROGRAM) -cs 'aaaaa' 'aaaaa'" 1000 -path 2>>$(CREST_PROGRAM)_path
-	../../../bin/run_crest "./$(CREST_PROGRAM) -d 'aaaaaaaaaa'" 1000 -path 2>>$(CREST_PROGRAM)_path
-	../../../bin/run_crest "./$(CREST_PROGRAM) -s 'aaaaaaaaaa'" 1000 -path 2>>$(CREST_PROGRAM)_path
-analysis:	clean	$(CREST_PROGRAM)$(EXEEXT)
-	rm -f -r inject_fortify
-	rm -f *.fpr
-	$(ANALYZER)	-scan -f $(FPRFILE)
-	file-roller --force --extract-to=inject_fortify $(FPRFILE)
-	rm -f currentCheck*
-	rm -f checklists
-tr$(EXEEXT): $(tr_OBJECTS) $(global_array_OBJECTS) $(tr_DEPENDENCIES) $(EXTRA_tr_DEPENDENCIES) 
+tr$(EXEEXT): $(tr_OBJECTS) $(tr_DEPENDENCIES) $(EXTRA_tr_DEPENDENCIES) 
 	@rm -f tr$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(global_array_OBJECTS) $(tr_OBJECTS) $(tr_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(tr_OBJECTS) $(tr_LDADD) $(LIBS)
 true$(EXEEXT): $(true_OBJECTS) $(true_DEPENDENCIES) $(EXTRA_true_DEPENDENCIES) 
 	@rm -f true$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(true_OBJECTS) $(true_LDADD) $(LIBS)
@@ -2677,9 +2634,9 @@ users$(EXEEXT): $(users_OBJECTS) $(users_DEPENDENCIES) $(EXTRA_users_DEPENDENCIE
 vdir$(EXEEXT): $(vdir_OBJECTS) $(vdir_DEPENDENCIES) $(EXTRA_vdir_DEPENDENCIES) 
 	@rm -f vdir$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(vdir_OBJECTS) $(vdir_LDADD) $(LIBS)
-wc$(EXEEXT): $(wc_OBJECTS) $(wc_DEPENDENCIES) $(EXTRA_wc_DEPENDENCIES)
+wc$(EXEEXT): $(wc_OBJECTS) $(wc_DEPENDENCIES) $(EXTRA_wc_DEPENDENCIES) 
 	@rm -f wc$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(wc_OBJECTS) $(global_array_OBJECTS) $(wc_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(wc_OBJECTS) $(wc_LDADD) $(LIBS)
 who$(EXEEXT): $(who_OBJECTS) $(who_DEPENDENCIES) $(EXTRA_who_DEPENDENCIES) 
 	@rm -f who$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(who_OBJECTS) $(who_LDADD) $(LIBS)
@@ -3146,10 +3103,6 @@ maintainer-clean-generic:
 	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
 clean: clean-am
-	-rm -f *.i *.cil.c
-	-rm -f branches cfg cfg_func_map funcount idcount stmtcount
-	-rm -f input cfg_branches coverage szd_execution
-	-rm -f reachability
 
 clean-am: clean-binPROGRAMS clean-generic clean-noinstLIBRARIES \
 	clean-noinstPROGRAMS clean-pkglibexecPROGRAMS mostlyclean-am
@@ -3157,9 +3110,6 @@ clean-am: clean-binPROGRAMS clean-generic clean-noinstLIBRARIES \
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
-	-rm -f currentCheck* checklists
-	-rm -f *.log *.fpr 
-	-rm -rf inject_fortify
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
 

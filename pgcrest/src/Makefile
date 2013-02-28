@@ -2,7 +2,7 @@
 YICES_DIR=/home/seg/lich/support/yices-1.0.36-amd64
 
 CC=$(CXX)
-CFLAGS = -I. -I$(YICES_DIR)/include -Wall -O2
+CFLAGS = -DCREST -I. -I$(YICES_DIR)/include -Wall -O2
 CXXFLAGS = $(CFLAGS)
 LDFLAGS = -L$(YICES_DIR)/lib
 LOADLIBES = -lyices -lrt

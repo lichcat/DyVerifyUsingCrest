@@ -50,6 +50,7 @@ SymbolicInterpreter::SymbolicInterpreter()
   : pred_(NULL), ex_(true), num_inputs_(0) {
   stack_.reserve(16);
   get_pathend_ = false;
+  get_iswarning_ = false;
   wLeak_=0;
   sFreed_=0;
   lFreed_=0;
@@ -60,6 +61,7 @@ SymbolicInterpreter::SymbolicInterpreter(const vector<value_t>& input)
   stack_.reserve(16);
   ex_.mutable_inputs()->assign(input.begin(), input.end());
   get_pathend_ = false;
+  get_iswarning_ = false;
   wLeak_=0;
   sFreed_=0;
   lFreed_=0;
@@ -318,6 +320,7 @@ void SymbolicInterpreter::Branch(id_t id, branch_id_t bid, bool pred_value) {
 	fprintf(stderr,"branch %d cannot reach path!\n",bid);
 	exit(101);
   }
+
   */
 
 }
@@ -411,7 +414,7 @@ void SymbolicInterpreter::DyVerifyMalloc(id_t id,addr_t memAddr,value_t size){
 	bool inserted=(shadowHeap_.insert(std::pair<addr_t,ShadowHeap*>(memAddr,sMem))).second;
 
 	if(!inserted){	//memAddr exists in shadowHeap_
-		fprintf(stderr,"Err: in Malloc id:%d\n\t Malloc %lld bytes @ %lu ,already exists in ShadowHeap!\n ",id,size,memAddr);
+		//fprintf(stderr,"Err: in Malloc id:%d\n\t Malloc %lld bytes @ %lu ,already exists in ShadowHeap!\n ",id,size,memAddr);
 		delete sMem;
 		//exit(-1);
 	}
@@ -429,10 +432,13 @@ void SymbolicInterpreter::DyVerifyChangeSize(addr_t memAddr,value_t size){
 }
 void SymbolicInterpreter::DyVerifyFree(id_t id,addr_t memAddr){
 	//IFMDEBUG(fprintf(stderr, "Free \tfree: %lu \n",memAddr));
+    if(memAddr==(addr_t)((void*)NULL))
+        return ;
 	ConstShadowHeapIt it=shadowHeap_.find(memAddr);
 	if(it==shadowHeap_.end()){
-		fprintf(stderr,"Err: in Free id:%d\n\tTry to Free %lu , on find in ShadowHeap!\n",id,memAddr);
-		exit(-1);
+		//fprintf(stderr,"Err: in Free id:%d\n\tTry to Free %lu , no find in ShadowHeap!\n",id,memAddr);
+		//exit(-1);
+        return ;
 	}
 	if((it->second!=NULL) && (it->second->isWarningMem)){
 		if(it->second->liveFlag=='S')
@@ -494,8 +500,8 @@ void SymbolicInterpreter::DyVerifyPathMark(id_t pathId,id_t pathStmtId){
 	//IFMDEBUG(fprintf(stderr,"StaticPathMark_%d_%d \n",pathId,pathStmtId));
 }
 void SymbolicInterpreter::DyVerifyCheckShadowHeap(){
-	//fprintf(stderr,"size:%d\n",shadowHeap_.size());
-	if(get_pathend_){		//along path fragment
+	fprintf(stderr,"in shadowheap! size:%d\n",shadowHeap_.size());
+	if(get_pathend_ && get_iswarning_){		//along path fragment
 		fprintf(stderr,"cover path!\n");
 		//fprintf(stderr,"Check\n");
 		//DyVerifyDumpShadowHeap();
@@ -530,6 +536,7 @@ void SymbolicInterpreter::DyVerifyCheckShadowHeap(){
 
 void SymbolicInterpreter::DyVerifyIsWarningMem(id_t id, addr_t memAddr){
 	//IFMDEBUG(fprintf(stderr,"IsWarningMemory: %lu \n", memAddr));
+    get_iswarning_=true;
 	ConstShadowHeapIt it=shadowHeap_.find(memAddr);
 	if(it==shadowHeap_.end()){
 		fprintf(stderr, "Err: in DyVerifyIsWarningMem id:%d\n\t Try mark %lu isWaringMem ,where couldn't find in ShadowHeap\n",id,memAddr);
@@ -537,5 +544,6 @@ void SymbolicInterpreter::DyVerifyIsWarningMem(id_t id, addr_t memAddr){
 	}else
 		it->second->isWarningMem=true;
 	//IFMDEBUG(DyVerifyDumpShadowHeap());
+	//DyVerifyDumpShadowHeap();
 }
 }  // namespace crest

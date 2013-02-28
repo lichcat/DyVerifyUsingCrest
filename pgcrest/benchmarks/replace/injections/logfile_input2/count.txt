@@ -1,0 +1,66 @@
+warning 0 's results:
+LEAK
+1000
+Iteration 1000 (4s): covered 98 branches [16 reach funs, 134 reach branches].
+warning 1 's results:
+MAY-LEAK
+Iteration 1000 (5s): covered 98 branches [16 reach funs, 134 reach branches].
+warning 2 's results:
+LEAK
+90
+Iteration 1000 (5s): covered 98 branches [16 reach funs, 134 reach branches].
+warning 3 's results:
+BLOAT
+4
+Iteration 1000 (5s): covered 98 branches [16 reach funs, 134 reach branches].
+warning 4 's results:
+MAY-LEAK
+Iteration 1000 (5s): covered 98 branches [16 reach funs, 134 reach branches].
+warning 5 's results:
+LEAK
+1000
+Iteration 1000 (4s): covered 98 branches [16 reach funs, 134 reach branches].
+warning 6 's results:
+LEAK
+42
+Iteration 1000 (4s): covered 98 branches [16 reach funs, 134 reach branches].
+warning 7 's results:
+MAY-LEAK
+Iteration 1000 (4s): covered 98 branches [16 reach funs, 134 reach branches].
+warning 8 's results:
+LEAK
+90
+Iteration 1000 (4s): covered 98 branches [16 reach funs, 134 reach branches].
+warning 9 's results:
+MAY-LEAK
+Iteration 1000 (4s): covered 98 branches [16 reach funs, 134 reach branches].
+warning 10 's results:
+L_NOT_LEAK
+62
+Iteration 1000 (4s): covered 98 branches [16 reach funs, 134 reach branches].
+warning 11 's results:
+MAY-LEAK
+Iteration 1000 (4s): covered 98 branches [16 reach funs, 134 reach branches].
+warning 12 's results:
+L_NOT_LEAK
+4
+Iteration 1000 (4s): covered 98 branches [16 reach funs, 134 reach branches].
+warning 13 's results:
+BLOAT
+42
+Iteration 1000 (5s): covered 98 branches [16 reach funs, 134 reach branches].
+warning 14 's results:
+L_NOT_LEAK
+1000
+Iteration 1000 (5s): covered 98 branches [16 reach funs, 134 reach branches].
+warning 15 's results:
+BLOAT
+55
+Iteration 1000 (5s): covered 98 branches [16 reach funs, 134 reach branches].
+warning 16 's results:
+MAY-LEAK
+Iteration 1000 (5s): covered 98 branches [16 reach funs, 134 reach branches].
+warning 17 's results:
+BLOAT
+55
+Iteration 1000 (5s): covered 98 branches [16 reach funs, 134 reach branches].

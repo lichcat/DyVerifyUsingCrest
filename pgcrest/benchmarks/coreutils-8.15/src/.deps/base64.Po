@@ -1,5 +1,6 @@
-base64.o: base64.c ../lib/config.h ../lib/stdio.h /usr/include/stdio.h \
-  /usr/include/features.h /usr/include/x86_64-linux-gnu/bits/predefs.h \
+base64.o base64.o: base64.c ../lib/config.h ../lib/stdio.h \
+  /usr/include/stdio.h /usr/include/features.h \
+  /usr/include/x86_64-linux-gnu/bits/predefs.h \
   /usr/include/x86_64-linux-gnu/sys/cdefs.h \
   /usr/include/x86_64-linux-gnu/bits/wordsize.h \
   /usr/include/x86_64-linux-gnu/gnu/stubs.h \
@@ -22,9 +23,9 @@ base64.o: base64.c ../lib/config.h ../lib/stdio.h /usr/include/stdio.h \
   /usr/include/x86_64-linux-gnu/bits/time.h \
   /usr/include/x86_64-linux-gnu/sys/sysmacros.h \
   /usr/include/x86_64-linux-gnu/bits/pthreadtypes.h /usr/include/getopt.h \
-  ../../../include/crest.h global_array.h system.h ../lib/alloca.h \
-  ../lib/sys/stat.h /usr/include/x86_64-linux-gnu/bits/timex.h \
-  /usr/include/xlocale.h /usr/include/x86_64-linux-gnu/sys/stat.h \
+  system.h ../lib/alloca.h ../lib/sys/stat.h \
+  /usr/include/x86_64-linux-gnu/bits/timex.h /usr/include/xlocale.h \
+  /usr/include/x86_64-linux-gnu/sys/stat.h \
   /usr/include/x86_64-linux-gnu/bits/stat.h \
   /usr/include/x86_64-linux-gnu/sys/param.h \
   /usr/lib/gcc/x86_64-linux-gnu/3.4.6/include/limits.h \
@@ -136,10 +137,6 @@ base64.o: base64.c ../lib/config.h ../lib/stdio.h /usr/include/stdio.h \
 /usr/include/x86_64-linux-gnu/bits/pthreadtypes.h:
 
 /usr/include/getopt.h:
-
-../../../include/crest.h:
-
-global_array.h:
 
 system.h:
 

@@ -115,7 +115,7 @@ class SymbolicInterpreter {
 
   // current execution is along the path fragment ,set true @ pathEnd
   bool get_pathend_ ;
-
+  bool get_iswarning_ ;
 
   // The symbolic execution (program path and inputs).
   SymbolicExecution ex_;

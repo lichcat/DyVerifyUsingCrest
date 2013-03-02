@@ -111,6 +111,8 @@ pgcrest/benchmarks/schedule2
 pgcrest/benchmarks/tot_info
 pgcrest/benchmarks/testLIB
 
+#pgcrest_2 benchmark target dir
+pgcrest_2/benchmarks/coreutils-8.15/target
 
 #Enhanced files ignored for current
 #EnhancedCrestInstru
